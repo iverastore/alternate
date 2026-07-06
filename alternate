@@ -524,65 +524,56 @@
                     BackgroundColor3 = rgb(0, 0, 0)
                 }); items[ "window" ].Position = dim2(0, items[ "window" ].AbsolutePosition.X, 0, items[ "window" ].AbsolutePosition.Y)          
 
-                items[ "top_frame" ] = library:create( "Frame" , {
-                    Name = "\0";
+                -- Glow Effect
+                items[ "glow" ] = library:create( "ImageLabel" , {
                     Parent = items[ "window" ];
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, 0, 0, 45);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(0, 0, 0)
-                });
-                
-                items[ "logo" ] = library:create( "ImageLabel" , {
-                    BorderColor3 = rgb(0, 0, 0);
-                    Parent = items[ "top_frame" ];
-                    Name = "\0";
-                    Image = cfg.logo;
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, 16, 0, 7);
-                    Size = dim2(0, 32, 0, 32);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                items[ "ui_title" ] = library:create( "TextLabel" , {
-                    FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    TextColor3 = rgb(255, 255, 255);
-                    TextStrokeColor3 = rgb(255, 255, 255);
-                    Text = cfg.name;
-                    Parent = items[ "top_frame" ];
                     Name = "\0";
                     BackgroundTransparency = 1;
-                    Size = dim2(1, 0, 1, 0);
-                    BorderSizePixel = 0;
-                    BorderColor3 = rgb(0, 0, 0);
-                    TextSize = 35;
-                    BackgroundColor3 = rgb(255, 255, 255)
+                    Position = dim2(0, -15, 0, -15);
+                    Size = dim2(1, 30, 1, 30);
+                    Image = "rbxassetid://6015886843";
+                    ImageColor3 = library.Theme.Accent;
+                    ImageTransparency = 0.5;
+                    ScaleType = Enum.ScaleType.Slice;
+                    SliceCenter = Rect.new(10, 10, 118, 118);
+                    ZIndex = -1;
                 });
                 
                 items[ "inline" ] = library:create( "Frame" , {
                     Parent = items[ "window" ];
                     Name = "\0";
-                    Position = dim2(0, 0, 0, 44);
+                    Position = dim2(0, 0, 0, 0);
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 63, 1, -44);
+                    Size = dim2(0, 63, 1, 0);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(0, 0, 0)
+                });
+
+                items[ "logo" ] = library:create( "ImageLabel" , {
+                    BorderColor3 = rgb(0, 0, 0);
+                    Parent = items[ "inline" ];
+                    Name = "\0";
+                    Image = cfg.logo;
+                    BackgroundTransparency = 1;
+                    Position = dim2(0.5, -16, 0, 10);
+                    Size = dim2(0, 32, 0, 32);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(255, 255, 255)
                 });
                 
                 items[ "tab_button_holder" ] = library:create( "Frame" , {
                     Parent = items[ "inline" ];
                     Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
+                    Position = dim2(0, 1, 0, 50);
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
+                    Size = dim2(1, -2, 1, -50);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(14, 14, 14)
                 });
                 
                 library:create( "UIPadding" , {
                     Parent = items[ "tab_button_holder" ];
-                    PaddingTop = dim(0, 37)
+                    PaddingTop = dim(0, 10)
                 });
                 
                 library:create( "UIListLayout" , {
@@ -594,9 +585,9 @@
                 items[ "page_holder" ] = library:create( "Frame" , {
                     Parent = items[ "window" ];
                     Name = "\0";
-                    Position = dim2(0, 63, 0, 45);
+                    Position = dim2(0, 63, 0, 0);
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -63, 1, -45);
+                    Size = dim2(1, -63, 1, 0);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(12, 12, 12)
                 });                
@@ -780,7 +771,7 @@
                 items[ "section_outline" ] = library:create( "Frame" , {
                     Name = "\0";
                     BackgroundTransparency = 1;
-                    Parent = self.items[ cfg.side ];
+                    Parent = self.items[ cfg.side == 1 and "left" or cfg.side == 2 and "right" or cfg.side ];
                     BorderColor3 = rgb(0, 0, 0);
                     Size = dim2(1, 0, 1, 0);
                     BorderSizePixel = 0;
@@ -963,7 +954,7 @@
                 items[ "section_outline" ] = library:create( "Frame" , {
                     Name = "\0";
                     BackgroundTransparency = 1;
-                    Parent = self.items[ cfg.side ];
+                    Parent = self.items[ cfg.side == 1 and "left" or cfg.side == 2 and "right" or cfg.side ];
                     BorderColor3 = rgb(0, 0, 0);
                     Size = dim2(1, 0, cfg.size, 0);
                     BorderSizePixel = 0;
