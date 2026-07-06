@@ -643,6 +643,10 @@
                     items[ "window" ].Visible = bool
                 end)
             end 
+
+            task.spawn(function()
+                cfg.toggle_menu(true)
+            end)
                 
             return setmetatable(cfg, library)
         end 
