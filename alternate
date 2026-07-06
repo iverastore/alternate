@@ -341,7 +341,7 @@
                     )
 
                     -- library:tween(frame, {Position = current_position}, Enum.EasingStyle.Linear, 0) -- heh, nobody will notice 
-                    frame.Position = current_position
+                    tween_service:Create(frame, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = current_position}):Play()
                     library:close_current_element(nil) 
                 end
             end)
@@ -638,6 +638,92 @@
             task.spawn(function()
                 cfg.toggle_menu(true)
             end)
+
+            -- Built-in settings tab creation
+            task.spawn(function()
+                local settings_tab = cfg:Tab({ Name = "Settings", Icon = "http://www.roblox.com/asset/?id=6031265977" })
+                
+                -- Configs Section
+                local config_section = settings_tab:Section({ Name = "Configs", Side = "left" })
+                local config_name_box = config_section:Textbox({ Name = "Config Name", Flag = "_settings_cfg_name", Default = "" })
+                local config_dropdown = config_section:Dropdown({ Name = "Select Config", Flag = "_settings_cfg_select", Items = {} })
+                
+                local function refresh_configs()
+                    local list = {}
+                    pcall(function()
+                        if not isfolder(library.directory .. "/configs") then
+                            makefolder(library.directory .. "/configs")
+                        end
+                        for _, file in ipairs(listfiles(library.directory .. "/configs")) do
+                            local name = file:match("([^/\\]+)%.cfg$") or file:gsub(library.directory .. "/configs\\", ""):gsub(".cfg", ""):gsub(library.directory .. "\\configs\\", "")
+                            if name then table.insert(list, name) end
+                        end
+                    end)
+                    config_dropdown.refresh_options(list)
+                end
+
+                config_section:Button({ Name = "Create Config", Callback = function()
+                    local name = library.flags["_settings_cfg_name"]
+                    if name and name ~= "" then
+                        local config_data = library:get_config()
+                        writefile(library.directory .. "/configs/" .. name .. ".cfg", config_data)
+                        refresh_configs()
+                        library:Notify("Created config: " .. name, 3)
+                    else
+                        library:Notify("Enter a config name first!", 3)
+                    end
+                end })
+
+                config_section:Button({ Name = "Save Config", Callback = function()
+                    local name = library.flags["_settings_cfg_select"]
+                    if name and name ~= "" then
+                        local config_data = library:get_config()
+                        writefile(library.directory .. "/configs/" .. name .. ".cfg", config_data)
+                        library:Notify("Saved config: " .. name, 3)
+                    else
+                        library:Notify("Select a config first!", 3)
+                    end
+                end })
+
+                config_section:Button({ Name = "Load Config", Callback = function()
+                    local name = library.flags["_settings_cfg_select"]
+                    if name and name ~= "" then
+                        local file_path = library.directory .. "/configs/" .. name .. ".cfg"
+                        if isfile(file_path) then
+                            local data = readfile(file_path)
+                            library:load_config(data)
+                            library:Notify("Loaded config: " .. name, 3)
+                        end
+                    else
+                        library:Notify("Select a config first!", 3)
+                    end
+                end })
+
+                config_section:Button({ Name = "Refresh Configs", Callback = refresh_configs })
+                refresh_configs()
+
+                -- Menu Settings Section
+                local menu_section = settings_tab:Section({ Name = "Menu Settings", Side = "right" })
+                
+                menu_section:Toggle({ Name = "Watermark", Default = true, Callback = function(val)
+                    if library.WatermarkObj then
+                        library.WatermarkObj:SetVisibility(val)
+                    end
+                end })
+
+                menu_section:Toggle({ Name = "Keybind List", Default = true, Callback = function(val)
+                    if library.KeyList then
+                        library.KeyList:SetVisibility(val)
+                    end
+                end })
+
+                menu_section:Toggle({ Name = "Accent Glow", Default = true }):Colorpicker({ Flag = "GlowColor", Default = library.Theme.Accent, Callback = function(color)
+                    library.Theme.Accent = color
+                    if items["glow"] then
+                        items["glow"].ImageColor3 = color
+                    end
+                end })
+            end)
                 
             return setmetatable(cfg, library)
         end 
@@ -716,10 +802,16 @@
                             BackgroundTransparency = 1;
                             Name = "\0";
                             BorderColor3 = rgb(0, 0, 0);
-                            Size = dim2(0, 100, 0, 100);
+                            Size = dim2(0.5, -10, 1, 0);
                             BorderSizePixel = 0;
                             BackgroundColor3 = rgb(8, 8, 8)
                         }); 
+
+                        library:create( "UIListLayout" , {
+                            Parent = items[ column ];
+                            Padding = dim(0, 15);
+                            SortOrder = Enum.SortOrder.LayoutOrder
+                        });
                     end                  
                 -- 
             end 
@@ -2433,7 +2525,11 @@
             flags[cfg.flag] = {
                 mode = cfg.mode,
                 key = cfg.key, 
-                active = cfg.active
+                active = cfg.active,
+                Mode = cfg.mode,
+                Key = cfg.key,
+                Active = cfg.active,
+                Toggled = cfg.active
             }
 
             local items = cfg.items; do 
@@ -2576,6 +2672,7 @@
                 end
 
                 flags[cfg.flag]["mode"] = mode
+                flags[cfg.flag]["Mode"] = mode
                 cfg.modify_mode_color(mode)
             end 
 
@@ -2621,7 +2718,11 @@
                 flags[cfg.flag] = {
                     mode = cfg.mode,
                     key = cfg.key, 
-                    active = cfg.active
+                    active = cfg.active,
+                    Mode = cfg.mode,
+                    Key = cfg.key,
+                    Active = cfg.active,
+                    Toggled = cfg.active
                 }
             end
 
