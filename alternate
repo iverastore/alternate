@@ -512,6 +512,7 @@
                 items = {};
                 tweening;
             }
+            setmetatable(cfg, library)
             
             library[ "items" ] = library:create( "ScreenGui" , {
                 Parent = coregui;
@@ -659,92 +660,6 @@
 
             task.spawn(function()
                 cfg.toggle_menu(true)
-            end)
-
-            -- Built-in settings tab creation
-            task.spawn(function()
-                local settings_tab = cfg:Tab({ Name = "Settings", Icon = "http://www.roblox.com/asset/?id=6031265977" })
-                
-                -- Configs Section
-                local config_section = settings_tab:Section({ Name = "Configs", Side = "left" })
-                local config_name_box = config_section:Textbox({ Name = "Config Name", Flag = "_settings_cfg_name", Default = "" })
-                local config_dropdown = config_section:Dropdown({ Name = "Select Config", Flag = "_settings_cfg_select", Items = {} })
-                
-                local function refresh_configs()
-                    local list = {}
-                    pcall(function()
-                        if not isfolder(library.directory .. "/configs") then
-                            makefolder(library.directory .. "/configs")
-                        end
-                        for _, file in ipairs(listfiles(library.directory .. "/configs")) do
-                            local name = file:match("([^/\\]+)%.cfg$") or file:gsub(library.directory .. "/configs\\", ""):gsub(".cfg", ""):gsub(library.directory .. "\\configs\\", "")
-                            if name then table.insert(list, name) end
-                        end
-                    end)
-                    config_dropdown.refresh_options(list)
-                end
-
-                config_section:Button({ Name = "Create Config", Callback = function()
-                    local name = library.flags["_settings_cfg_name"]
-                    if name and name ~= "" then
-                        local config_data = library:get_config()
-                        writefile(library.directory .. "/configs/" .. name .. ".cfg", config_data)
-                        refresh_configs()
-                        library:Notify("Created config: " .. name, 3)
-                    else
-                        library:Notify("Enter a config name first!", 3)
-                    end
-                end })
-
-                config_section:Button({ Name = "Save Config", Callback = function()
-                    local name = library.flags["_settings_cfg_select"]
-                    if name and name ~= "" then
-                        local config_data = library:get_config()
-                        writefile(library.directory .. "/configs/" .. name .. ".cfg", config_data)
-                        library:Notify("Saved config: " .. name, 3)
-                    else
-                        library:Notify("Select a config first!", 3)
-                    end
-                end })
-
-                config_section:Button({ Name = "Load Config", Callback = function()
-                    local name = library.flags["_settings_cfg_select"]
-                    if name and name ~= "" then
-                        local file_path = library.directory .. "/configs/" .. name .. ".cfg"
-                        if isfile(file_path) then
-                            local data = readfile(file_path)
-                            library:load_config(data)
-                            library:Notify("Loaded config: " .. name, 3)
-                        end
-                    else
-                        library:Notify("Select a config first!", 3)
-                    end
-                end })
-
-                config_section:Button({ Name = "Refresh Configs", Callback = refresh_configs })
-                refresh_configs()
-
-                -- Menu Settings Section
-                local menu_section = settings_tab:Section({ Name = "Menu Settings", Side = "right" })
-                
-                menu_section:Toggle({ Name = "Watermark", Default = true, Callback = function(val)
-                    if library.WatermarkObj then
-                        library.WatermarkObj:SetVisibility(val)
-                    end
-                end })
-
-                menu_section:Toggle({ Name = "Keybind List", Default = true, Callback = function(val)
-                    if library.KeyList then
-                        library.KeyList:SetVisibility(val)
-                    end
-                end })
-
-                menu_section:Toggle({ Name = "Accent Glow", Default = true }):Colorpicker({ Flag = "GlowColor", Default = library.Theme.Accent, Callback = function(color)
-                    library.Theme.Accent = color
-                    if items["glow"] then
-                        items["glow"].ImageColor3 = color
-                    end
-                end })
             end)
                 
             return setmetatable(cfg, library)
@@ -3282,16 +3197,33 @@ function library:Watermark(options)
         BackgroundTransparency = 1,
         Size = dim2(1, 0, 1, 0),
         TextColor3 = rgb(230, 230, 230),
-        FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+        FontFace = library.font,
         TextSize = 10,
         Text = options.name or options.Name or "alternate.lol",
-        ZIndex = 3
+        ZIndex = 3,
+        TextXAlignment = Enum.TextXAlignment.Center
     })
+    
+    local fps = 60
+    task.spawn(function()
+        local last_time = os.clock()
+        run.RenderStepped:Connect(function()
+            local current_time = os.clock()
+            fps = math.round(1 / math.max(current_time - last_time, 0.0001))
+            last_time = current_time
+        end)
+    end)
+    
+    text_lbl:GetPropertyChangedSignal("TextBounds"):Connect(function()
+        container.Size = dim2(0, text_lbl.TextBounds.X + 20, 0, 25)
+    end)
     
     task.spawn(function()
         while task.wait(1) do
-            local fps = math.round(stats.WorkspaceRules.FPS:GetValue())
-            local ping = math.round(lp:GetNetworkPing() * 1000)
+            local ping = 0
+            pcall(function()
+                ping = math.round(lp:GetNetworkPing() * 1000)
+            end)
             text_lbl.Text = string.format("%s | %d FPS | %dms", options.name or options.Name or "alternate.lol", fps, ping)
         end
     end)
@@ -3357,7 +3289,7 @@ function library:TargetHUD(options)
         Position = dim2(0, 10, 0, 5),
         Size = dim2(1, -20, 0, 20),
         TextColor3 = rgb(255, 255, 255),
-        FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+        FontFace = library.font,
         TextSize = 11,
         Text = "Target: None",
         ZIndex = 3
@@ -3386,7 +3318,7 @@ function library:TargetHUD(options)
         Position = dim2(0, 10, 0, 40),
         Size = dim2(1, -20, 0, 15),
         TextColor3 = rgb(178, 178, 178),
-        FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+        FontFace = library.font,
         TextSize = 9,
         Text = "HP: 100/100 | Dist: 0m",
         ZIndex = 3
@@ -3473,7 +3405,7 @@ function library:KeybindList(options)
         BackgroundTransparency = 1,
         Size = dim2(1, 0, 0, 25),
         TextColor3 = rgb(255, 255, 255),
-        FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+        FontFace = library.font,
         TextSize = 11,
         Text = "Keybinds",
         ZIndex = 3
@@ -3502,7 +3434,7 @@ function library:KeybindList(options)
                         BackgroundTransparency = 1,
                         Size = dim2(1, 0, 0, 15),
                         TextColor3 = rgb(178, 178, 178),
-                        FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+                        FontFace = library.font,
                         TextSize = 9,
                         Text = string.format(" %s [%s]", tostring(flag), tostring(data.key):gsub("Enum.KeyCode.", "")),
                         ZIndex = 3
