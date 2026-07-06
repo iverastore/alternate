@@ -87,7 +87,24 @@
             Inline = Color3.fromRGB(3, 3, 3)
         }
     }
-    getgenv().library.ChangeTheme = function(self, name, color) end
+    getgenv().themes = {
+        preset = {
+            glow = Color3.fromRGB(85, 170, 255)
+        }
+    }
+    getgenv().library.ChangeTheme = function(self, name, color)
+        pcall(function()
+            if name == "Accent" or name == "glow" then
+                library.Theme.Accent = color
+                themes.preset.glow = color
+            end
+        end)
+    end
+    function library:apply_theme(obj, name, prop)
+        pcall(function()
+            obj[prop] = library.Theme.Accent
+        end)
+    end
 
     local keys = {
         [Enum.KeyCode.LeftShift] = "LS",
@@ -525,19 +542,24 @@
                 }); items[ "window" ].Position = dim2(0, items[ "window" ].AbsolutePosition.X, 0, items[ "window" ].AbsolutePosition.Y)          
 
                 -- Glow Effect
-                items[ "glow" ] = library:create( "ImageLabel" , {
-                    Parent = items[ "window" ];
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, -15, 0, -15);
-                    Size = dim2(1, 30, 1, 30);
-                    Image = "rbxassetid://6015886843";
-                    ImageColor3 = library.Theme.Accent;
-                    ImageTransparency = 0.5;
-                    ScaleType = Enum.ScaleType.Slice;
-                    SliceCenter = Rect.new(10, 10, 118, 118);
-                    ZIndex = -1;
-                });
+                items[ "glow" ] = library:create("ImageLabel", {
+                    Parent = items[ "window" ],
+                    Name = "",
+                    ImageColor3 = library.Theme.Accent,
+                    ScaleType = Enum.ScaleType.Slice,
+                    BorderColor3 = rgb(0, 0, 0),
+                    BackgroundColor3 = rgb(255, 255, 255),
+                    Visible = true,
+                    Image = "http://www.roblox.com/asset/?id=18245826428",
+                    BackgroundTransparency = 1,
+                    ImageTransparency = 0.8, 
+                    Position = dim2(0, -20, 0, -20),
+                    Size = dim2(1, 40, 1, 40),
+                    ZIndex = -1,
+                    BorderSizePixel = 0,
+                    SliceCenter = rect(vec2(21, 21), vec2(79, 79))
+                })
+                library:apply_theme(items[ "glow" ], "glow", "ImageColor3")
                 
                 items[ "inline" ] = library:create( "Frame" , {
                     Parent = items[ "window" ];
@@ -1154,7 +1176,7 @@
                         Size = dim2(0, 0, 0, 12);
                         BorderSizePixel = 0;
                         BackgroundColor3 = rgb(255, 255, 255);
-                        AutomaticSize = Enum.AutomaticSize.XY;
+                        AutomaticSize = Enum.AutomaticSize.X;
                     });
 
                     subItems[ "button_text" ] = library:create( "TextLabel" , {
@@ -1163,11 +1185,11 @@
                         TextColor3 = rgb(100, 100, 100);
                         Text = name;
                         BackgroundTransparency = 1;
-                        Size = dim2(1, 0, 1, 0);
+                        Size = dim2(0, 0, 1, 0);
                         BorderSizePixel = 0;
                         TextSize = 10;
                         BackgroundColor3 = rgb(255, 255, 255);
-                        AutomaticSize = Enum.AutomaticSize.XY;
+                        AutomaticSize = Enum.AutomaticSize.X;
                     });
 
                     library:create( "UIStroke" , {
@@ -1917,8 +1939,8 @@
                 -- options
                 name = options.name or options.Name or "", 
                 flag = options.flag or options.Flag or options.name or options.Name or "please set me a flag 🥺",
-                color = options.color or options.Color or color(1, 1, 1), -- Default to white color if not provided
-                alpha = (options.alpha and 1 - options.alpha) or (options.Alpha and 1 - options.Alpha) or 0,
+                color = options.color or options.Color or options.default or options.Default or color(1, 1, 1), -- Default to white color if not provided
+                alpha = (options.alpha and 1 - options.alpha) or (options.Alpha and 1 - options.Alpha) or (options.default_alpha and 1 - options.default_alpha) or (options.DefaultAlpha and 1 - options.DefaultAlpha) or 0,
                 callback = options.callback or options.Callback or function() end,
 
                 -- ignore
@@ -3210,30 +3232,197 @@ function library:Notify(text, duration)
 end
 
 function library:Watermark(options)
+    local watermark_gui = library:create("ScreenGui", {
+        Parent = coregui,
+        Name = "Watermark",
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    })
+    
+    local container = library:create("Frame", {
+        Parent = watermark_gui,
+        BackgroundColor3 = rgb(12, 12, 12),
+        BorderColor3 = library.Theme.Accent,
+        BorderSizePixel = 1,
+        Position = dim2(0.9, -150, 0, 15),
+        Size = dim2(0, 200, 0, 25),
+        Visible = true
+    })
+    
+    local text_lbl = library:create("TextLabel", {
+        Parent = container,
+        BackgroundTransparency = 1,
+        Size = dim2(1, 0, 1, 0),
+        TextColor3 = rgb(230, 230, 230),
+        FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+        TextSize = 10,
+        Text = options.name or options.Name or "alternate.lol"
+    })
+    
+    task.spawn(function()
+        while task.wait(1) do
+            local fps = math.round(stats.WorkspaceRules.FPS:GetValue())
+            local ping = math.round(lp:GetNetworkPing() * 1000)
+            text_lbl.Text = string.format("%s | %d FPS | %dms", options.name or options.Name or "alternate.lol", fps, ping)
+        end
+    end)
+
     local obj = {
-        SetVisibility = function(self, bool) end
+        SetVisibility = function(self, bool)
+            container.Visible = bool
+        end
     }
     library.WatermarkObj = obj
     return obj
 end
 
 function library:TargetHUD(options)
+    local hud_gui = library:create("ScreenGui", {
+        Parent = coregui,
+        Name = "TargetHUD",
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    })
+    
+    local container = library:create("Frame", {
+        Parent = hud_gui,
+        BackgroundColor3 = rgb(12, 12, 12),
+        BorderColor3 = library.Theme.Accent,
+        BorderSizePixel = 1,
+        Position = dim2(0.5, -100, 0.7, 0),
+        Size = dim2(0, 200, 0, 60),
+        Visible = false
+    })
+    
+    local name_lbl = library:create("TextLabel", {
+        Parent = container,
+        BackgroundTransparency = 1,
+        Position = dim2(0, 10, 0, 5),
+        Size = dim2(1, -20, 0, 20),
+        TextColor3 = rgb(255, 255, 255),
+        FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+        TextSize = 11,
+        Text = "Target: None"
+    })
+    
+    local bar_bg = library:create("Frame", {
+        Parent = container,
+        BackgroundColor3 = rgb(30, 30, 30),
+        BorderSizePixel = 0,
+        Position = dim2(0, 10, 0, 30),
+        Size = dim2(1, -20, 0, 8)
+    })
+    
+    local bar_fill = library:create("Frame", {
+        Parent = bar_bg,
+        BackgroundColor3 = rgb(0, 255, 0),
+        BorderSizePixel = 0,
+        Size = dim2(1, 0, 1, 0)
+    })
+    
+    local info_lbl = library:create("TextLabel", {
+        Parent = container,
+        BackgroundTransparency = 1,
+        Position = dim2(0, 10, 0, 40),
+        Size = dim2(1, -20, 0, 15),
+        TextColor3 = rgb(178, 178, 178),
+        FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+        TextSize = 9,
+        Text = "HP: 100/100 | Dist: 0m"
+    })
+
     local obj = {
-        SetVisibility = function(self, bool) end,
-        SetTarget = function(self, target) end,
         Items = {
-            Container = {
-                Visible = false
-            }
-        }
+            Container = container
+        },
+        SetVisibility = function(self, bool)
+            container.Visible = bool
+        end,
+        SetTarget = function(self, target)
+            if target and target.Character then
+                container.Visible = true
+                local hum = target.Character:FindFirstChildOfClass("Humanoid")
+                local root = target.Character:FindFirstChild("HumanoidRootPart")
+                local lp_root = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+                
+                local hp = hum and hum.Health or 100
+                local max_hp = hum and hum.MaxHealth or 100
+                local dist = (root and lp_root) and (root.Position - lp_root.Position).Magnitude or 0
+                
+                name_lbl.Text = "Target: " .. target.Name
+                bar_fill.Size = dim2(hp / max_hp, 0, 1, 0)
+                info_lbl.Text = string.format("HP: %d/%d | Dist: %dm", math.round(hp), math.round(max_hp), math.round(dist))
+            else
+                container.Visible = false
+            end
+        end
     }
     library.TargetHUDObj = obj
     return obj
 end
 
 function library:KeybindList(options)
+    local keylist_gui = library:create("ScreenGui", {
+        Parent = coregui,
+        Name = "KeybindList",
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    })
+    
+    local container = library:create("Frame", {
+        Parent = keylist_gui,
+        BackgroundColor3 = rgb(12, 12, 12),
+        BorderColor3 = library.Theme.Accent,
+        BorderSizePixel = 1,
+        Position = dim2(0.05, 0, 0.3, 0),
+        Size = dim2(0, 180, 0, 30),
+        Visible = true
+    })
+    
+    local header = library:create("TextLabel", {
+        Parent = container,
+        BackgroundTransparency = 1,
+        Size = dim2(1, 0, 0, 25),
+        TextColor3 = rgb(255, 255, 255),
+        FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+        TextSize = 11,
+        Text = "Keybinds"
+    })
+    
+    local list_layout = library:create("UIListLayout", {
+        Parent = container,
+        Padding = dim(0, 2),
+        SortOrder = Enum.SortOrder.LayoutOrder
+    })
+    
+    task.spawn(function()
+        while task.wait(0.2) do
+            for _, child in ipairs(container:GetChildren()) do
+                if child:IsA("TextLabel") and child ~= header then
+                    child:Destroy()
+                end
+            end
+            
+            local active_count = 0
+            for flag, data in pairs(flags) do
+                if type(data) == "table" and data.key and data.active and not tostring(flag):find("^_settings") then
+                    active_count = active_count + 1
+                    library:create("TextLabel", {
+                        Parent = container,
+                        BackgroundTransparency = 1,
+                        Size = dim2(1, 0, 0, 15),
+                        TextColor3 = rgb(178, 178, 178),
+                        FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+                        TextSize = 9,
+                        Text = string.format(" %s [%s]", tostring(flag), tostring(data.key):gsub("Enum.KeyCode.", ""))
+                    })
+                end
+            end
+            container.Size = dim2(0, 180, 0, 25 + (active_count * 17))
+        end
+    end)
+
     local obj = {
-        SetVisibility = function(self, bool) end
+        SetVisibility = function(self, bool)
+            container.Visible = bool
+        end
     }
     library.KeyList = obj
     return obj
