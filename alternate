@@ -73,7 +73,7 @@
     }
     
     getgenv().library.Theme = {
-        Accent = Color3.fromRGB(85, 170, 255),
+        Accent = Color3.fromRGB(255, 255, 255),
         Background = Color3.fromRGB(12, 12, 12),
         Inline = Color3.fromRGB(19, 19, 19)
     }
@@ -89,7 +89,7 @@
     }
     getgenv().themes = {
         preset = {
-            glow = Color3.fromRGB(85, 170, 255)
+            glow = Color3.fromRGB(255, 255, 255)
         }
     }
     getgenv().library.ChangeTheme = function(self, name, color)
@@ -3241,21 +3241,51 @@ function library:Watermark(options)
     local container = library:create("Frame", {
         Parent = watermark_gui,
         BackgroundColor3 = rgb(12, 12, 12),
-        BorderColor3 = library.Theme.Accent,
+        BorderColor3 = rgb(40, 40, 40),
         BorderSizePixel = 1,
         Position = dim2(0.9, -150, 0, 15),
         Size = dim2(0, 200, 0, 25),
-        Visible = true
+        Visible = true,
+        ZIndex = 1
+    })
+    
+    local inline = library:create("Frame", {
+        Parent = container,
+        BackgroundColor3 = rgb(12, 12, 12),
+        BorderColor3 = rgb(3, 3, 3),
+        BorderSizePixel = 1,
+        Position = dim2(0, 1, 0, 1),
+        Size = dim2(1, -2, 1, -2),
+        ZIndex = 2
+    })
+    
+    local glow = library:create("ImageLabel", {
+        Parent = container,
+        Name = "",
+        ImageColor3 = library.Theme.Accent,
+        ScaleType = Enum.ScaleType.Slice,
+        BorderColor3 = rgb(0, 0, 0),
+        BackgroundColor3 = rgb(255, 255, 255),
+        Visible = true,
+        Image = "http://www.roblox.com/asset/?id=18245826428",
+        BackgroundTransparency = 1,
+        ImageTransparency = 0.8, 
+        Position = dim2(0, -20, 0, -20),
+        Size = dim2(1, 40, 1, 40),
+        ZIndex = -1,
+        BorderSizePixel = 0,
+        SliceCenter = rect(vec2(21, 21), vec2(79, 79))
     })
     
     local text_lbl = library:create("TextLabel", {
-        Parent = container,
+        Parent = inline,
         BackgroundTransparency = 1,
         Size = dim2(1, 0, 1, 0),
         TextColor3 = rgb(230, 230, 230),
         FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
         TextSize = 10,
-        Text = options.name or options.Name or "alternate.lol"
+        Text = options.name or options.Name or "alternate.lol",
+        ZIndex = 3
     })
     
     task.spawn(function()
@@ -3285,48 +3315,81 @@ function library:TargetHUD(options)
     local container = library:create("Frame", {
         Parent = hud_gui,
         BackgroundColor3 = rgb(12, 12, 12),
-        BorderColor3 = library.Theme.Accent,
+        BorderColor3 = rgb(40, 40, 40),
         BorderSizePixel = 1,
         Position = dim2(0.5, -100, 0.7, 0),
         Size = dim2(0, 200, 0, 60),
-        Visible = false
+        Visible = false,
+        ZIndex = 1
+    })
+    
+    local inline = library:create("Frame", {
+        Parent = container,
+        BackgroundColor3 = rgb(12, 12, 12),
+        BorderColor3 = rgb(3, 3, 3),
+        BorderSizePixel = 1,
+        Position = dim2(0, 1, 0, 1),
+        Size = dim2(1, -2, 1, -2),
+        ZIndex = 2
+    })
+    
+    local glow = library:create("ImageLabel", {
+        Parent = container,
+        Name = "",
+        ImageColor3 = library.Theme.Accent,
+        ScaleType = Enum.ScaleType.Slice,
+        BorderColor3 = rgb(0, 0, 0),
+        BackgroundColor3 = rgb(255, 255, 255),
+        Visible = true,
+        Image = "http://www.roblox.com/asset/?id=18245826428",
+        BackgroundTransparency = 1,
+        ImageTransparency = 0.8, 
+        Position = dim2(0, -20, 0, -20),
+        Size = dim2(1, 40, 1, 40),
+        ZIndex = -1,
+        BorderSizePixel = 0,
+        SliceCenter = rect(vec2(21, 21), vec2(79, 79))
     })
     
     local name_lbl = library:create("TextLabel", {
-        Parent = container,
+        Parent = inline,
         BackgroundTransparency = 1,
         Position = dim2(0, 10, 0, 5),
         Size = dim2(1, -20, 0, 20),
         TextColor3 = rgb(255, 255, 255),
         FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
         TextSize = 11,
-        Text = "Target: None"
+        Text = "Target: None",
+        ZIndex = 3
     })
     
     local bar_bg = library:create("Frame", {
-        Parent = container,
+        Parent = inline,
         BackgroundColor3 = rgb(30, 30, 30),
         BorderSizePixel = 0,
         Position = dim2(0, 10, 0, 30),
-        Size = dim2(1, -20, 0, 8)
+        Size = dim2(1, -20, 0, 8),
+        ZIndex = 3
     })
     
     local bar_fill = library:create("Frame", {
         Parent = bar_bg,
         BackgroundColor3 = rgb(0, 255, 0),
         BorderSizePixel = 0,
-        Size = dim2(1, 0, 1, 0)
+        Size = dim2(1, 0, 1, 0),
+        ZIndex = 4
     })
     
     local info_lbl = library:create("TextLabel", {
-        Parent = container,
+        Parent = inline,
         BackgroundTransparency = 1,
         Position = dim2(0, 10, 0, 40),
         Size = dim2(1, -20, 0, 15),
         TextColor3 = rgb(178, 178, 178),
         FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
         TextSize = 9,
-        Text = "HP: 100/100 | Dist: 0m"
+        Text = "HP: 100/100 | Dist: 0m",
+        ZIndex = 3
     })
 
     local obj = {
@@ -3369,32 +3432,62 @@ function library:KeybindList(options)
     local container = library:create("Frame", {
         Parent = keylist_gui,
         BackgroundColor3 = rgb(12, 12, 12),
-        BorderColor3 = library.Theme.Accent,
+        BorderColor3 = rgb(40, 40, 40),
         BorderSizePixel = 1,
         Position = dim2(0.05, 0, 0.3, 0),
         Size = dim2(0, 180, 0, 30),
-        Visible = true
+        Visible = true,
+        ZIndex = 1
+    })
+    
+    local inline = library:create("Frame", {
+        Parent = container,
+        BackgroundColor3 = rgb(12, 12, 12),
+        BorderColor3 = rgb(3, 3, 3),
+        BorderSizePixel = 1,
+        Position = dim2(0, 1, 0, 1),
+        Size = dim2(1, -2, 1, -2),
+        ZIndex = 2
+    })
+    
+    local glow = library:create("ImageLabel", {
+        Parent = container,
+        Name = "",
+        ImageColor3 = library.Theme.Accent,
+        ScaleType = Enum.ScaleType.Slice,
+        BorderColor3 = rgb(0, 0, 0),
+        BackgroundColor3 = rgb(255, 255, 255),
+        Visible = true,
+        Image = "http://www.roblox.com/asset/?id=18245826428",
+        BackgroundTransparency = 1,
+        ImageTransparency = 0.8, 
+        Position = dim2(0, -20, 0, -20),
+        Size = dim2(1, 40, 1, 40),
+        ZIndex = -1,
+        BorderSizePixel = 0,
+        SliceCenter = rect(vec2(21, 21), vec2(79, 79))
     })
     
     local header = library:create("TextLabel", {
-        Parent = container,
+        Parent = inline,
         BackgroundTransparency = 1,
         Size = dim2(1, 0, 0, 25),
         TextColor3 = rgb(255, 255, 255),
         FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
         TextSize = 11,
-        Text = "Keybinds"
+        Text = "Keybinds",
+        ZIndex = 3
     })
     
     local list_layout = library:create("UIListLayout", {
-        Parent = container,
+        Parent = inline,
         Padding = dim(0, 2),
         SortOrder = Enum.SortOrder.LayoutOrder
     })
     
     task.spawn(function()
         while task.wait(0.2) do
-            for _, child in ipairs(container:GetChildren()) do
+            for _, child in ipairs(inline:GetChildren()) do
                 if child:IsA("TextLabel") and child ~= header then
                     child:Destroy()
                 end
@@ -3405,13 +3498,14 @@ function library:KeybindList(options)
                 if type(data) == "table" and data.key and data.active and not tostring(flag):find("^_settings") then
                     active_count = active_count + 1
                     library:create("TextLabel", {
-                        Parent = container,
+                        Parent = inline,
                         BackgroundTransparency = 1,
                         Size = dim2(1, 0, 0, 15),
                         TextColor3 = rgb(178, 178, 178),
                         FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
                         TextSize = 9,
-                        Text = string.format(" %s [%s]", tostring(flag), tostring(data.key):gsub("Enum.KeyCode.", ""))
+                        Text = string.format(" %s [%s]", tostring(flag), tostring(data.key):gsub("Enum.KeyCode.", "")),
+                        ZIndex = 3
                     })
                 end
             end
