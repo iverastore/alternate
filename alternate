@@ -825,6 +825,48 @@
                 cfg.open_tab()
             end)
 
+            local tooltip
+            items[ "tab_button" ].MouseEnter:Connect(function()
+                tooltip = library:create("TextLabel", {
+                    Parent = library.items;
+                    Name = "\0";
+                    BackgroundColor3 = rgb(20, 20, 20);
+                    BorderColor3 = rgb(0, 0, 0);
+                    BorderSizePixel = 0;
+                    Size = dim2(0, 0, 0, 20);
+                    Position = dim2(0, 0, 0, 0);
+                    AutomaticSize = Enum.AutomaticSize.X;
+                    Text = cfg.name;
+                    TextColor3 = rgb(255, 255, 255);
+                    FontFace = library.font;
+                    TextSize = 10;
+                    TextXAlignment = Enum.TextXAlignment.Center;
+                    TextYAlignment = Enum.TextYAlignment.Center;
+                    BackgroundTransparency = 0;
+                    ZIndex = 100;
+                    Visible = true;
+                })
+                library:create("UIPadding", {
+                    Parent = tooltip;
+                    PaddingLeft = dim(0, 6);
+                    PaddingRight = dim(0, 6);
+                })
+                library:create("UIStroke", {
+                    Parent = tooltip;
+                    Color = rgb(50, 50, 50);
+                    Thickness = 1;
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual;
+                })
+                local mouseLoc = uis:GetMouseLocation()
+                tooltip.Position = dim2(0, mouseLoc.X + 12, 0, mouseLoc.Y - 24)
+            end)
+            items[ "tab_button" ].MouseLeave:Connect(function()
+                if tooltip then
+                    tooltip:Destroy()
+                    tooltip = nil
+                end
+            end)
+
             if not self.selected_tab then 
                 cfg.open_tab(true) 
             end
