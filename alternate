@@ -1174,6 +1174,9 @@
                     cfg.selected_subtab = sub
                     sub.set_visible(true)
                     library:close_current_element(nil)
+                    if type(sub.on_turn) == "function" then
+                        sub.on_turn(sub)
+                    end
                 end)
 
                 if not cfg.selected_subtab then
@@ -1183,6 +1186,22 @@
 
                 table.insert(cfg.subtabs, sub)
                 return setmetatable(sub, library)
+            end
+
+            function cfg.Select(name_or_sub)
+                for _, sub in ipairs(cfg.subtabs) do
+                    if sub.name == name_or_sub or sub == name_or_sub then
+                        if cfg.selected_subtab then
+                            cfg.selected_subtab.set_visible(false)
+                        end
+                        cfg.selected_subtab = sub
+                        sub.set_visible(true)
+                        if type(sub.on_turn) == "function" then
+                            sub.on_turn(sub)
+                        end
+                        return
+                    end
+                end
             end
 
             items[ "section_outline" ].MouseEnter:Connect(function()
