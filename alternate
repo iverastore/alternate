@@ -826,7 +826,7 @@
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(14, 14, 14);
                     ScrollBarThickness = 0;
-                    ScrollDirection = Enum.ScrollDirection.Y;
+                    ScrollingDirection = Enum.ScrollingDirection.Y;
                     CanvasSize = dim2(0, 0, 0, 0);
                     AutomaticCanvasSize = Enum.AutomaticSize.Y;
                     ClipsDescendants = true;
