@@ -170,6 +170,7 @@
     local flags = library.flags 
     library.Flags = library.flags
     local config_flags = library.config_flags
+    library.SetFlags = config_flags
     local notifications = library.notifications 
 
     -- Font importing system 
