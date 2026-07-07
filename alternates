@@ -3294,7 +3294,6 @@
             section:Button({name = "Load", callback = function() library:load_config(readfile(library.directory .. "/configs/" .. flags["config_name_text"] .. ".cfg"))  library:update_config_list() end})
             section:Button({name = "Delete", callback = function() delfile(library.directory .. "/configs/" .. flags["config_name_text"] .. ".cfg")  library:update_config_list() end})
             
-            window.tweening = true 
             section:Label({Name = "UI Bind"}):Keybind({flag = "_ui_bind", callback = function(bool) window.toggle_menu(bool) end, default = false, key = library.MenuKeybind, mode = "Toggle"})
         end
     --
