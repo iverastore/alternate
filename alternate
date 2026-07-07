@@ -581,15 +581,16 @@
                     Position = dim2(0.5, -16, 0, 10);
                     Size = dim2(0, 32, 0, 32);
                     BorderSizePixel = 0;
+                    Visible = false;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
                 
                 items[ "tab_button_holder" ] = library:create( "Frame" , {
                     Parent = items[ "inline" ];
                     Name = "\0";
-                    Position = dim2(0, 1, 0, 50);
+                    Position = dim2(0, 1, 0, 10);
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -50);
+                    Size = dim2(1, -2, 1, -10);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(14, 14, 14)
                 });
@@ -610,9 +611,45 @@
                     Name = "\0";
                     Position = dim2(0, 63, 0, 0);
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -63, 1, 0);
+                    Size = dim2(1, -63, 1, -40);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(12, 12, 12)
+                });
+
+                items[ "bottom_bar" ] = library:create( "Frame" , {
+                    Parent = items[ "window" ];
+                    Name = "\0";
+                    Position = dim2(0, 63, 1, -40);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -63, 0, 40);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(19, 19, 19)
+                });
+
+                items[ "bottom_bar_inline" ] = library:create( "Frame" , {
+                    Parent = items[ "bottom_bar" ];
+                    Name = "\0";
+                    Position = dim2(0, 1, 0, 1);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -2, 1, -2);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(12, 12, 12)
+                });
+
+                library:create( "UIListLayout" , {
+                    Parent = items[ "bottom_bar_inline" ];
+                    FillDirection = Enum.FillDirection.Horizontal;
+                    HorizontalFlex = Enum.UIFlexAlignment.Fill;
+                    Padding = dim(0, 10);
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                });
+
+                library:create( "UIPadding" , {
+                    Parent = items[ "bottom_bar_inline" ];
+                    PaddingLeft = dim(0, 10);
+                    PaddingRight = dim(0, 10);
+                    PaddingTop = dim(0, 8);
+                    PaddingBottom = dim(0, 8)
                 });                
             end 
 
@@ -1401,7 +1438,7 @@
                     Text = "";
                     Name = "\0";
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 100, 1, 0);
+                    Size = dim2(0, 150, 1, 0);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
@@ -1412,7 +1449,7 @@
                     Name = "\0";
                     Position = dim2(0, 0, 0.5, 0);
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, 0, 0, 5);
+                    Size = dim2(1, 0, 0, 8);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(0, 0, 0)
                 });
@@ -1426,10 +1463,24 @@
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
-                
+
                 library:create( "UIGradient" , {
                     Color = rgbseq{rgbkey(0, rgb(255, 255, 255)), rgbkey(1, rgb(93, 93, 93))};
                     Parent = items[ "gradient_holder" ]
+                });
+
+                items[ "center_value" ] = library:create( "TextLabel" , {
+                    Parent = items[ "slider_holder" ];
+                    Name = "\0";
+                    BackgroundTransparency = 1;
+                    Size = dim2(1, 0, 1, 0);
+                    Text = tostring(cfg.default) .. cfg.suffix;
+                    TextColor3 = rgb(230, 230, 230),
+                    FontFace = library.font,
+                    TextSize = 9,
+                    TextXAlignment = Enum.TextXAlignment.Center,
+                    TextYAlignment = Enum.TextYAlignment.Center,
+                    ZIndex = 2
                 });
                 
                 items[ "slider" ] = library:create( "Frame" , {
@@ -1438,7 +1489,7 @@
                     Name = "\0";
                     Position = dim2(0, 0, 0.5, 0);
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 4, 0, 9);
+                    Size = dim2(0, 6, 0, 14);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(0, 0, 0)
                 });
@@ -1464,11 +1515,15 @@
 
             function cfg.set(value)
                 cfg.value = clamp(library:round(value, cfg.intervals), cfg.min, cfg.max)
-                
+
                 items[ "slider" ].Position = dim2((cfg.value - cfg.min) / (cfg.max - cfg.min), 0, 0.5, 0)
 
                 if items[ "value" ] then
                     items[ "value" ].set(tostring(cfg.value) .. cfg.suffix)
+                end
+
+                if items[ "center_value" ] then
+                    items[ "center_value" ].Text = tostring(cfg.value) .. cfg.suffix
                 end
 
                 flags[cfg.flag] = cfg.value
