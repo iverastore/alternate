@@ -1191,7 +1191,7 @@
             function cfg.Select(name_or_sub)
                 for _, sub in ipairs(cfg.subtabs) do
                     if sub.name == name_or_sub or sub == name_or_sub then
-                        if cfg.selected_subtab then
+                        if cfg.selected_subtab and cfg.selected_subtab ~= sub then
                             cfg.selected_subtab.set_visible(false)
                         end
                         cfg.selected_subtab = sub
