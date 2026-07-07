@@ -271,44 +271,6 @@
         end)
     end
     
-    library.SearchRegistry = {}
-    
-    function library:RegisterSearchable(obj, name)
-        table.insert(library.SearchRegistry, {obj = obj, name = name:lower()})
-    end
-    
-    function library:ApplySearch()
-        local query = library.search_query or ""
-        for _, entry in ipairs(library.SearchRegistry) do
-            pcall(function()
-                if query == "" then
-                    entry.obj.Visible = true
-                else
-                    -- Check if this element is on a currently visible page
-                    -- (i.e. one of its ancestors is Visible=true and parented to page_holder)
-                    local onPage = false
-                    local ancestor = entry.obj.Parent
-                    while ancestor do
-                        if ancestor.Name == "\0" and ancestor.Visible then
-                            -- Check if this ancestor has a horizontal UIListLayout (page indicator)
-                            local layout = ancestor:FindFirstChildOfClass("UIListLayout")
-                            if layout and layout.FillDirection == Enum.FillDirection.Horizontal then
-                                onPage = true
-                                break
-                            end
-                        end
-                        ancestor = ancestor.Parent
-                    end
-                    if onPage then
-                        entry.obj.Visible = entry.name:find(query, 1, true) ~= nil
-                    else
-                        entry.obj.Visible = true
-                    end
-                end
-            end)
-        end
-    end
-
     local keys = {
         [Enum.KeyCode.LeftShift] = "LS",
         [Enum.KeyCode.RightShift] = "RS",
@@ -828,17 +790,14 @@
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
                 
-                items[ "tab_button_holder" ] = library:create( "ScrollingFrame" , {
+                items[ "tab_button_holder" ] = library:create( "Frame" , {
                     Parent = items[ "inline" ];
                     Name = "\0";
                     Position = dim2(0, 1, 0, 10);
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -48);
+                    Size = dim2(1, -2, 1, -20);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(14, 14, 14);
-                    ScrollBarThickness = 0;
-                    CanvasSize = dim2(0, 0, 0, 0);
-                    AutomaticCanvasSize = Enum.AutomaticSize.Y;
                     ClipsDescendants = true;
                 });
                 library:RegisterTheme(items[ "tab_button_holder" ], "BackgroundColor3", "Inline")
@@ -854,60 +813,6 @@
                     SortOrder = Enum.SortOrder.LayoutOrder
                 });
 
-                -- Search bar
-                items[ "search_holder" ] = library:create("Frame", {
-                    Parent = items[ "inline" ];
-                    Name = "\0";
-                    Position = dim2(0, 1, 1, -36);
-                    Size = dim2(1, -2, 0, 30);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(10, 10, 10);
-                    ZIndex = 10;
-                    Active = false;
-                })
-                library:RegisterTheme(items[ "search_holder" ], "BackgroundColor3", "Background")
-                
-                items[ "search_inline" ] = library:create("Frame", {
-                    Parent = items[ "search_holder" ];
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(20, 20, 20);
-                    ZIndex = 11;
-                    Active = false;
-                })
-                library:RegisterTheme(items[ "search_inline" ], "BackgroundColor3", "Inline")
-                
-                items[ "search_box" ] = library:create("TextBox", {
-                    Parent = items[ "search_inline" ];
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, 6, 0, 0);
-                    Size = dim2(1, -8, 1, 0);
-                    Text = "";
-                    PlaceholderText = "Search...";
-                    TextColor3 = rgb(180, 180, 180);
-                    PlaceholderColor3 = rgb(90, 90, 90);
-                    FontFace = library.font;
-                    TextSize = 9;
-                    TextXAlignment = Enum.TextXAlignment.Left;
-                    TextYAlignment = Enum.TextYAlignment.Center;
-                    BorderSizePixel = 0;
-                    ClearTextOnFocus = false;
-                    ZIndex = 12;
-                })
-                
-                library.search_query = ""
-                items[ "search_box" ].FocusLost:Connect(function()
-                    library.search_query = items[ "search_box" ].Text:lower()
-                    library:ApplySearch()
-                end)
-                items[ "search_box" ]:GetPropertyChangedSignal("Text"):Connect(function()
-                    library.search_query = items[ "search_box" ].Text:lower()
-                    library:ApplySearch()
-                end)
-                
                 items[ "page_holder" ] = library:create( "Frame" , {
                     Parent = items[ "window" ];
                     Name = "\0";
@@ -1114,7 +1019,6 @@
                 }
 
                 library:close_current_element(nil) 
-                library:ApplySearch()
             end
 
             items[ "tab_button" ].MouseButton1Down:Connect(function()
@@ -1619,7 +1523,6 @@
                     -- AutomaticSize = Enum.AutomaticSize.Y;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
-                library:RegisterSearchable(items[ "object" ], cfg.name)
                 
                 items[ "toggle_outline" ] = library:create( "Frame" , {
                     Parent = items[ "object" ];
@@ -1762,7 +1665,6 @@
                     AutomaticSize = Enum.AutomaticSize.XY;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
-                library:RegisterSearchable(items[ "object" ], cfg.name or "")
                 
                 library:create( "UIListLayout" , {
                     Parent = items[ "object" ];
@@ -1955,8 +1857,7 @@
                         AutomaticSize = Enum.AutomaticSize.XY;
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
-                    library:RegisterSearchable(items[ "object" ], cfg.name or "")
-
+    
                     if self.items.object then 
                         library:create( "UIPadding" , {
                             Parent = items[ "object" ];
@@ -1996,7 +1897,7 @@
                         FontFace = library.font;
                         TextColor3 = rgb(178, 178, 178);
                         BorderColor3 = rgb(0, 0, 0);
-                        Text = "Combat";
+                        Text = "";
                         Parent = items[ "dropdown_shading" ];
                         AnchorPoint = vec2(0, 0.5);
                         Size = dim2(1, 0, 1, 0);
@@ -2202,7 +2103,6 @@
                 end
             end)
             
-            flags[cfg.flag] = {} 
             config_flags[cfg.flag] = cfg.set
             
             cfg.refresh_options(cfg.options)
@@ -2247,7 +2147,6 @@
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
-                library:RegisterSearchable(items[ "object" ], cfg.name)
 
                 items.text = library:create( "TextLabel" , {
                     FontFace = library.font;
@@ -2329,7 +2228,6 @@
                         BorderSizePixel = 0;
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
-                    library:RegisterSearchable(items[ "gear_holder" ], cfg.name)
                     
                     items[ "color_square" ] = library:create( "Frame" , {
                         BorderColor3 = rgb(0, 0, 0);
@@ -2789,7 +2687,6 @@
                     AutomaticSize = Enum.AutomaticSize.Y;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
-                library:RegisterSearchable(items[ "object" ], cfg.name)
                 
                 items[ "textbox_outline" ] = library:create( "Frame" , {
                     Name = "\0";
@@ -2927,7 +2824,6 @@
                         TextSize = 10;
                         BackgroundColor3 = rgb(38, 38, 38)
                     });
-                    library:RegisterSearchable(items.text_label, cfg.name or "")
 
                     library:create( "UIStroke" , {
                         Parent = items.text_label
@@ -3209,7 +3105,6 @@
                     AutomaticSize = Enum.AutomaticSize.Y;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
-                library:RegisterSearchable(items[ "button" ], cfg.name)
                 
                 items[ "button_outline" ] = library:create( "Frame" , {
                     Name = "\0";
