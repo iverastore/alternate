@@ -699,7 +699,11 @@
                 connection = nil 
             end
             
-            library = nil 
+            library.connections = {}
+        end 
+
+        function library:Unload()
+            library:unload_menu()
         end 
     --
     
@@ -1842,7 +1846,7 @@
                 items = {};
             }   
 
-            cfg.default = options.default or (cfg.multi and {cfg.items[1]}) or cfg.items[1] or "None"
+            cfg.default = options.default or (cfg.multi and {cfg.options[1]}) or cfg.options[1] or "None"
             flags[cfg.flag] = cfg.default
             
             local items = cfg.items; do 
@@ -3291,7 +3295,7 @@
             section:Button({name = "Delete", callback = function() delfile(library.directory .. "/configs/" .. flags["config_name_text"] .. ".cfg")  library:update_config_list() end})
             
             window.tweening = true 
-            section:Label({Name = "UI Bind"}):Keybind({callback = function(bool) window.toggle_menu(bool) print(window.tweening) end, default = false})
+            section:Label({Name = "UI Bind"}):Keybind({flag = "_ui_bind", callback = function(bool) window.toggle_menu(bool) end, default = false, key = library.MenuKeybind, mode = "Toggle"})
         end
     --
 
@@ -3946,7 +3950,7 @@ function library:KeybindList(options)
 
             local active_count = 0
             for flag, data in pairs(flags) do
-                if type(data) == "table" and data.key and data.active and not tostring(flag):find("^_settings") then
+                if type(data) == "table" and data.key and data.active and not tostring(flag):find("^_settings") and not tostring(flag):find("^_ui_bind") then
                     active_count = active_count + 1
                     local entry = library:create("TextLabel", {
                         Parent = list_holder,
