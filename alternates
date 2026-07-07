@@ -98,6 +98,13 @@
     
     library.ThemeRegistry = {}
     
+    local function themeKey(name)
+        if type(name) == "table" then
+            return table.concat(name, ".")
+        end
+        return tostring(name)
+    end
+    
     local function resolveThemeColor(name)
         if type(name) == "table" then
             local obj = library.CurrentTheme
@@ -111,7 +118,8 @@
     end
     
     local function applyThemeChange(name, color)
-        local entries = library.ThemeRegistry[name]
+        local key = themeKey(name)
+        local entries = library.ThemeRegistry[key]
         if not entries then return end
         for _, entry in ipairs(entries) do
             pcall(function()
@@ -123,10 +131,11 @@
     end
     
     function library:RegisterTheme(obj, prop, themeName)
-        if not library.ThemeRegistry[themeName] then
-            library.ThemeRegistry[themeName] = {}
+        local key = themeKey(themeName)
+        if not library.ThemeRegistry[key] then
+            library.ThemeRegistry[key] = {}
         end
-        table.insert(library.ThemeRegistry[themeName], {obj = obj, prop = prop})
+        table.insert(library.ThemeRegistry[key], {obj = obj, prop = prop})
         pcall(function()
             obj[prop] = resolveThemeColor(themeName)
         end)
@@ -772,7 +781,8 @@
                     Size = cfg.size;
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(0, 0, 0)
-                }); items[ "window" ].Position = dim2(0, items[ "window" ].AbsolutePosition.X, 0, items[ "window" ].AbsolutePosition.Y)          
+                }); items[ "window" ].Position = dim2(0, items[ "window" ].AbsolutePosition.X, 0, items[ "window" ].AbsolutePosition.Y)
+                library:RegisterTheme(items[ "window" ], "BackgroundColor3", "Background")          
 
                 -- Glow Effect
                 items[ "glow" ] = library:create("ImageLabel", {
@@ -803,6 +813,7 @@
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(0, 0, 0)
                 });
+                library:RegisterTheme(items[ "inline" ], "BackgroundColor3", "Background")
 
                 items[ "logo" ] = library:create( "ImageLabel" , {
                     BorderColor3 = rgb(0, 0, 0);
@@ -822,7 +833,7 @@
                     Name = "\0";
                     Position = dim2(0, 1, 0, 10);
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -52);
+                    Size = dim2(1, -2, 1, -48);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(14, 14, 14);
                     ScrollBarThickness = 0;
@@ -847,8 +858,8 @@
                 items[ "search_holder" ] = library:create("Frame", {
                     Parent = items[ "inline" ];
                     Name = "\0";
-                    Position = dim2(0, 1, 1, -40);
-                    Size = dim2(1, -2, 0, 34);
+                    Position = dim2(0, 1, 1, -36);
+                    Size = dim2(1, -2, 0, 30);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(10, 10, 10);
                     ZIndex = 10;
@@ -868,30 +879,18 @@
                 })
                 library:RegisterTheme(items[ "search_inline" ], "BackgroundColor3", "Inline")
                 
-                items[ "search_icon" ] = library:create("ImageLabel", {
-                    Parent = items[ "search_inline" ];
-                    Name = "\0";
-                    Image = "rbxassetid://6034287515";
-                    ImageColor3 = rgb(120, 120, 120);
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, 6, 0.5, -8);
-                    Size = dim2(0, 16, 0, 16);
-                    BorderSizePixel = 0;
-                    ZIndex = 12;
-                })
-                
                 items[ "search_box" ] = library:create("TextBox", {
                     Parent = items[ "search_inline" ];
                     Name = "\0";
                     BackgroundTransparency = 1;
-                    Position = dim2(0, 26, 0, 0);
-                    Size = dim2(1, -30, 1, 0);
+                    Position = dim2(0, 6, 0, 0);
+                    Size = dim2(1, -8, 1, 0);
                     Text = "";
                     PlaceholderText = "Search...";
-                    TextColor3 = rgb(200, 200, 200);
-                    PlaceholderColor3 = rgb(100, 100, 100);
+                    TextColor3 = rgb(180, 180, 180);
+                    PlaceholderColor3 = rgb(90, 90, 90);
                     FontFace = library.font;
-                    TextSize = 11;
+                    TextSize = 9;
                     TextXAlignment = Enum.TextXAlignment.Left;
                     TextYAlignment = Enum.TextYAlignment.Center;
                     BorderSizePixel = 0;
@@ -1105,7 +1104,7 @@
                    selected_tab[ 2 ].Visible = false
                 end
                 
-                items.image.ImageColor3 = rgb(255, 255, 255)
+                items.image.ImageColor3 = library.Theme.Accent
                 items.tab.Parent = self.items[ "page_holder" ]
                 items.tab.Visible = true
 
@@ -1123,40 +1122,20 @@
             end)
 
             local tooltip
-            local tab_highlight
             items[ "tab_button" ].MouseEnter:Connect(function()
-                -- Tab highlight: simple rounded background behind the icon
-                tab_highlight = library:create("Frame", {
-                    Parent = items[ "tab_button" ];
-                    Name = "\0";
-                    BackgroundColor3 = library.Theme.Accent;
-                    BackgroundTransparency = 0.85;
-                    Size = dim2(0, 40, 0, 40);
-                    AnchorPoint = vec2(0.5, 0);
-                    Position = dim2(0.5, 0, 0, -4);
-                    BorderSizePixel = 0;
-                    ZIndex = -1;
-                })
-                library:create("UICorner", {
-                    Parent = tab_highlight;
-                    CornerRadius = dim(0, 8);
-                })
-                library:RegisterTheme(tab_highlight, "BackgroundColor3", "Accent")
-                library:tween(tab_highlight, {BackgroundTransparency = 0.7})
-                
                 -- Tooltip
                 tooltip = library:create("TextLabel", {
                     Parent = library.items;
                     Name = "\0";
                     BackgroundColor3 = rgb(15, 15, 15);
                     BorderSizePixel = 0;
-                    Size = dim2(0, 0, 0, 22);
+                    Size = dim2(0, 0, 0, 20);
                     Position = dim2(0, 0, 0, 0);
                     AutomaticSize = Enum.AutomaticSize.X;
                     Text = cfg.name;
                     TextColor3 = rgb(255, 255, 255);
                     FontFace = library.font;
-                    TextSize = 11;
+                    TextSize = 10;
                     TextXAlignment = Enum.TextXAlignment.Center;
                     TextYAlignment = Enum.TextYAlignment.Center;
                     BackgroundTransparency = 1;
@@ -1166,26 +1145,17 @@
                 })
                 library:create("UIPadding", {
                     Parent = tooltip;
-                    PaddingLeft = dim(0, 8);
-                    PaddingRight = dim(0, 8);
+                    PaddingLeft = dim(0, 6);
+                    PaddingRight = dim(0, 6);
                 })
                 library:create("UIStroke", {
                     Parent = tooltip;
-                    Color = rgb(45, 45, 45);
+                    Color = rgb(35, 35, 35);
                     Thickness = 1;
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual;
                 })
-                local accent_bar = library:create("Frame", {
-                    Parent = tooltip;
-                    Name = "\0";
-                    Size = dim2(0, 2, 1, 0);
-                    BackgroundColor3 = library.Theme.Accent;
-                    BorderSizePixel = 0;
-                    ZIndex = 101;
-                })
-                library:RegisterTheme(accent_bar, "BackgroundColor3", "Accent")
                 local mouseLoc = uis:GetMouseLocation()
-                tooltip.Position = dim2(0, mouseLoc.X + 14, 0, mouseLoc.Y - 28)
+                tooltip.Position = dim2(0, mouseLoc.X + 12, 0, mouseLoc.Y - 24)
                 library:tween(tooltip, {BackgroundTransparency = 0})
                 library:tween(tooltip, {TextTransparency = 0})
             end)
@@ -1195,13 +1165,7 @@
                     tooltip = nil
                     library:tween(t, {BackgroundTransparency = 1})
                     library:tween(t, {TextTransparency = 1})
-                    task.delay(0.2, function() pcall(function() t:Destroy() end) end)
-                end
-                if tab_highlight then
-                    local h = tab_highlight
-                    tab_highlight = nil
-                    library:tween(h, {BackgroundTransparency = 1})
-                    task.delay(0.2, function() pcall(function() h:Destroy() end) end)
+                    task.delay(0.15, function() pcall(function() t:Destroy() end) end)
                 end
             end)
 
@@ -1233,6 +1197,7 @@
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(8, 8, 8)
                 });
+                library:RegisterTheme(items[ "section_outline" ], "BackgroundColor3", "Background")
                 
                 items[ "section_shadow" ] = library:create( "Frame" , {
                     Parent = items[ "section_outline" ];
@@ -1348,7 +1313,7 @@
                 end 
                 
                 library:tween(items.line, {Size = dim2(1, 0, 0, 1)})
-                library:tween(items.text, {TextColor3 = rgb(255, 255, 255)})
+                library:tween(items.text, {TextColor3 = library.Theme.Accent})
             end)
 
             items[ "section_outline" ].MouseLeave:Connect(function()
@@ -1357,7 +1322,7 @@
                 end
 
                 library:tween(items.line, {Size = dim2(0, 0, 0, 1)})
-                library:tween(items.text, {TextColor3 = rgb(178, 178, 178)})
+                library:tween(items.text, {TextColor3 = resolveThemeColor({"Text", "Unselected"})})
             end)
 
             return setmetatable(cfg, library)
@@ -1707,6 +1672,7 @@
                     TextSize = 10;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
+                library:RegisterTheme(items[ "text" ], "TextColor3", {"Text", "Unselected"})
                 
                 library:create( "UIStroke" , {
                     Parent = items[ "text" ]
@@ -1719,10 +1685,10 @@
             end;
             
             function cfg.set(bool)
-                library:tween(items[ "text" ], {TextColor3 = bool and rgb(255, 255, 255) or rgb(178, 178, 178)})
+                library:tween(items[ "text" ], {TextColor3 = bool and library.Theme.Accent or resolveThemeColor({"Text", "Unselected"})})
                 library:tween(items[ "toggle_outline" ], {BackgroundTransparency = bool and 0 or 1})
                 library:tween(items[ "toggle_shading" ], {BackgroundTransparency = bool and 0 or 1})
-                library:tween(items[ "toggle_inline" ], {BackgroundColor3 = bool and rgb(255, 255, 255) or rgb(74, 74, 74)})
+                library:tween(items[ "toggle_inline" ], {BackgroundColor3 = bool and library.Theme.Accent or rgb(74, 74, 74)})
 
                 if type(cfg.sub_objects) == "table" then
                     for _, sub in ipairs(cfg.sub_objects) do
@@ -1883,6 +1849,7 @@
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
+                library:RegisterTheme(items[ "inline" ], "BackgroundColor3", "Accent")
                 
                 if cfg.name then
                     items[ "name" ] = setmetatable(cfg, library):Label({name = cfg.name, padding_top = 1})
@@ -3283,6 +3250,7 @@
                     TextSize = 10;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
+                library:RegisterTheme(items[ "button_text" ], "TextColor3", {"Text", "Unselected"})
                 
                 library:create( "UIStroke" , {
                     Parent = items[ "button_text" ]
@@ -3298,8 +3266,8 @@
             items[ "button" ].MouseButton1Click:Connect(function()
                 cfg.callback()
 
-                items[ "button_text" ].TextColor3 = rgb(255, 255, 255) 
-                library:tween(items[ "button_text" ], {TextColor3 = rgb(178, 178, 178)})
+                items[ "button_text" ].TextColor3 = library.Theme.Accent 
+                library:tween(items[ "button_text" ], {TextColor3 = resolveThemeColor({"Text", "Unselected"})})
             end)
             
             return setmetatable(cfg, library)
