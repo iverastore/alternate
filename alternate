@@ -1790,36 +1790,41 @@
                 cfg.callback(flags[cfg.flag]) 
             end
             
-            function cfg.refresh_options(list) 
-                for _, option in cfg.option_instances do 
-                    option:Destroy() 
+            function cfg.refresh_options(list)
+                for _, option in cfg.option_instances do
+                    option:Destroy()
                 end
-                
-                cfg.option_instances = {} 
 
-                for _, option in list do 
+                cfg.option_instances = {}
+
+                for _, option in list do
                     local button = cfg.render_option(option)
                     insert(cfg.option_instances, button)
-                    
+
                     button.MouseButton1Down:Connect(function()
-                        if cfg.multi then 
+                        if cfg.multi then
                             local selected_index = find(cfg.multi_items, button.Text)
-                            
-                            if selected_index then 
+
+                            if selected_index then
                                 remove(cfg.multi_items, selected_index)
                             else
                                 insert(cfg.multi_items, button.Text)
                             end
-                            
-                            cfg.set(cfg.multi_items) 				
-                        else 
+
+                            cfg.set(cfg.multi_items)
+                        else
                             cfg.set_visible(false)
-                            cfg.open = false 
-                            
+                            cfg.open = false
+
                             cfg.set(button.Text)
                         end
                     end)
                 end
+            end
+
+            function cfg.Refresh(list)
+                cfg.options = list or cfg.options
+                cfg.refresh_options(cfg.options)
             end
 
             items.dropdown_outline.MouseButton1Click:Connect(function()
