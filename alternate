@@ -506,7 +506,7 @@
                 -- Properties
                 name = properties.name or properties.Name or "nebula";
                 size = properties.size or properties.Size or dim2(0, 650, 0, 400);
-                logo = properties.logo or properties.Logo or "rbxassetid://128155293790451";
+                logo = properties.logo or properties.Logo or "rbxassetid://132488048637620";
 
                 selected_tab;
                 items = {};
@@ -1319,9 +1319,9 @@
                     end
                 end
 
-                cfg.callback(bool)
-                
                 flags[cfg.flag] = bool
+
+                cfg.callback(bool)
             end 
             
             items[ "object" ].MouseButton1Click:Connect(function()
@@ -1435,7 +1435,7 @@
                 });
                 
                 if cfg.name then
-                    items[ "name" ] = setmetatable(cfg, library):Label({padding_top = 1})
+                    items[ "name" ] = setmetatable(cfg, library):Label({name = cfg.name, padding_top = 1})
                 end
 
                 if cfg.show_value then 
@@ -1791,7 +1791,7 @@
 
                 -- ignore
                 padding_top = options.PaddingTop or options.padding_top or 0; -- used because roblox cant make proper layouts
-                padding_top = options.PaddingBottom or options.padding_bottom or 0;
+                padding_bottom = options.PaddingBottom or options.padding_bottom or 0;
 
                 items = {};
             }
@@ -3152,28 +3152,36 @@ function library:Watermark(options)
         Name = "Watermark",
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     })
-    
+
     local container = library:create("Frame", {
         Parent = watermark_gui,
-        BackgroundColor3 = rgb(12, 12, 12),
-        BorderColor3 = rgb(40, 40, 40),
-        BorderSizePixel = 1,
+        BackgroundColor3 = rgb(40, 40, 40),
+        BorderSizePixel = 0,
         Position = dim2(0.9, -150, 0, 15),
         Size = dim2(0, 200, 0, 25),
         Visible = true,
+        Active = true,
         ZIndex = 1
     })
-    
+
     local inline = library:create("Frame", {
         Parent = container,
-        BackgroundColor3 = rgb(12, 12, 12),
-        BorderColor3 = rgb(3, 3, 3),
-        BorderSizePixel = 1,
+        BackgroundColor3 = rgb(19, 19, 19),
+        BorderSizePixel = 0,
         Position = dim2(0, 1, 0, 1),
         Size = dim2(1, -2, 1, -2),
         ZIndex = 2
     })
-    
+
+    local content = library:create("Frame", {
+        Parent = inline,
+        BackgroundColor3 = rgb(12, 12, 12),
+        BorderSizePixel = 0,
+        Position = dim2(0, 1, 0, 1),
+        Size = dim2(1, -2, 1, -2),
+        ZIndex = 3
+    })
+
     local glow = library:create("ImageLabel", {
         Parent = container,
         Name = "",
@@ -3184,26 +3192,41 @@ function library:Watermark(options)
         Visible = true,
         Image = "http://www.roblox.com/asset/?id=18245826428",
         BackgroundTransparency = 1,
-        ImageTransparency = 0.8, 
+        ImageTransparency = 0.8,
         Position = dim2(0, -20, 0, -20),
         Size = dim2(1, 40, 1, 40),
         ZIndex = -1,
         BorderSizePixel = 0,
         SliceCenter = rect(vec2(21, 21), vec2(79, 79))
     })
-    
+
     local text_lbl = library:create("TextLabel", {
-        Parent = inline,
+        Parent = content,
         BackgroundTransparency = 1,
         Size = dim2(1, 0, 1, 0),
         TextColor3 = rgb(230, 230, 230),
         FontFace = library.font,
         TextSize = 10,
         Text = options.name or options.Name or "alternate.lol",
-        ZIndex = 3,
+        ZIndex = 4,
         TextXAlignment = Enum.TextXAlignment.Center
     })
-    
+
+    library:create("UIStroke", {
+        Parent = text_lbl,
+        Color = rgb(0, 0, 0),
+        Thickness = 1,
+        Transparency = 0.5
+    })
+
+    library:create("UIPadding", {
+        Parent = content,
+        PaddingLeft = dim(0, 6),
+        PaddingRight = dim(0, 6)
+    })
+
+    library:draggify(container)
+
     local fps = 60
     task.spawn(function()
         local last_time = os.clock()
@@ -3213,11 +3236,11 @@ function library:Watermark(options)
             last_time = current_time
         end)
     end)
-    
+
     text_lbl:GetPropertyChangedSignal("TextBounds"):Connect(function()
         container.Size = dim2(0, text_lbl.TextBounds.X + 20, 0, 25)
     end)
-    
+
     task.spawn(function()
         while task.wait(1) do
             local ping = 0
@@ -3360,28 +3383,36 @@ function library:KeybindList(options)
         Name = "KeybindList",
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     })
-    
+
     local container = library:create("Frame", {
         Parent = keylist_gui,
-        BackgroundColor3 = rgb(12, 12, 12),
-        BorderColor3 = rgb(40, 40, 40),
-        BorderSizePixel = 1,
+        BackgroundColor3 = rgb(40, 40, 40),
+        BorderSizePixel = 0,
         Position = dim2(0.05, 0, 0.3, 0),
         Size = dim2(0, 180, 0, 30),
         Visible = true,
+        Active = true,
         ZIndex = 1
     })
-    
+
     local inline = library:create("Frame", {
         Parent = container,
-        BackgroundColor3 = rgb(12, 12, 12),
-        BorderColor3 = rgb(3, 3, 3),
-        BorderSizePixel = 1,
+        BackgroundColor3 = rgb(19, 19, 19),
+        BorderSizePixel = 0,
         Position = dim2(0, 1, 0, 1),
         Size = dim2(1, -2, 1, -2),
         ZIndex = 2
     })
-    
+
+    local content = library:create("Frame", {
+        Parent = inline,
+        BackgroundColor3 = rgb(12, 12, 12),
+        BorderSizePixel = 0,
+        Position = dim2(0, 1, 0, 1),
+        Size = dim2(1, -2, 1, -2),
+        ZIndex = 3
+    })
+
     local glow = library:create("ImageLabel", {
         Parent = container,
         Name = "",
@@ -3392,52 +3423,95 @@ function library:KeybindList(options)
         Visible = true,
         Image = "http://www.roblox.com/asset/?id=18245826428",
         BackgroundTransparency = 1,
-        ImageTransparency = 0.8, 
+        ImageTransparency = 0.8,
         Position = dim2(0, -20, 0, -20),
         Size = dim2(1, 40, 1, 40),
         ZIndex = -1,
         BorderSizePixel = 0,
         SliceCenter = rect(vec2(21, 21), vec2(79, 79))
     })
-    
+
     local header = library:create("TextLabel", {
-        Parent = inline,
+        Parent = content,
         BackgroundTransparency = 1,
-        Size = dim2(1, 0, 0, 25),
+        Size = dim2(1, 0, 0, 22),
         TextColor3 = rgb(255, 255, 255),
         FontFace = library.font,
-        TextSize = 11,
-        Text = "Keybinds",
-        ZIndex = 3
+        TextSize = 10,
+        Text = "  Keybinds",
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 4
     })
-    
+
+    library:create("UIStroke", {
+        Parent = header,
+        Color = rgb(0, 0, 0),
+        Thickness = 1,
+        Transparency = 0.5
+    })
+
+    local header_line = library:create("Frame", {
+        Parent = content,
+        BackgroundColor3 = rgb(40, 40, 40),
+        BorderSizePixel = 0,
+        Position = dim2(0, 0, 0, 22),
+        Size = dim2(1, 0, 0, 1),
+        ZIndex = 4
+    })
+
+    local list_holder = library:create("Frame", {
+        Parent = content,
+        BackgroundTransparency = 1,
+        Position = dim2(0, 0, 0, 24),
+        Size = dim2(1, 0, 1, -24),
+        BorderSizePixel = 0,
+        ZIndex = 4
+    })
+
+    library:create("UIPadding", {
+        Parent = list_holder,
+        PaddingLeft = dim(0, 4),
+        PaddingRight = dim(0, 4),
+        PaddingBottom = dim(0, 4)
+    })
+
     local list_layout = library:create("UIListLayout", {
-        Parent = inline,
-        Padding = dim(0, 2),
+        Parent = list_holder,
+        Padding = dim(0, 3),
         SortOrder = Enum.SortOrder.LayoutOrder
     })
-    
+
+    library:draggify(container)
+
     task.spawn(function()
         while task.wait(0.2) do
-            for _, child in ipairs(inline:GetChildren()) do
-                if child:IsA("TextLabel") and child ~= header then
+            for _, child in ipairs(list_holder:GetChildren()) do
+                if child:IsA("TextLabel") then
                     child:Destroy()
                 end
             end
-            
+
             local active_count = 0
             for flag, data in pairs(flags) do
                 if type(data) == "table" and data.key and data.active and not tostring(flag):find("^_settings") then
                     active_count = active_count + 1
-                    library:create("TextLabel", {
-                        Parent = inline,
+                    local entry = library:create("TextLabel", {
+                        Parent = list_holder,
                         BackgroundTransparency = 1,
-                        Size = dim2(1, 0, 0, 15),
+                        Size = dim2(1, 0, 0, 14),
                         TextColor3 = rgb(178, 178, 178),
                         FontFace = library.font,
                         TextSize = 9,
-                        Text = string.format(" %s [%s]", tostring(flag), tostring(data.key):gsub("Enum.KeyCode.", "")),
-                        ZIndex = 3
+                        Text = string.format("%s [%s]", tostring(flag), tostring(data.key):gsub("Enum.KeyCode.", "")),
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        ZIndex = 4
+                    })
+
+                    library:create("UIStroke", {
+                        Parent = entry,
+                        Color = rgb(0, 0, 0),
+                        Thickness = 1,
+                        Transparency = 0.5
                     })
                 end
             end
