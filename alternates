@@ -3297,7 +3297,7 @@
             section:Button({name = "Load", callback = function() library:load_config(readfile(library.directory .. "/configs/" .. flags["config_name_text"] .. ".cfg"))  library:update_config_list() end})
             section:Button({name = "Delete", callback = function() delfile(library.directory .. "/configs/" .. flags["config_name_text"] .. ".cfg")  library:update_config_list() end})
             
-            section:Label({Name = "UI Bind"}):Keybind({flag = "_ui_bind", callback = function(bool) window.toggle_menu(bool) end, default = false, key = library.MenuKeybind, mode = "Toggle"})
+            section:Label({Name = "UI Bind"}):Keybind({flag = "_ui_bind", callback = function(bool) window.toggle_menu(bool) end, default = true, key = library.MenuKeybind, mode = "Toggle"})
         end
     --
 
@@ -3952,7 +3952,7 @@ function library:KeybindList(options)
 
             local active_count = 0
             for flag, data in pairs(flags) do
-                if type(data) == "table" and data.key and data.active and not tostring(flag):find("^_settings") and not tostring(flag):find("^_ui_bind") then
+                if type(data) == "table" and data.key and data.active and not tostring(flag):find("^_settings") and not tostring(flag):find("^_ui_bind") and not tostring(flag):find("^MenuKeybind") then
                     active_count = active_count + 1
                     local entry = library:create("TextLabel", {
                         Parent = list_holder,
