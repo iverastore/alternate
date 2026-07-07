@@ -275,7 +275,26 @@
                 if query == "" then
                     entry.obj.Visible = true
                 else
-                    entry.obj.Visible = entry.name:find(query, 1, true) ~= nil
+                    -- Check if this element is on a currently visible page
+                    -- (i.e. one of its ancestors is Visible=true and parented to page_holder)
+                    local onPage = false
+                    local ancestor = entry.obj.Parent
+                    while ancestor do
+                        if ancestor.Name == "\0" and ancestor.Visible then
+                            -- Check if this ancestor has a horizontal UIListLayout (page indicator)
+                            local layout = ancestor:FindFirstChildOfClass("UIListLayout")
+                            if layout and layout.FillDirection == Enum.FillDirection.Horizontal then
+                                onPage = true
+                                break
+                            end
+                        end
+                        ancestor = ancestor.Parent
+                    end
+                    if onPage then
+                        entry.obj.Visible = entry.name:find(query, 1, true) ~= nil
+                    else
+                        entry.obj.Visible = true
+                    end
                 end
             end)
         end
@@ -798,14 +817,19 @@
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
                 
-                items[ "tab_button_holder" ] = library:create( "Frame" , {
+                items[ "tab_button_holder" ] = library:create( "ScrollingFrame" , {
                     Parent = items[ "inline" ];
                     Name = "\0";
                     Position = dim2(0, 1, 0, 10);
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -50);
+                    Size = dim2(1, -2, 1, -52);
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(14, 14, 14)
+                    BackgroundColor3 = rgb(14, 14, 14);
+                    ScrollBarThickness = 0;
+                    ScrollDirection = Enum.ScrollDirection.Y;
+                    CanvasSize = dim2(0, 0, 0, 0);
+                    AutomaticCanvasSize = Enum.AutomaticSize.Y;
+                    ClipsDescendants = true;
                 });
                 library:RegisterTheme(items[ "tab_button_holder" ], "BackgroundColor3", "Inline")
                 
@@ -824,10 +848,12 @@
                 items[ "search_holder" ] = library:create("Frame", {
                     Parent = items[ "inline" ];
                     Name = "\0";
-                    Position = dim2(0, 1, 1, -38);
-                    Size = dim2(1, -2, 0, 32);
+                    Position = dim2(0, 1, 1, -40);
+                    Size = dim2(1, -2, 0, 34);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(10, 10, 10);
+                    ZIndex = 10;
+                    Active = false;
                 })
                 library:RegisterTheme(items[ "search_holder" ], "BackgroundColor3", "Background")
                 
@@ -838,6 +864,8 @@
                     Size = dim2(1, -2, 1, -2);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(20, 20, 20);
+                    ZIndex = 11;
+                    Active = false;
                 })
                 library:RegisterTheme(items[ "search_inline" ], "BackgroundColor3", "Inline")
                 
@@ -850,6 +878,7 @@
                     Position = dim2(0, 6, 0.5, -8);
                     Size = dim2(0, 16, 0, 16);
                     BorderSizePixel = 0;
+                    ZIndex = 12;
                 })
                 
                 items[ "search_box" ] = library:create("TextBox", {
@@ -868,6 +897,7 @@
                     TextYAlignment = Enum.TextYAlignment.Center;
                     BorderSizePixel = 0;
                     ClearTextOnFocus = false;
+                    ZIndex = 12;
                 })
                 
                 library.search_query = ""
@@ -1086,6 +1116,7 @@
                 }
 
                 library:close_current_element(nil) 
+                library:ApplySearch()
             end
 
             items[ "tab_button" ].MouseButton1Down:Connect(function()
@@ -1093,31 +1124,32 @@
             end)
 
             local tooltip
-            local tab_glow
+            local tab_highlight
             items[ "tab_button" ].MouseEnter:Connect(function()
-                -- Tab glow effect
-                tab_glow = library:create("ImageLabel", {
-                    Parent = items[ "image" ];
+                -- Tab highlight: simple rounded background behind the icon
+                tab_highlight = library:create("Frame", {
+                    Parent = items[ "tab_button" ];
                     Name = "\0";
-                    Image = "http://www.roblox.com/asset/?id=18245826428";
-                    ImageColor3 = library.Theme.Accent;
-                    ScaleType = Enum.ScaleType.Slice;
-                    SliceCenter = rect(vec2(21, 21), vec2(79, 79));
-                    BackgroundTransparency = 1;
-                    ImageTransparency = 0.5;
-                    Position = dim2(0, -8, 0, -8);
-                    Size = dim2(1, 16, 1, 16);
-                    ZIndex = -1;
+                    BackgroundColor3 = library.Theme.Accent;
+                    BackgroundTransparency = 0.85;
+                    Size = dim2(0, 40, 0, 40);
+                    AnchorPoint = vec2(0.5, 0);
+                    Position = dim2(0.5, 0, 0, -4);
                     BorderSizePixel = 0;
+                    ZIndex = -1;
                 })
-                library:tween(tab_glow, {ImageTransparency = 0.15})
+                library:create("UICorner", {
+                    Parent = tab_highlight;
+                    CornerRadius = dim(0, 8);
+                })
+                library:RegisterTheme(tab_highlight, "BackgroundColor3", "Accent")
+                library:tween(tab_highlight, {BackgroundTransparency = 0.7})
                 
                 -- Tooltip
                 tooltip = library:create("TextLabel", {
                     Parent = library.items;
                     Name = "\0";
                     BackgroundColor3 = rgb(15, 15, 15);
-                    BorderColor3 = rgb(0, 0, 0);
                     BorderSizePixel = 0;
                     Size = dim2(0, 0, 0, 22);
                     Position = dim2(0, 0, 0, 0);
@@ -1128,7 +1160,8 @@
                     TextSize = 11;
                     TextXAlignment = Enum.TextXAlignment.Center;
                     TextYAlignment = Enum.TextYAlignment.Center;
-                    BackgroundTransparency = 0;
+                    BackgroundTransparency = 1;
+                    TextTransparency = 1;
                     ZIndex = 100;
                     Visible = true;
                 })
@@ -1154,24 +1187,22 @@
                 library:RegisterTheme(accent_bar, "BackgroundColor3", "Accent")
                 local mouseLoc = uis:GetMouseLocation()
                 tooltip.Position = dim2(0, mouseLoc.X + 14, 0, mouseLoc.Y - 28)
-                tooltip.BackgroundTransparency = 1
-                tooltip.TextTransparency = 1
                 library:tween(tooltip, {BackgroundTransparency = 0})
                 library:tween(tooltip, {TextTransparency = 0})
             end)
             items[ "tab_button" ].MouseLeave:Connect(function()
                 if tooltip then
-                    library:tween(tooltip, {BackgroundTransparency = 1})
-                    library:tween(tooltip, {TextTransparency = 1})
-                    task.wait(0.2)
-                    tooltip:Destroy()
+                    local t = tooltip
                     tooltip = nil
+                    library:tween(t, {BackgroundTransparency = 1})
+                    library:tween(t, {TextTransparency = 1})
+                    task.delay(0.2, function() pcall(function() t:Destroy() end) end)
                 end
-                if tab_glow then
-                    library:tween(tab_glow, {ImageTransparency = 1})
-                    task.wait(0.2)
-                    tab_glow:Destroy()
-                    tab_glow = nil
+                if tab_highlight then
+                    local h = tab_highlight
+                    tab_highlight = nil
+                    library:tween(h, {BackgroundTransparency = 1})
+                    task.delay(0.2, function() pcall(function() h:Destroy() end) end)
                 end
             end)
 
