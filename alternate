@@ -75,7 +75,10 @@
     getgenv().library.Theme = {
         Accent = Color3.fromRGB(255, 255, 255),
         Background = Color3.fromRGB(12, 12, 12),
-        Inline = Color3.fromRGB(19, 19, 19)
+        Inline = Color3.fromRGB(19, 19, 19),
+        Element = Color3.fromRGB(39, 39, 39),
+        ["Element 2"] = Color3.fromRGB(56, 56, 56),
+        ["Hovered Element"] = Color3.fromRGB(61, 61, 61)
     }
     getgenv().library.CurrentTheme = {
         Text = {
@@ -94,9 +97,15 @@
     }
     getgenv().library.ChangeTheme = function(self, name, color)
         pcall(function()
-            if name == "Accent" or name == "glow" then
+            if type(name) == "table" then
+                local obj = library.CurrentTheme
+                for i = 1, #name - 1 do obj = obj[name[i]] end
+                obj[name[#name]] = color
+            elseif name == "Accent" or name == "glow" then
                 library.Theme.Accent = color
                 themes.preset.glow = color
+            elseif name == "Background" or name == "Inline" or name == "Element" or name == "Element 2" or name == "Hovered Element" then
+                library.Theme[name] = color
             end
         end)
     end
@@ -840,8 +849,7 @@
                     BackgroundTransparency = 1;
                     Parent = self.items[ cfg.side == 1 and "left" or cfg.side == 2 and "right" or cfg.side ];
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, 0, 0, 0);
-                    AutomaticSize = Enum.AutomaticSize.Y;
+                    Size = dim2(1, 0, 1, 0);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(8, 8, 8)
                 });
@@ -852,8 +860,7 @@
                     Position = dim2(0, 1, 0, 1);
                     BackgroundTransparency = 1;
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 0, 0);
-                    AutomaticSize = Enum.AutomaticSize.Y;
+                    Size = dim2(1, -2, 1, -2);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(5, 5, 5)
                 });
@@ -864,8 +871,7 @@
                     Position = dim2(0, 1, 0, 1);
                     BackgroundTransparency = 1;
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 0, 0);
-                    AutomaticSize = Enum.AutomaticSize.Y;
+                    Size = dim2(1, -2, 1, -2);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(0, 0, 0)
                 });
@@ -876,8 +882,7 @@
                     BackgroundTransparency = 1;
                     Position = dim2(0, 1, 0, 1);
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 0, 0);
-                    AutomaticSize = Enum.AutomaticSize.Y;
+                    Size = dim2(1, -2, 1, -2);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(0, 0, 0)
                 });
@@ -887,26 +892,24 @@
                     BackgroundTransparency = 1;
                     Parent = items[ "section_shadow_two" ];
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, 0, 0, 0);
-                    AutomaticSize = Enum.AutomaticSize.Y;
+                    Size = dim2(1, 0, 1, 0);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(14, 14, 14)
                 });
                 
-                library:create( "UICorner" , {
-                    Parent = items[ "section_shadow_three" ];
-                    CornerRadius = dim(0, 0)
-                });
-                
-                items[ "scrolling" ] = library:create( "Frame" , {
+                items[ "scrolling" ] = library:create( "ScrollingFrame" , {
+                    ScrollBarImageColor3 = rgb(0, 0, 0);
+                    Active = true;
+                    AutomaticCanvasSize = Enum.AutomaticSize.Y;
+                    ScrollBarThickness = 0;
                     Parent = items[ "section_shadow_three" ];
                     Name = "\0";
                     BackgroundTransparency = 1;
-                    Size = dim2(1, 0, 0, 0);
-                    AutomaticSize = Enum.AutomaticSize.Y;
+                    Size = dim2(1, 0, 1, 0);
                     BackgroundColor3 = rgb(255, 255, 255);
                     BorderColor3 = rgb(0, 0, 0);
-                    BorderSizePixel = 0
+                    BorderSizePixel = 0;
+                    CanvasSize = dim2(0, 0, 0, 0)
                 });
                 
                 items[ "elements" ] = library:create( "Frame" , {
@@ -927,20 +930,6 @@
                     SortOrder = Enum.SortOrder.LayoutOrder
                 });
                 
-                library:create( "UICorner" , {
-                    Parent = items[ "section_shadow_two" ];
-                    CornerRadius = dim(0, 0)
-                });
-                
-                library:create( "UICorner" , {
-                    Parent = items[ "section_shadow_one" ];
-                    CornerRadius = dim(0, 0)
-                });
-                
-                library:create( "UICorner" , {
-                    Parent = items[ "section_shadow" ];
-                    CornerRadius = dim(0, 0)
-                });
                 
                 items.text = library:create( "TextLabel" , {
                     FontFace = library.font;
@@ -968,20 +957,9 @@
                 library:create( "UIStroke" , {
                     Parent = items.text;
                 });
-                
-                library:create( "UICorner" , {
-                    Parent = items[ "section_outline" ];
-                    CornerRadius = dim(0, 0)
-                });                
             end;
 
             items[ "section_outline" ].MouseEnter:Connect(function()
-                for _,instance in items[ "section_outline" ]:GetDescendants() do 
-                    if instance:IsA("UICorner") then 
-                        library:tween(instance, {CornerRadius = dim(0, 8)})
-                    end 
-                end 
-
                 for _,section in {"section_shadow_three", "section_shadow_two", "section_shadow_one", "section_shadow"} do 
                     library:tween(items[ section ], {BackgroundTransparency = 0})
                 end 
@@ -991,12 +969,6 @@
             end)
 
             items[ "section_outline" ].MouseLeave:Connect(function()
-                for _,instance in items[ "section_outline" ]:GetDescendants() do 
-                    if instance:IsA("UICorner") then 
-                        library:tween(instance, {CornerRadius = dim(0, 0)})
-                    end 
-                end 
-
                 for _,section in {"section_shadow_three", "section_shadow_two", "section_shadow_one", "section_shadow"} do 
                     library:tween(items[ section ], {BackgroundTransparency = 1})
                 end
@@ -1477,12 +1449,19 @@
                     BackgroundTransparency = 1;
                     Size = dim2(1, 0, 1, 0);
                     Text = tostring(cfg.default) .. cfg.suffix;
-                    TextColor3 = rgb(230, 230, 230),
+                    TextColor3 = rgb(255, 255, 255),
                     FontFace = library.font,
                     TextSize = 9,
                     TextXAlignment = Enum.TextXAlignment.Center,
                     TextYAlignment = Enum.TextYAlignment.Center,
                     ZIndex = 2
+                });
+                
+                library:create( "UIStroke" , {
+                    Parent = items[ "center_value" ];
+                    Color = rgb(0, 0, 0);
+                    Thickness = 1;
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
                 });
                 
                 items[ "slider" ] = library:create( "Frame" , {
@@ -1891,7 +1870,7 @@
 
                 items.text = library:create( "TextLabel" , {
                     FontFace = library.font;
-                    TextColor3 = rgb(178, 178, 178);
+                    TextColor3 = rgb(255, 255, 255);
                     BorderColor3 = rgb(0, 0, 0);
                     Text = cfg.name;
                     RichText = true;
@@ -1912,7 +1891,10 @@
                 });
 
                 library:create( "UIStroke" , {
-                    Parent = items.text
+                    Parent = items.text;
+                    Color = rgb(0, 0, 0);
+                    Thickness = 1;
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
                 });
 
                 library:create( "UIPadding" , {
@@ -1967,16 +1949,13 @@
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
                     
-                    items[ "gear" ] = library:create( "ImageLabel" , {
-                        ImageColor3 = rgb(178, 178, 178);
+                    items[ "color_square" ] = library:create( "Frame" , {
                         BorderColor3 = rgb(0, 0, 0);
                         Parent = items[ "gear_holder" ];
-                        Image = "rbxassetid://99473719385675";
-                        BackgroundTransparency = 1;
                         Name = "\0";
-                        Size = dim2(0, 12, 0, 12);
+                        Size = dim2(1, 0, 1, 0);
                         BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(255, 255, 255)
+                        BackgroundColor3 = cfg.color
                     });
                     
                     library:create( "UIPadding" , {
@@ -2324,6 +2303,7 @@
 
                 items.alpha_visualizer.ImageTransparency = 1 - a 
                 items.visualizer.BackgroundColor3 = Color
+                items.color_square.BackgroundColor3 = Color
 
                 flags[cfg.flag] = {
                     Color = Color;
@@ -3067,6 +3047,7 @@
 				name = options.name or "Hit: q3sm (finobe) in the Head for 100 Damage!",
 				color = options.color or rgb(255, 255, 255);
 				clickable = options.click or false;
+				duration = options.duration or 5;
 			}
 			
 			-- Instances
@@ -3183,8 +3164,8 @@
 			else 
                 -- booty code
 				task.spawn(function()
-					tween_service:Create(line, TweenInfo.new(3, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = dim2(1, -1, 0, 1)}):Play()
-					task.wait(5)
+					tween_service:Create(line, TweenInfo.new(cfg.duration, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = dim2(1, -1, 0, 1)}):Play()
+					task.wait(cfg.duration)
                     print("fade2")
 					notifications.notifs[index] = nil
 					for _, obj in outline:GetDescendants() do
@@ -3221,9 +3202,14 @@ function library:SetVisibility(vis)
 end
 
 function library:Notify(text, duration)
+    if library.NotificationsEnabled == false then return end
+    local settings = library.NotifSettings or {}
     return notifications:create_notification({
         name = text,
-        duration = duration
+        duration = duration or settings.Duration or 3,
+        type = settings.Type or "Full",
+        animation = settings.Animation or "Slide",
+        position = settings.Position or "Top Right"
     })
 end
 
