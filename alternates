@@ -2959,7 +2959,8 @@
             end 
 
             function cfg.set(input)
-                if type(input) == "boolean" then 
+                local isBool = type(input) == "boolean"
+                if isBool then 
                     cfg.active = input
 
                     if cfg.mode == "Always" then 
@@ -2990,7 +2991,9 @@
                     cfg.set_mode(cfg.mode) 
                 end 
 
-                cfg.callback(cfg.active)
+                if isBool then
+                    cfg.callback(cfg.active)
+                end
 
                 local text = tostring(cfg.key) ~= "Enums" and (keys[cfg.key] or tostring(cfg.key):gsub("Enum.", "")) or nil
                 local __text = text and (tostring(text):gsub("KeyCode.", ""):gsub("UserInputType.", ""))
