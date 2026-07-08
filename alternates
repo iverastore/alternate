@@ -2332,6 +2332,7 @@
                         BorderSizePixel = 0;
                         BackgroundColor3 = rgb(0, 0, 0)
                     });
+                    library:RegisterTheme(items[ "colorpicker_outline" ], "BackgroundColor3", {"Borders", "Outline"})
                     
                     items[ "_" ] = library:create( "UICorner" , {
                         Parent = items[ "colorpicker_outline" ];
@@ -2347,8 +2348,9 @@
                         BorderColor3 = rgb(0, 0, 0);
                         Position = dim2(0, 1, 0, 1);
                         BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(32, 32, 32)
+                        BackgroundColor3 = rgb(19, 19, 19)
                     });
+                    library:RegisterTheme(items[ "colorpicker_inline" ], "BackgroundColor3", "Inline")
                     
                     items[ "_" ] = library:create( "UICorner" , {
                         Parent = items[ "colorpicker_inline" ];
@@ -2364,8 +2366,9 @@
                         BorderColor3 = rgb(0, 0, 0);
                         Position = dim2(0, 1, 0, 1);
                         BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(8, 8, 8)
+                        BackgroundColor3 = rgb(12, 12, 12)
                     });
+                    library:RegisterTheme(items[ "colorpicker_background" ], "BackgroundColor3", "Background")
                     
                     items[ "_" ] = library:create( "UICorner" , {
                         Parent = items[ "colorpicker_background" ];
@@ -2399,8 +2402,9 @@
                         Size = dim2(1, 0, 0, 1);
                         Position = dim2(0, 0, 0.5, 0);
                         BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(40, 40, 40)
+                        BackgroundColor3 = rgb(19, 19, 19)
                     });
+                    library:RegisterTheme(items[ "rgb_divider_line" ], "BackgroundColor3", "Inline")
                     
                     items[ "rgb_mode_label" ] = library:create( "TextLabel" , {
                         FontFace = library.font;
@@ -2426,12 +2430,13 @@
                         TextColor3 = rgb(178, 178, 178);
                         FontFace = library.font;
                         TextSize = 9;
-                        BackgroundColor3 = rgb(20, 20, 20);
+                        BackgroundColor3 = rgb(39, 39, 39);
                         Position = dim2(0, 35, 1, -62);
                         Size = dim2(1, -38, 0, 16);
                         BorderSizePixel = 0;
                         ZIndex = 101
                     });
+                    library:RegisterTheme(items[ "rgb_mode_btn" ], "BackgroundColor3", "Element")
                     
                     items[ "rgb_mode_outline" ] = library:create( "Frame" , {
                         Parent = items[ "rgb_mode_btn" ];
@@ -2444,7 +2449,7 @@
                     
                     library:create( "UIStroke" , {
                         Parent = items[ "rgb_mode_btn" ];
-                        Color = rgb(40, 40, 40);
+                        Color = rgb(19, 19, 19);
                         Thickness = 1;
                         ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                     });
@@ -2459,6 +2464,7 @@
                         BorderSizePixel = 0;
                         BackgroundColor3 = rgb(0, 0, 0)
                     });
+                    library:RegisterTheme(items[ "rgb_mode_dropdown" ], "BackgroundColor3", {"Borders", "Outline"})
                     
                     items[ "rgb_mode_dd_inline" ] = library:create( "Frame" , {
                         Parent = items[ "rgb_mode_dropdown" ];
@@ -2466,8 +2472,9 @@
                         Size = dim2(1, -2, 1, -2);
                         Position = dim2(0, 1, 0, 1);
                         BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(20, 20, 20)
+                        BackgroundColor3 = rgb(12, 12, 12)
                     });
+                    library:RegisterTheme(items[ "rgb_mode_dd_inline" ], "BackgroundColor3", "Background")
                     
                     items[ "rgb_mode_dd_list" ] = library:create( "Frame" , {
                         Parent = items[ "rgb_mode_dd_inline" ];
@@ -2506,16 +2513,17 @@
                         Name = "\0";
                         AutoButtonColor = false;
                         Text = "";
-                        BackgroundColor3 = rgb(20, 20, 20);
+                        BackgroundColor3 = rgb(39, 39, 39);
                         Position = dim2(0, 35, 1, -42);
                         Size = dim2(1, -38, 0, 16);
                         BorderSizePixel = 0;
                         ZIndex = 101
                     });
+                    library:RegisterTheme(items[ "rgb_speed_bar" ], "BackgroundColor3", "Element")
                     
                     library:create( "UIStroke" , {
                         Parent = items[ "rgb_speed_bar" ];
-                        Color = rgb(40, 40, 40);
+                        Color = rgb(19, 19, 19);
                         Thickness = 1;
                         ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                     });
@@ -2772,6 +2780,12 @@
                         BorderSizePixel = 0;
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
+                    items.gear.MouseEnter:Connect(function()
+                        library:tween(items.gear, {ImageColor3 = rgb(255, 255, 255)})
+                    end)
+                    items.gear.MouseLeave:Connect(function()
+                        library:tween(items.gear, {ImageColor3 = rgb(178, 178, 178)})
+                    end)
                     
                     library:create( "TextLabel" , {
                         FontFace = library.font;
@@ -2799,9 +2813,24 @@
             end;
 
             function cfg.set_visible(bool) 
-                items.colorpicker_outline.Visible = bool
-                items.colorpicker_outline.Position = dim2(0, items.gear_holder.AbsolutePosition.X - 5, 0, items.gear_holder.AbsolutePosition.Y + items.gear_holder.AbsoluteSize.Y + 60 - 19)
-                if not bool then
+                if bool then
+                    library:close_current_element(cfg)
+                    local absX = items.gear_holder.AbsolutePosition.X
+                    local absY = items.gear_holder.AbsolutePosition.Y + items.gear_holder.AbsoluteSize.Y + 2
+                    local pickerW = 161
+                    local pickerH = 245
+                    local viewportW = camera.ViewportSize.X
+                    local viewportH = camera.ViewportSize.Y
+                    if absX + pickerW > viewportW then
+                        absX = viewportW - pickerW - 5
+                    end
+                    if absY + pickerH > viewportH then
+                        absY = absY - pickerH - items.gear_holder.AbsoluteSize.Y - 4
+                    end
+                    items.colorpicker_outline.Position = dim2(0, absX, 0, absY)
+                    items.colorpicker_outline.Visible = true
+                else
+                    items.colorpicker_outline.Visible = false
                     items.rgb_mode_dropdown.Visible = false
                     mode_dd_open = false
                 end
@@ -2856,11 +2885,18 @@
             end
 
             items.gear_holder.MouseButton1Click:Connect(function()
-                cfg.set_visible(true)            
+                if items.colorpicker_outline.Visible then
+                    cfg.set_visible(false)
+                    cfg.open = false
+                else
+                    cfg.set_visible(true)
+                    cfg.open = true
+                end
             end)
 
             items.gear.MouseButton1Click:Connect(function()
-                cfg.set_visible(false)            
+                cfg.set_visible(false)
+                cfg.open = false
             end)
 
             uis.InputChanged:Connect(function(input)
@@ -2875,7 +2911,7 @@
                     dragging_hue = false
                     dragging_alpha = false  
 
-                    if not (library:mouse_in_frame(items.gear_holder) or library:mouse_in_frame(items.colorpicker_outline)) then 
+                    if items.colorpicker_outline.Visible and not (library:mouse_in_frame(items.gear_holder) or library:mouse_in_frame(items.colorpicker_outline)) then 
                         cfg.open = false
                         cfg.set_visible(false)
                     end
@@ -2925,16 +2961,25 @@
                     FontFace = library.font;
                     TextSize = 9;
                     Size = dim2(1, 0, 0, 16);
-                    BackgroundColor3 = rgb(20, 20, 20);
+                    BackgroundColor3 = rgb(39, 39, 39);
                     BorderSizePixel = 0;
                     ZIndex = 201
                 })
+                library:RegisterTheme(btn, "BackgroundColor3", "Element")
                 library:create("UIStroke", {
                     Parent = btn;
-                    Color = rgb(30, 30, 30);
+                    Color = rgb(19, 19, 19);
                     Thickness = 1;
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 })
+                btn.MouseEnter:Connect(function()
+                    library:tween(btn, {BackgroundColor3 = library.Theme["Hovered Element"] or rgb(56, 56, 56)})
+                    library:tween(btn, {TextColor3 = rgb(255, 255, 255)})
+                end)
+                btn.MouseLeave:Connect(function()
+                    library:tween(btn, {BackgroundColor3 = library.Theme.Element or rgb(39, 39, 39)})
+                    library:tween(btn, {TextColor3 = rgb(178, 178, 178)})
+                end)
                 btn.MouseButton1Click:Connect(function()
                     set_rgb_mode(mode)
                     mode_dd_open = false
@@ -2946,12 +2991,25 @@
                 mode_dd_open = not mode_dd_open
                 if mode_dd_open then
                     local pos = items.rgb_mode_btn.AbsolutePosition
-                    items.rgb_mode_dropdown.Position = dim2(0, pos.X, 0, pos.Y + 16)
-                    items.rgb_mode_dropdown.Size = dim2(0, items.rgb_mode_btn.AbsoluteSize.X, 0, #rgb_modes * 16)
+                    local ddH = #rgb_modes * 16
+                    local viewportH = camera.ViewportSize.Y
+                    local ddY = pos.Y + 16
+                    if ddY + ddH > viewportH then
+                        ddY = pos.Y - ddH - 2
+                    end
+                    items.rgb_mode_dropdown.Position = dim2(0, pos.X, 0, ddY)
+                    items.rgb_mode_dropdown.Size = dim2(0, items.rgb_mode_btn.AbsoluteSize.X, 0, ddH)
                     items.rgb_mode_dropdown.Visible = true
                 else
                     items.rgb_mode_dropdown.Visible = false
                 end
+            end)
+
+            items.rgb_mode_btn.MouseEnter:Connect(function()
+                library:tween(items.rgb_mode_btn, {TextColor3 = rgb(255, 255, 255)})
+            end)
+            items.rgb_mode_btn.MouseLeave:Connect(function()
+                library:tween(items.rgb_mode_btn, {TextColor3 = rgb(178, 178, 178)})
             end)
 
             -- Speed slider
