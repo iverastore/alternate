@@ -4513,8 +4513,9 @@ local Library = {
                         end
                     end
 
-                    task.wait(0.45)
-                    Items["Main"].Instance.Visible = false
+                    task.delay(0.45, function()
+                        Items["Main"].Instance.Visible = false
+                    end)
 
                     if UpdateConnection then
                         UpdateConnection:Disconnect()
