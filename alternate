@@ -33,7 +33,7 @@
     local numseq = NumberSequence.new
     local numkey = NumberSequenceKeypoint.new
 
-    local camera = ws.CurrentCamera
+    local camera = setmetatable({}, {__index = function(self, key) return ws.CurrentCamera[key] end})
     local lp = players.LocalPlayer 
     local mouse = lp:GetMouse() 
     local gui_offset = gui_service:GetGuiInset().Y
@@ -59,7 +59,7 @@
 -- 
 
 -- Library init
-    getgenv().library = {
+    local library = {
         directory = "alternate.lol",
         folders = {
             "/fonts",
@@ -71,6 +71,7 @@
         notifications = {notifs = {}},
         current_open; 
     }
+    getgenv().library = library
     
     getgenv().library.Theme = {
         Accent = Color3.fromRGB(255, 255, 255),
@@ -148,20 +149,32 @@
     end
     
     getgenv().library.ChangeTheme = function(self, name, color)
+        local themeName, themeColor
+        if typeof(self) == "table" and (self.Theme == nil and self.ChangeTheme == nil) then
+            themeName = self
+            themeColor = name
+        elseif typeof(self) == "string" then
+            themeName = self
+            themeColor = name
+        else
+            themeName = name
+            themeColor = color
+        end
+
         pcall(function()
-            if type(name) == "table" then
+            if type(themeName) == "table" then
                 local obj = library.CurrentTheme
-                for i = 1, #name - 1 do obj = obj[name[i]] end
-                obj[name[#name]] = color
-                applyThemeChange(name, color)
-            elseif name == "Accent" or name == "glow" then
-                library.Theme.Accent = color
-                themes.preset.glow = color
-                applyThemeChange("Accent", color)
-                applyThemeChange("glow", color)
-            elseif type(name) == "string" and library.Theme[name] ~= nil then
-                library.Theme[name] = color
-                applyThemeChange(name, color)
+                for i = 1, #themeName - 1 do obj = obj[themeName[i]] end
+                obj[themeName[#themeName]] = themeColor
+                applyThemeChange(themeName, themeColor)
+            elseif themeName == "Accent" or themeName == "glow" then
+                library.Theme.Accent = themeColor
+                themes.preset.glow = themeColor
+                applyThemeChange("Accent", themeColor)
+                applyThemeChange("glow", themeColor)
+            elseif type(themeName) == "string" and library.Theme[themeName] ~= nil then
+                library.Theme[themeName] = themeColor
+                applyThemeChange(themeName, themeColor)
             end
         end)
     end
@@ -844,13 +857,12 @@
                     Visible = false;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
-                
-                items[ "tab_button_holder" ] = library:create( "Frame" , {
+                             items[ "tab_button_holder" ] = library:create( "Frame" , {
                     Parent = items[ "inline" ];
                     Name = "\0";
-                    Position = dim2(0, 1, 0, 10);
+                    Position = dim2(0, 1, 0, 0);
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -20);
+                    Size = dim2(1, -2, 1, 0);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(14, 14, 14);
                     ClipsDescendants = true;
@@ -859,7 +871,8 @@
                 
                 library:create( "UIPadding" , {
                     Parent = items[ "tab_button_holder" ];
-                    PaddingTop = dim(0, 10)
+                    PaddingTop = dim(0, 10);
+                    PaddingBottom = dim(0, 10);
                 });
                 
                 library:create( "UIListLayout" , {
@@ -867,7 +880,7 @@
                     Padding = dim(0, 24);
                     SortOrder = Enum.SortOrder.LayoutOrder
                 });
-
+ 
                 items[ "page_holder" ] = library:create( "Frame" , {
                     Parent = items[ "window" ];
                     Name = "\0";
@@ -879,11 +892,6 @@
                     ClipsDescendants = true
                 });
                 library:RegisterTheme(items[ "page_holder" ], "BackgroundColor3", "Background")
-                
-                library:create("UICorner", {
-                    Parent = items[ "page_holder" ];
-                    CornerRadius = dim(0, 6)
-                });
 
                 items[ "bottom_bar" ] = library:create( "Frame" , {
                     Parent = items[ "window" ];
@@ -2118,7 +2126,7 @@
                     items[ "dropdown_holder" ].Visible = true
                     
                     -- Animate arrow rotation
-                    library:tween(items[ "arrow" ], {Rotation = 180}, Enum.EasingStyle.Back, 0.2)
+                    library:tween(items[ "arrow" ], {Rotation = 180}, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0.15)
 
                     -- Animate open after layout computes Y size
                     task.spawn(function()
@@ -2138,18 +2146,18 @@
                         end
                         
                         if targetH > 2 then
-                            library:tween(items[ "dropdown_holder" ], {Size = dim2(0, absSize.X, 0, targetH)}, Enum.EasingStyle.Quint, 0.2)
+                            library:tween(items[ "dropdown_holder" ], {Size = dim2(0, absSize.X, 0, targetH)}, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0.15)
                         end
                     end)
                 else
                     -- Animate arrow back
-                    library:tween(items[ "arrow" ], {Rotation = 0}, Enum.EasingStyle.Back, 0.2)
+                    library:tween(items[ "arrow" ], {Rotation = 0}, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0.15)
 
                     -- Animate close
                     local currentH = items[ "dropdown_holder" ].AbsoluteSize.Y
                     local btnSize = items.dropdown_outline.AbsoluteSize.X
                     
-                    local closeTween = library:tween(items[ "dropdown_holder" ], {Size = dim2(0, btnSize, 0, 0)}, Enum.EasingStyle.Quint, 0.15)
+                    local closeTween = library:tween(items[ "dropdown_holder" ], {Size = dim2(0, btnSize, 0, 0)}, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0.15)
                     library:connection(closeTween.Completed, function()
                         if gen ~= cfg._vis_gen then return end
                         items[ "dropdown_holder" ].Visible = false
@@ -2534,6 +2542,7 @@
                         Size = dim2(0, 100, 0, 0);
                         Position = dim2(0, 0, 0, 0);
                         BorderSizePixel = 0;
+                        ClipsDescendants = true;
                         BackgroundColor3 = rgb(0, 0, 0)
                     });
                     library:RegisterTheme(items[ "rgb_mode_dropdown" ], "BackgroundColor3", {"Borders", "Outline"})
@@ -2541,27 +2550,30 @@
                     items[ "rgb_mode_dd_inline" ] = library:create( "Frame" , {
                         Parent = items[ "rgb_mode_dropdown" ];
                         Name = "\0";
-                        Size = dim2(1, -2, 1, -2);
+                        Size = dim2(1, -2, 0, -2);
                         Position = dim2(0, 1, 0, 1);
+                        BorderColor3 = rgb(0, 0, 0);
                         BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(12, 12, 12)
-                    });
-                    library:RegisterTheme(items[ "rgb_mode_dd_inline" ], "BackgroundColor3", "Background")
-                    
-                    items[ "rgb_mode_dd_list" ] = library:create( "Frame" , {
-                        Parent = items[ "rgb_mode_dd_inline" ];
-                        Name = "\0";
-                        BackgroundTransparency = 1;
-                        Size = dim2(1, 0, 0, 0);
                         AutomaticSize = Enum.AutomaticSize.Y;
-                        BorderSizePixel = 0;
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
                     
+                    library:create( "UIGradient" , {
+                        Rotation = 90;
+                        Parent = items[ "rgb_mode_dd_inline" ];
+                        Color = rgbseq{rgbkey(0, rgb(33, 33, 33)), rgbkey(1, rgb(8, 8, 8))}
+                    });
+                    
                     library:create( "UIListLayout" , {
-                        Parent = items[ "rgb_mode_dd_list" ];
-                        Padding = dim(0, 0);
+                        Parent = items[ "rgb_mode_dd_inline" ];
+                        Padding = dim(0, 5);
                         SortOrder = Enum.SortOrder.LayoutOrder
+                    });
+                    
+                    library:create( "UIPadding" , {
+                        PaddingBottom = dim(0, 5);
+                        PaddingTop = dim(0, 5);
+                        Parent = items[ "rgb_mode_dd_inline" ]
                     });
                     
                     items[ "rgb_speed_label" ] = library:create( "TextLabel" , {
@@ -2838,35 +2850,14 @@
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
                     
-                    items[ "gear" ] = library:create( "ImageButton" , {
-                        ImageColor3 = rgb(178, 178, 178);
-                        AutoButtonColor = false;
-                        BorderColor3 = rgb(0, 0, 0);
-                        Parent = items[ "colorpicker_inline" ];
-                        Name = "\0";
-                        Image = "rbxassetid://99473719385675";
-                        BackgroundTransparency = 1;
-                        Position = dim2(0, 4, 0, 3);
-                        
-                        Size = dim2(0, 12, 0, 12);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });
-                    items.gear.MouseEnter:Connect(function()
-                        library:tween(items.gear, {ImageColor3 = rgb(255, 255, 255)})
-                    end)
-                    items.gear.MouseLeave:Connect(function()
-                        library:tween(items.gear, {ImageColor3 = rgb(178, 178, 178)})
-                    end)
-                    
-                    library:create( "TextLabel" , {
+                    items.title = library:create( "TextLabel" , {
                         FontFace = library.font;
                         TextColor3 = rgb(178, 178, 178);
                         BorderColor3 = rgb(0, 0, 0);
                         Text = cfg.name;
                         Parent = items[ "colorpicker_outline" ];
                         BackgroundTransparency = 1;
-                        Position = dim2(0, 20, 0, 5);
+                        Position = dim2(0, 6, 0, 5);
                         BorderSizePixel = 0;
                         AutomaticSize = Enum.AutomaticSize.XY;
                         TextSize = 10;
@@ -2874,13 +2865,18 @@
                     });
                     
                     library:create( "UIStroke" , {
-                        Parent = items[ "TextLabel" ]
+                        Parent = items.title
                     });
                     
                     library:create( "UIPadding" , {
                         PaddingLeft = dim(0, 1);
-                        Parent = items[ "TextLabel" ]
-                    });                
+                        Parent = items.title
+                    });
+
+                    library:RegisterTheme(items.title, "TextColor3", {"Text", "Main"})
+                    library:RegisterTheme(items[ "rgb_mode_label" ], "TextColor3", {"Text", "Unselected"})
+                    library:RegisterTheme(items[ "rgb_speed_label" ], "TextColor3", {"Text", "Unselected"})
+                    library:RegisterTheme(items[ "rgb_mode_btn" ], "TextColor3", {"Text", "Unselected"})
                 --  
             end;
 
@@ -2966,10 +2962,7 @@
                 end
             end)
 
-            items.gear.MouseButton1Click:Connect(function()
-                cfg.set_visible(false)
-                cfg.open = false
-            end)
+
 
             uis.InputChanged:Connect(function(input)
                 if (dragging_sat or dragging_hue or dragging_alpha) and input.UserInputType == Enum.UserInputType.MouseMovement then
@@ -3025,37 +3018,43 @@
             -- Populate mode dropdown
             for _, mode in ipairs(rgb_modes) do
                 local btn = library:create("TextButton", {
-                    Parent = items.rgb_mode_dd_list;
+                    Parent = items.rgb_mode_dd_inline;
                     Name = "\0";
                     AutoButtonColor = false;
                     Text = mode;
-                    TextColor3 = rgb(178, 178, 178);
+                    TextColor3 = resolveThemeColor({"Text", "Unselected"});
                     FontFace = library.font;
-                    TextSize = 9;
-                    Size = dim2(1, 0, 0, 16);
-                    BackgroundColor3 = rgb(39, 39, 39);
+                    TextSize = 10;
+                    Size = dim2(1, 0, 0, 0);
+                    BackgroundTransparency = 1;
+                    TextXAlignment = Enum.TextXAlignment.Center;
                     BorderSizePixel = 0;
+                    AutomaticSize = Enum.AutomaticSize.XY;
+                    BackgroundColor3 = rgb(255, 255, 255);
                     ZIndex = 201
                 })
-                library:RegisterTheme(btn, "BackgroundColor3", "Element")
                 library:create("UIStroke", {
-                    Parent = btn;
-                    Color = rgb(19, 19, 19);
-                    Thickness = 1;
-                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                    Parent = btn
+                })
+                library:create("UIPadding", {
+                    Parent = btn
                 })
                 btn.MouseEnter:Connect(function()
-                    library:tween(btn, {BackgroundColor3 = library.Theme["Hovered Element"] or rgb(56, 56, 56)})
-                    library:tween(btn, {TextColor3 = rgb(255, 255, 255)})
+                    library:tween(btn, {TextColor3 = resolveThemeColor({"Text", "Main"})})
                 end)
                 btn.MouseLeave:Connect(function()
-                    library:tween(btn, {BackgroundColor3 = library.Theme.Element or rgb(39, 39, 39)})
-                    library:tween(btn, {TextColor3 = rgb(178, 178, 178)})
+                    local isSelected = cfg.rgb_mode == mode
+                    if not isSelected then
+                        library:tween(btn, {TextColor3 = resolveThemeColor({"Text", "Unselected"})})
+                    end
                 end)
                 btn.MouseButton1Click:Connect(function()
                     set_rgb_mode(mode)
                     mode_dd_open = false
-                    items.rgb_mode_dropdown.Visible = false
+                    local closeTween = library:tween(items.rgb_mode_dropdown, {Size = dim2(0, items.rgb_mode_btn.AbsoluteSize.X, 0, 0)}, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0.15)
+                    library:connection(closeTween.Completed, function()
+                        items.rgb_mode_dropdown.Visible = false
+                    end)
                 end)
             end
 
@@ -3063,25 +3062,34 @@
                 mode_dd_open = not mode_dd_open
                 if mode_dd_open then
                     local pos = items.rgb_mode_btn.AbsolutePosition
-                    local ddH = #rgb_modes * 16
                     local viewportH = camera.ViewportSize.Y
-                    local ddY = pos.Y + 16
-                    if ddY + ddH > viewportH then
-                        ddY = pos.Y - ddH - 2
-                    end
-                    items.rgb_mode_dropdown.Position = dim2(0, pos.X, 0, ddY)
-                    items.rgb_mode_dropdown.Size = dim2(0, items.rgb_mode_btn.AbsoluteSize.X, 0, ddH)
+                    
+                    items.rgb_mode_dropdown.Size = dim2(0, items.rgb_mode_btn.AbsoluteSize.X, 0, 0)
                     items.rgb_mode_dropdown.Visible = true
+
+                    task.spawn(function()
+                        task.wait()
+                        local ddH = items.rgb_mode_dd_inline.AbsoluteSize.Y + 2
+                        local ddY = pos.Y + 16
+                        if ddY + ddH > viewportH then
+                            ddY = pos.Y - ddH - 2
+                        end
+                        items.rgb_mode_dropdown.Position = dim2(0, pos.X, 0, ddY)
+                        library:tween(items.rgb_mode_dropdown, {Size = dim2(0, items.rgb_mode_btn.AbsoluteSize.X, 0, ddH)}, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0.15)
+                    end)
                 else
-                    items.rgb_mode_dropdown.Visible = false
+                    local closeTween = library:tween(items.rgb_mode_dropdown, {Size = dim2(0, items.rgb_mode_btn.AbsoluteSize.X, 0, 0)}, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0.15)
+                    library:connection(closeTween.Completed, function()
+                        items.rgb_mode_dropdown.Visible = false
+                    end)
                 end
             end)
 
             items.rgb_mode_btn.MouseEnter:Connect(function()
-                library:tween(items.rgb_mode_btn, {TextColor3 = rgb(255, 255, 255)})
+                library:tween(items.rgb_mode_btn, {TextColor3 = resolveThemeColor({"Text", "Main"})})
             end)
             items.rgb_mode_btn.MouseLeave:Connect(function()
-                library:tween(items.rgb_mode_btn, {TextColor3 = rgb(178, 178, 178)})
+                library:tween(items.rgb_mode_btn, {TextColor3 = resolveThemeColor({"Text", "Unselected"})})
             end)
 
             -- Speed slider
@@ -3239,6 +3247,9 @@
                     Padding = dim(0, 5);
                     SortOrder = Enum.SortOrder.LayoutOrder
                 });                
+
+                library:RegisterTheme(items[ "textbox_outline" ], "BackgroundColor3", {"Borders", "Outline"})
+                library:RegisterTheme(items[ "textbox" ], "TextColor3", {"Text", "Main"})
             end 
             
             function cfg.set(text) 
