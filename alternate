@@ -98,6 +98,13 @@
     
     library.ThemeRegistry = {}
     
+    local function themeKey(name)
+        if type(name) == "table" then
+            return table.concat(name, ".")
+        end
+        return tostring(name)
+    end
+    
     local function resolveThemeColor(name)
         if type(name) == "table" then
             local obj = library.CurrentTheme
@@ -111,7 +118,8 @@
     end
     
     local function applyThemeChange(name, color)
-        local entries = library.ThemeRegistry[name]
+        local key = themeKey(name)
+        local entries = library.ThemeRegistry[key]
         if not entries then return end
         for _, entry in ipairs(entries) do
             pcall(function()
@@ -123,10 +131,11 @@
     end
     
     function library:RegisterTheme(obj, prop, themeName)
-        if not library.ThemeRegistry[themeName] then
-            library.ThemeRegistry[themeName] = {}
+        local key = themeKey(themeName)
+        if not library.ThemeRegistry[key] then
+            library.ThemeRegistry[key] = {}
         end
-        table.insert(library.ThemeRegistry[themeName], {obj = obj, prop = prop})
+        table.insert(library.ThemeRegistry[key], {obj = obj, prop = prop})
         pcall(function()
             obj[prop] = resolveThemeColor(themeName)
         end)
@@ -262,44 +271,6 @@
         end)
     end
     
-    library.SearchRegistry = {}
-    
-    function library:RegisterSearchable(obj, name)
-        table.insert(library.SearchRegistry, {obj = obj, name = name:lower()})
-    end
-    
-    function library:ApplySearch()
-        local query = library.search_query or ""
-        for _, entry in ipairs(library.SearchRegistry) do
-            pcall(function()
-                if query == "" then
-                    entry.obj.Visible = true
-                else
-                    -- Check if this element is on a currently visible page
-                    -- (i.e. one of its ancestors is Visible=true and parented to page_holder)
-                    local onPage = false
-                    local ancestor = entry.obj.Parent
-                    while ancestor do
-                        if ancestor.Name == "\0" and ancestor.Visible then
-                            -- Check if this ancestor has a horizontal UIListLayout (page indicator)
-                            local layout = ancestor:FindFirstChildOfClass("UIListLayout")
-                            if layout and layout.FillDirection == Enum.FillDirection.Horizontal then
-                                onPage = true
-                                break
-                            end
-                        end
-                        ancestor = ancestor.Parent
-                    end
-                    if onPage then
-                        entry.obj.Visible = entry.name:find(query, 1, true) ~= nil
-                    else
-                        entry.obj.Visible = true
-                    end
-                end
-            end)
-        end
-    end
-
     local keys = {
         [Enum.KeyCode.LeftShift] = "LS",
         [Enum.KeyCode.RightShift] = "RS",
@@ -728,7 +699,11 @@
                 connection = nil 
             end
             
-            library = nil 
+            library.connections = {}
+        end 
+
+        function library:Unload()
+            library:unload_menu()
         end 
     --
     
@@ -772,7 +747,8 @@
                     Size = cfg.size;
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(0, 0, 0)
-                }); items[ "window" ].Position = dim2(0, items[ "window" ].AbsolutePosition.X, 0, items[ "window" ].AbsolutePosition.Y)          
+                }); items[ "window" ].Position = dim2(0, items[ "window" ].AbsolutePosition.X, 0, items[ "window" ].AbsolutePosition.Y)
+                library:RegisterTheme(items[ "window" ], "BackgroundColor3", "Background")          
 
                 -- Glow Effect
                 items[ "glow" ] = library:create("ImageLabel", {
@@ -803,6 +779,7 @@
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(0, 0, 0)
                 });
+                library:RegisterTheme(items[ "inline" ], "BackgroundColor3", "Background")
 
                 items[ "logo" ] = library:create( "ImageLabel" , {
                     BorderColor3 = rgb(0, 0, 0);
@@ -817,17 +794,14 @@
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
                 
-                items[ "tab_button_holder" ] = library:create( "ScrollingFrame" , {
+                items[ "tab_button_holder" ] = library:create( "Frame" , {
                     Parent = items[ "inline" ];
                     Name = "\0";
                     Position = dim2(0, 1, 0, 10);
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -52);
+                    Size = dim2(1, -2, 1, -20);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(14, 14, 14);
-                    ScrollBarThickness = 0;
-                    CanvasSize = dim2(0, 0, 0, 0);
-                    AutomaticCanvasSize = Enum.AutomaticSize.Y;
                     ClipsDescendants = true;
                 });
                 library:RegisterTheme(items[ "tab_button_holder" ], "BackgroundColor3", "Inline")
@@ -843,72 +817,6 @@
                     SortOrder = Enum.SortOrder.LayoutOrder
                 });
 
-                -- Search bar
-                items[ "search_holder" ] = library:create("Frame", {
-                    Parent = items[ "inline" ];
-                    Name = "\0";
-                    Position = dim2(0, 1, 1, -40);
-                    Size = dim2(1, -2, 0, 34);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(10, 10, 10);
-                    ZIndex = 10;
-                    Active = false;
-                })
-                library:RegisterTheme(items[ "search_holder" ], "BackgroundColor3", "Background")
-                
-                items[ "search_inline" ] = library:create("Frame", {
-                    Parent = items[ "search_holder" ];
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(20, 20, 20);
-                    ZIndex = 11;
-                    Active = false;
-                })
-                library:RegisterTheme(items[ "search_inline" ], "BackgroundColor3", "Inline")
-                
-                items[ "search_icon" ] = library:create("ImageLabel", {
-                    Parent = items[ "search_inline" ];
-                    Name = "\0";
-                    Image = "rbxassetid://6034287515";
-                    ImageColor3 = rgb(120, 120, 120);
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, 6, 0.5, -8);
-                    Size = dim2(0, 16, 0, 16);
-                    BorderSizePixel = 0;
-                    ZIndex = 12;
-                })
-                
-                items[ "search_box" ] = library:create("TextBox", {
-                    Parent = items[ "search_inline" ];
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, 26, 0, 0);
-                    Size = dim2(1, -30, 1, 0);
-                    Text = "";
-                    PlaceholderText = "Search...";
-                    TextColor3 = rgb(200, 200, 200);
-                    PlaceholderColor3 = rgb(100, 100, 100);
-                    FontFace = library.font;
-                    TextSize = 11;
-                    TextXAlignment = Enum.TextXAlignment.Left;
-                    TextYAlignment = Enum.TextYAlignment.Center;
-                    BorderSizePixel = 0;
-                    ClearTextOnFocus = false;
-                    ZIndex = 12;
-                })
-                
-                library.search_query = ""
-                items[ "search_box" ].FocusLost:Connect(function()
-                    library.search_query = items[ "search_box" ].Text:lower()
-                    library:ApplySearch()
-                end)
-                items[ "search_box" ]:GetPropertyChangedSignal("Text"):Connect(function()
-                    library.search_query = items[ "search_box" ].Text:lower()
-                    library:ApplySearch()
-                end)
-                
                 items[ "page_holder" ] = library:create( "Frame" , {
                     Parent = items[ "window" ];
                     Name = "\0";
@@ -1105,7 +1013,7 @@
                    selected_tab[ 2 ].Visible = false
                 end
                 
-                items.image.ImageColor3 = rgb(255, 255, 255)
+                items.image.ImageColor3 = library.Theme.Accent
                 items.tab.Parent = self.items[ "page_holder" ]
                 items.tab.Visible = true
 
@@ -1115,7 +1023,6 @@
                 }
 
                 library:close_current_element(nil) 
-                library:ApplySearch()
             end
 
             items[ "tab_button" ].MouseButton1Down:Connect(function()
@@ -1123,40 +1030,20 @@
             end)
 
             local tooltip
-            local tab_highlight
             items[ "tab_button" ].MouseEnter:Connect(function()
-                -- Tab highlight: simple rounded background behind the icon
-                tab_highlight = library:create("Frame", {
-                    Parent = items[ "tab_button" ];
-                    Name = "\0";
-                    BackgroundColor3 = library.Theme.Accent;
-                    BackgroundTransparency = 0.85;
-                    Size = dim2(0, 40, 0, 40);
-                    AnchorPoint = vec2(0.5, 0);
-                    Position = dim2(0.5, 0, 0, -4);
-                    BorderSizePixel = 0;
-                    ZIndex = -1;
-                })
-                library:create("UICorner", {
-                    Parent = tab_highlight;
-                    CornerRadius = dim(0, 8);
-                })
-                library:RegisterTheme(tab_highlight, "BackgroundColor3", "Accent")
-                library:tween(tab_highlight, {BackgroundTransparency = 0.7})
-                
                 -- Tooltip
                 tooltip = library:create("TextLabel", {
                     Parent = library.items;
                     Name = "\0";
                     BackgroundColor3 = rgb(15, 15, 15);
                     BorderSizePixel = 0;
-                    Size = dim2(0, 0, 0, 22);
+                    Size = dim2(0, 0, 0, 20);
                     Position = dim2(0, 0, 0, 0);
                     AutomaticSize = Enum.AutomaticSize.X;
                     Text = cfg.name;
                     TextColor3 = rgb(255, 255, 255);
                     FontFace = library.font;
-                    TextSize = 11;
+                    TextSize = 10;
                     TextXAlignment = Enum.TextXAlignment.Center;
                     TextYAlignment = Enum.TextYAlignment.Center;
                     BackgroundTransparency = 1;
@@ -1166,26 +1053,17 @@
                 })
                 library:create("UIPadding", {
                     Parent = tooltip;
-                    PaddingLeft = dim(0, 8);
-                    PaddingRight = dim(0, 8);
+                    PaddingLeft = dim(0, 6);
+                    PaddingRight = dim(0, 6);
                 })
                 library:create("UIStroke", {
                     Parent = tooltip;
-                    Color = rgb(45, 45, 45);
+                    Color = rgb(35, 35, 35);
                     Thickness = 1;
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual;
                 })
-                local accent_bar = library:create("Frame", {
-                    Parent = tooltip;
-                    Name = "\0";
-                    Size = dim2(0, 2, 1, 0);
-                    BackgroundColor3 = library.Theme.Accent;
-                    BorderSizePixel = 0;
-                    ZIndex = 101;
-                })
-                library:RegisterTheme(accent_bar, "BackgroundColor3", "Accent")
                 local mouseLoc = uis:GetMouseLocation()
-                tooltip.Position = dim2(0, mouseLoc.X + 14, 0, mouseLoc.Y - 28)
+                tooltip.Position = dim2(0, mouseLoc.X + 12, 0, mouseLoc.Y - 24)
                 library:tween(tooltip, {BackgroundTransparency = 0})
                 library:tween(tooltip, {TextTransparency = 0})
             end)
@@ -1195,13 +1073,7 @@
                     tooltip = nil
                     library:tween(t, {BackgroundTransparency = 1})
                     library:tween(t, {TextTransparency = 1})
-                    task.delay(0.2, function() pcall(function() t:Destroy() end) end)
-                end
-                if tab_highlight then
-                    local h = tab_highlight
-                    tab_highlight = nil
-                    library:tween(h, {BackgroundTransparency = 1})
-                    task.delay(0.2, function() pcall(function() h:Destroy() end) end)
+                    task.delay(0.15, function() pcall(function() t:Destroy() end) end)
                 end
             end)
 
@@ -1233,6 +1105,7 @@
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(8, 8, 8)
                 });
+                library:RegisterTheme(items[ "section_outline" ], "BackgroundColor3", "Background")
                 
                 items[ "section_shadow" ] = library:create( "Frame" , {
                     Parent = items[ "section_outline" ];
@@ -1348,7 +1221,7 @@
                 end 
                 
                 library:tween(items.line, {Size = dim2(1, 0, 0, 1)})
-                library:tween(items.text, {TextColor3 = rgb(255, 255, 255)})
+                library:tween(items.text, {TextColor3 = library.Theme.Accent})
             end)
 
             items[ "section_outline" ].MouseLeave:Connect(function()
@@ -1357,7 +1230,7 @@
                 end
 
                 library:tween(items.line, {Size = dim2(0, 0, 0, 1)})
-                library:tween(items.text, {TextColor3 = rgb(178, 178, 178)})
+                library:tween(items.text, {TextColor3 = resolveThemeColor({"Text", "Unselected"})})
             end)
 
             return setmetatable(cfg, library)
@@ -1654,7 +1527,6 @@
                     -- AutomaticSize = Enum.AutomaticSize.Y;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
-                library:RegisterSearchable(items[ "object" ], cfg.name)
                 
                 items[ "toggle_outline" ] = library:create( "Frame" , {
                     Parent = items[ "object" ];
@@ -1707,6 +1579,7 @@
                     TextSize = 10;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
+                library:RegisterTheme(items[ "text" ], "TextColor3", {"Text", "Unselected"})
                 
                 library:create( "UIStroke" , {
                     Parent = items[ "text" ]
@@ -1719,10 +1592,10 @@
             end;
             
             function cfg.set(bool)
-                library:tween(items[ "text" ], {TextColor3 = bool and rgb(255, 255, 255) or rgb(178, 178, 178)})
+                library:tween(items[ "text" ], {TextColor3 = bool and library.Theme.Accent or resolveThemeColor({"Text", "Unselected"})})
                 library:tween(items[ "toggle_outline" ], {BackgroundTransparency = bool and 0 or 1})
                 library:tween(items[ "toggle_shading" ], {BackgroundTransparency = bool and 0 or 1})
-                library:tween(items[ "toggle_inline" ], {BackgroundColor3 = bool and rgb(255, 255, 255) or rgb(74, 74, 74)})
+                library:tween(items[ "toggle_inline" ], {BackgroundColor3 = bool and library.Theme.Accent or rgb(74, 74, 74)})
 
                 if type(cfg.sub_objects) == "table" then
                     for _, sub in ipairs(cfg.sub_objects) do
@@ -1790,19 +1663,18 @@
                     Parent = self.items.object or self.items.elements;
                     Name = "\0";
                     BackgroundTransparency = 1;
-                    Size = dim2(0, 0, 0, 12);
+                    Size = dim2(1, 0, 0, 12);
                     BorderColor3 = rgb(0, 0, 0);
                     BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.XY;
+                    AutomaticSize = Enum.AutomaticSize.Y;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
-                library:RegisterSearchable(items[ "object" ], cfg.name or "")
                 
                 library:create( "UIListLayout" , {
                     Parent = items[ "object" ];
-                    Padding = dim(0, 5);
+                    Padding = dim(0, 2);
                     SortOrder = Enum.SortOrder.LayoutOrder;
-                    FillDirection = Enum.FillDirection.Horizontal
+                    FillDirection = Enum.FillDirection.Vertical
                 });
                 
                 items[ "slider_parent" ] = library:create( "TextButton" , {
@@ -1811,7 +1683,7 @@
                     Text = "";
                     Name = "\0";
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 150, 1, 0);
+                    Size = dim2(1, 0, 0, 12);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
@@ -1883,6 +1755,7 @@
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
+                library:RegisterTheme(items[ "inline" ], "BackgroundColor3", "Accent")
                 
                 if cfg.name then
                     items[ "name" ] = setmetatable(cfg, library):Label({name = cfg.name, padding_top = 1})
@@ -1973,7 +1846,7 @@
                 items = {};
             }   
 
-            cfg.default = options.default or (cfg.multi and {cfg.items[1]}) or cfg.items[1] or "None"
+            cfg.default = options.default or (cfg.multi and {cfg.options[1]}) or cfg.options[1] or "None"
             flags[cfg.flag] = cfg.default
             
             local items = cfg.items; do 
@@ -1982,14 +1855,12 @@
                         Parent = self.items.object or self.items.elements;
                         Name = "\0";
                         BackgroundTransparency = 1;
-                        Size = dim2(0, 0, 0, 12);
+                        Size = dim2(1, 0, 0, 16);
                         BorderColor3 = rgb(0, 0, 0);
                         BorderSizePixel = 0;
-                        AutomaticSize = Enum.AutomaticSize.XY;
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
-                    library:RegisterSearchable(items[ "object" ], cfg.name or "")
-
+    
                     if self.items.object then 
                         library:create( "UIPadding" , {
                             Parent = items[ "object" ];
@@ -2002,20 +1873,18 @@
                         Text = "";
                         AutoButtonColor = false;
                         Name = "\0";
-                        Size = dim2(0, 0, 0, 16);
+                        Size = dim2(1, 0, 0, 16);
                         BorderSizePixel = 0;
-                        AutomaticSize = Enum.AutomaticSize.X;
                         BackgroundColor3 = rgb(0, 0, 0)
                     });
                     
                     items[ "dropdown_shading" ] = library:create( "Frame" , {
                         Parent = items[ "dropdown_outline" ];
-                        Size = dim2(0, -2, 1, -2);
+                        Size = dim2(1, -2, 1, -2);
                         Name = "\0";
                         Position = dim2(0, 1, 0, 1);
                         BorderColor3 = rgb(0, 0, 0);
                         BorderSizePixel = 0;
-                        AutomaticSize = Enum.AutomaticSize.X;
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
                     
@@ -2029,14 +1898,14 @@
                         FontFace = library.font;
                         TextColor3 = rgb(178, 178, 178);
                         BorderColor3 = rgb(0, 0, 0);
-                        Text = "Combat";
+                        Text = "";
                         Parent = items[ "dropdown_shading" ];
                         AnchorPoint = vec2(0, 0.5);
-                        Size = dim2(1, 0, 1, 0);
+                        Size = dim2(1, 0, 0, 0);
                         BackgroundTransparency = 1;
                         Position = dim2(0, 0, 0.5, 0);
                         BorderSizePixel = 0;
-                        AutomaticSize = Enum.AutomaticSize.XY;
+                        TextXAlignment = Enum.TextXAlignment.Left;
                         TextSize = 10;
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
@@ -2051,8 +1920,8 @@
                     
                     library:create( "UIPadding" , {
                         Parent = items[ "dropdown_shading" ];
-                        PaddingRight = dim(0, 40);
-                        PaddingLeft = dim(0, 40)
+                        PaddingRight = dim(0, 20);
+                        PaddingLeft = dim(0, 8)
                     });
                     
                     library:create( "UIPadding" , {
@@ -2078,7 +1947,7 @@
                         Parent = items[ "object" ];
                         Padding = dim(0, 5);
                         SortOrder = Enum.SortOrder.LayoutOrder;
-                        FillDirection = Enum.FillDirection.Horizontal
+                        FillDirection = Enum.FillDirection.Vertical
                     });
                 -- 
 
@@ -2088,6 +1957,8 @@
                         Size = dim2(0, 114, 0, 0);
                         Visible = false;
                         Name = "\0";
+                        ZIndex = 999;
+                        ClipsDescendants = true;
                         Position = dim2(0.05823293328285217, 0, 0.19430045783519745, 0);
                         BorderColor3 = rgb(0, 0, 0);
                         BorderSizePixel = 0;
@@ -2150,16 +2021,76 @@
                     Parent = button
                 });
 
+                button.MouseEnter:Connect(function()
+                    library:tween(button, {TextColor3 = rgb(255, 255, 255)})
+                end)
+                button.MouseLeave:Connect(function()
+                    local isSelected = false
+                    if cfg.multi then
+                        isSelected = find(cfg.multi_items, button.Text) ~= nil
+                    else
+                        isSelected = flags[cfg.flag] == button.Text
+                    end
+                    if not isSelected then
+                        library:tween(button, {TextColor3 = rgb(174, 174, 174)})
+                    end
+                end)
+
                 return button
             end
             
+            cfg._vis_gen = 0
             function cfg.set_visible(bool)
-                local a = bool and cfg.y_size or 0
-                items[ "dropdown_holder" ].Visible = bool 
-                items[ "arrow" ].Rotation = bool and 180 or 0
+                cfg._vis_gen = (cfg._vis_gen or 0) + 1
+                local gen = cfg._vis_gen
+                items[ "dropdown_holder" ].ClipsDescendants = true
 
-                items[ "dropdown_holder" ].Size = dim2(0, items.dropdown_outline.AbsoluteSize.X, 0, 0)
-                items[ "dropdown_holder" ].Position = dim2(0, items.dropdown_outline.AbsolutePosition.X, 0, items.dropdown_outline.AbsolutePosition.Y + 75)
+                if bool then
+                    local absPos = items.dropdown_outline.AbsolutePosition
+                    local absSize = items.dropdown_outline.AbsoluteSize
+
+                    -- Position BELOW the dropdown button (opens DOWN)
+                    items[ "dropdown_holder" ].Position = dim2(0, absPos.X, 0, absPos.Y + absSize.Y + 2)
+                    items[ "dropdown_holder" ].Size = dim2(0, absSize.X, 0, 0)
+                    items[ "dropdown_holder" ].Visible = true
+
+                    -- Animate arrow rotation
+                    library:tween(items[ "arrow" ], {Rotation = 180}, Enum.EasingStyle.Back, 0.2)
+
+                    -- Wait one frame for AutomaticSize to compute target height, then slide down
+                    task.spawn(function()
+                        task.wait()
+                        if gen ~= cfg._vis_gen then return end
+                        local targetH = items[ "dropdown_holder" ].AbsoluteSize.Y
+                        if targetH > 0 then
+                            items[ "dropdown_holder" ].AutomaticSize = Enum.AutomaticSize.None
+                            items[ "dropdown_holder" ].Size = dim2(0, absSize.X, 0, 0)
+                            library:tween(items[ "dropdown_holder" ], {Size = dim2(0, absSize.X, 0, targetH)}, Enum.EasingStyle.Quint, 0.25)
+                            task.delay(0.3, function()
+                                if gen == cfg._vis_gen and items[ "dropdown_holder" ].Visible then
+                                    items[ "dropdown_holder" ].AutomaticSize = Enum.AutomaticSize.Y
+                                    items[ "dropdown_holder" ].ClipsDescendants = false
+                                end
+                            end)
+                        end
+                    end)
+                else
+                    -- Animate arrow back
+                    library:tween(items[ "arrow" ], {Rotation = 0}, Enum.EasingStyle.Back, 0.2)
+
+                    -- Slide up close animation
+                    local currentH = items[ "dropdown_holder" ].AbsoluteSize.Y
+                    items[ "dropdown_holder" ].AutomaticSize = Enum.AutomaticSize.None
+                    items[ "dropdown_holder" ].Size = dim2(0, items.dropdown_outline.AbsoluteSize.X, 0, currentH)
+
+                    local closeTween = library:tween(items[ "dropdown_holder" ], {Size = dim2(0, items.dropdown_outline.AbsoluteSize.X, 0, 0)}, Enum.EasingStyle.Quint, 0.2)
+                    library:connection(closeTween.Completed, function()
+                        if gen ~= cfg._vis_gen then return end
+                        items[ "dropdown_holder" ].Visible = false
+                        items[ "dropdown_holder" ].AutomaticSize = Enum.AutomaticSize.Y
+                        items[ "dropdown_holder" ].ClipsDescendants = false
+                    end)
+                end
                 
                 library.current = cfg
             end
@@ -2178,7 +2109,8 @@
                     end
                 end
 
-                items.inner_text.Text = if isTable then concat(selected, ", ") else selected[1] or ""
+                local displayValue = if isTable then concat(selected, ", ") else selected[1] or ""
+                items.inner_text.Text = displayValue
                 flags[cfg.flag] = if isTable then selected else selected[1]
                 
                 cfg.callback(flags[cfg.flag]) 
@@ -2221,7 +2153,23 @@
                 cfg.refresh_options(cfg.options)
             end
 
+            function cfg.Set(value)
+                cfg.set(value)
+            end
+
+            items.dropdown_outline.MouseEnter:Connect(function()
+                library:tween(items.inner_text, {TextColor3 = rgb(255, 255, 255)})
+                library:tween(items[ "arrow" ], {ImageColor3 = rgb(255, 255, 255)})
+            end)
+            items.dropdown_outline.MouseLeave:Connect(function()
+                library:tween(items.inner_text, {TextColor3 = rgb(178, 178, 178)})
+                library:tween(items[ "arrow" ], {ImageColor3 = rgb(178, 178, 178)})
+            end)
+
             items.dropdown_outline.MouseButton1Click:Connect(function()
+                if not cfg.open then
+                    library:close_current_element(cfg)
+                end
                 cfg.open = not cfg.open
                 cfg.set_visible(cfg.open)
             end)
@@ -2235,17 +2183,12 @@
                 end
             end)
             
-            flags[cfg.flag] = {} 
             config_flags[cfg.flag] = cfg.set
             
             cfg.refresh_options(cfg.options)
             cfg.set(cfg.default)
 
             local set = setmetatable(cfg, library)
-
-            if cfg.name then 
-                set:Label({name = cfg.name, padding_bottom = 2})
-            end 
 
             if type(self) == "table" and self.sub_objects then
                 table.insert(self.sub_objects, cfg)
@@ -2280,7 +2223,6 @@
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
-                library:RegisterSearchable(items[ "object" ], cfg.name)
 
                 items.text = library:create( "TextLabel" , {
                     FontFace = library.font;
@@ -2343,6 +2285,7 @@
             local dragging_sat = false 
             local dragging_hue = false 
             local dragging_alpha = false 
+            local mode_dd_open = false
 
             local h, s, v = cfg.color:ToHSV() 
             local a = cfg.alpha 
@@ -2362,7 +2305,6 @@
                         BorderSizePixel = 0;
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
-                    library:RegisterSearchable(items[ "gear_holder" ], cfg.name)
                     
                     items[ "color_square" ] = library:create( "Frame" , {
                         BorderColor3 = rgb(0, 0, 0);
@@ -2383,7 +2325,7 @@
                     items[ "colorpicker_outline" ] = library:create( "Frame" , {
                         Parent = library.items;
                         Visible = false;
-                        Size = dim2(0, 161, 0, 180);
+                        Size = dim2(0, 161, 0, 245);
                         Name = "\0";
                         BorderColor3 = rgb(0, 0, 0);
                         ZIndex = 100;
@@ -2440,13 +2382,178 @@
                         PaddingLeft = dim(0, 3)
                     });
                     
+                    -- RGB Modes section
+                    items[ "rgb_divider" ] = library:create( "Frame" , {
+                        Parent = items[ "colorpicker_background" ];
+                        Name = "\0";
+                        BackgroundTransparency = 1;
+                        Size = dim2(1, 0, 0, 1);
+                        Position = dim2(0, 0, 1, -68);
+                        BorderSizePixel = 0;
+                        BackgroundColor3 = rgb(255, 255, 255)
+                    });
+                    
+                    items[ "rgb_divider_line" ] = library:create( "Frame" , {
+                        Parent = items[ "rgb_divider" ];
+                        Name = "\0";
+                        Size = dim2(1, 0, 0, 1);
+                        Position = dim2(0, 0, 0.5, 0);
+                        BorderSizePixel = 0;
+                        BackgroundColor3 = rgb(40, 40, 40)
+                    });
+                    
+                    items[ "rgb_mode_label" ] = library:create( "TextLabel" , {
+                        FontFace = library.font;
+                        TextColor3 = rgb(178, 178, 178);
+                        BorderColor3 = rgb(0, 0, 0);
+                        Text = "Mode";
+                        Parent = items[ "colorpicker_background" ];
+                        Name = "\0";
+                        BackgroundTransparency = 1;
+                        Position = dim2(0, 3, 1, -60);
+                        Size = dim2(0, 30, 0, 14);
+                        BorderSizePixel = 0;
+                        TextSize = 9;
+                        TextXAlignment = Enum.TextXAlignment.Left;
+                        BackgroundColor3 = rgb(255, 255, 255)
+                    });
+                    
+                    items[ "rgb_mode_btn" ] = library:create( "TextButton" , {
+                        Parent = items[ "colorpicker_background" ];
+                        Name = "\0";
+                        AutoButtonColor = false;
+                        Text = "Static";
+                        TextColor3 = rgb(178, 178, 178);
+                        FontFace = library.font;
+                        TextSize = 9;
+                        BackgroundColor3 = rgb(20, 20, 20);
+                        Position = dim2(0, 35, 1, -62);
+                        Size = dim2(1, -38, 0, 16);
+                        BorderSizePixel = 0;
+                        ZIndex = 101
+                    });
+                    
+                    items[ "rgb_mode_outline" ] = library:create( "Frame" , {
+                        Parent = items[ "rgb_mode_btn" ];
+                        Name = "\0";
+                        Size = dim2(1, 0, 1, 0);
+                        BorderSizePixel = 0;
+                        BackgroundTransparency = 1;
+                        ZIndex = 102
+                    });
+                    
+                    library:create( "UIStroke" , {
+                        Parent = items[ "rgb_mode_btn" ];
+                        Color = rgb(40, 40, 40);
+                        Thickness = 1;
+                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                    });
+                    
+                    items[ "rgb_mode_dropdown" ] = library:create( "Frame" , {
+                        Parent = library.items;
+                        Visible = false;
+                        Name = "\0";
+                        ZIndex = 200;
+                        Size = dim2(0, 100, 0, 0);
+                        Position = dim2(0, 0, 0, 0);
+                        BorderSizePixel = 0;
+                        BackgroundColor3 = rgb(0, 0, 0)
+                    });
+                    
+                    items[ "rgb_mode_dd_inline" ] = library:create( "Frame" , {
+                        Parent = items[ "rgb_mode_dropdown" ];
+                        Name = "\0";
+                        Size = dim2(1, -2, 1, -2);
+                        Position = dim2(0, 1, 0, 1);
+                        BorderSizePixel = 0;
+                        BackgroundColor3 = rgb(20, 20, 20)
+                    });
+                    
+                    items[ "rgb_mode_dd_list" ] = library:create( "Frame" , {
+                        Parent = items[ "rgb_mode_dd_inline" ];
+                        Name = "\0";
+                        BackgroundTransparency = 1;
+                        Size = dim2(1, 0, 0, 0);
+                        AutomaticSize = Enum.AutomaticSize.Y;
+                        BorderSizePixel = 0;
+                        BackgroundColor3 = rgb(255, 255, 255)
+                    });
+                    
+                    library:create( "UIListLayout" , {
+                        Parent = items[ "rgb_mode_dd_list" ];
+                        Padding = dim(0, 0);
+                        SortOrder = Enum.SortOrder.LayoutOrder
+                    });
+                    
+                    items[ "rgb_speed_label" ] = library:create( "TextLabel" , {
+                        FontFace = library.font;
+                        TextColor3 = rgb(178, 178, 178);
+                        BorderColor3 = rgb(0, 0, 0);
+                        Text = "Speed";
+                        Parent = items[ "colorpicker_background" ];
+                        Name = "\0";
+                        BackgroundTransparency = 1;
+                        Position = dim2(0, 3, 1, -40);
+                        Size = dim2(0, 30, 0, 14);
+                        BorderSizePixel = 0;
+                        TextSize = 9;
+                        TextXAlignment = Enum.TextXAlignment.Left;
+                        BackgroundColor3 = rgb(255, 255, 255)
+                    });
+                    
+                    items[ "rgb_speed_bar" ] = library:create( "TextButton" , {
+                        Parent = items[ "colorpicker_background" ];
+                        Name = "\0";
+                        AutoButtonColor = false;
+                        Text = "";
+                        BackgroundColor3 = rgb(20, 20, 20);
+                        Position = dim2(0, 35, 1, -42);
+                        Size = dim2(1, -38, 0, 16);
+                        BorderSizePixel = 0;
+                        ZIndex = 101
+                    });
+                    
+                    library:create( "UIStroke" , {
+                        Parent = items[ "rgb_speed_bar" ];
+                        Color = rgb(40, 40, 40);
+                        Thickness = 1;
+                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                    });
+                    
+                    items[ "rgb_speed_fill" ] = library:create( "Frame" , {
+                        Parent = items[ "rgb_speed_bar" ];
+                        Name = "\0";
+                        Size = dim2(0.25, 0, 1, 0);
+                        BorderSizePixel = 0;
+                        BackgroundColor3 = library.Theme.Accent;
+                        ZIndex = 102
+                    });
+                    library:RegisterTheme(items[ "rgb_speed_fill" ], "BackgroundColor3", "Accent")
+                    
+                    items[ "rgb_speed_text" ] = library:create( "TextLabel" , {
+                        FontFace = library.font;
+                        TextColor3 = rgb(255, 255, 255);
+                        BorderColor3 = rgb(0, 0, 0);
+                        Text = "5x";
+                        Parent = items[ "rgb_speed_bar" ];
+                        Name = "\0";
+                        BackgroundTransparency = 1;
+                        Size = dim2(1, 0, 1, 0);
+                        BorderSizePixel = 0;
+                        TextSize = 9;
+                        TextXAlignment = Enum.TextXAlignment.Center;
+                        TextYAlignment = Enum.TextYAlignment.Center;
+                        ZIndex = 103;
+                        BackgroundColor3 = rgb(255, 255, 255)
+                    });
+                    
                     items[ "saturation_outline" ] = library:create( "TextButton" , {
                         Name = "\0";
                         AutoButtonColor = false;
                         Text = "";
                         Parent = items[ "colorpicker_background" ];
                         BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -12, 1, -12);
+                        Size = dim2(1, -12, 1, -80);
                         BorderSizePixel = 0;
                         BackgroundColor3 = rgb(0, 0, 0)
                     });
@@ -2694,6 +2801,10 @@
             function cfg.set_visible(bool) 
                 items.colorpicker_outline.Visible = bool
                 items.colorpicker_outline.Position = dim2(0, items.gear_holder.AbsolutePosition.X - 5, 0, items.gear_holder.AbsolutePosition.Y + items.gear_holder.AbsoluteSize.Y + 60 - 19)
+                if not bool then
+                    items.rgb_mode_dropdown.Visible = false
+                    mode_dd_open = false
+                end
 
                 library.current = cfg
             end
@@ -2780,9 +2891,124 @@
             end)
             
             items.saturation_outline.MouseButton1Down:Connect(function()
-                print("hiu")
                 dragging_sat = true  
             end)
+
+            -- RGB Mode state
+            cfg.rgb_mode = "Static"
+            cfg.rgb_speed = 5
+            local dragging_speed = false
+            local rgb_modes = {"Static", "Rainbow", "Gradient", "Pulse", "Hue Shift", "Breathe"}
+
+            local function set_rgb_speed(val)
+                cfg.rgb_speed = math.clamp(math.floor(val), 1, 20)
+                items.rgb_speed_fill.Size = dim2(cfg.rgb_speed / 20, 0, 1, 0)
+                items.rgb_speed_text.Text = cfg.rgb_speed .. "x"
+            end
+
+            local function set_rgb_mode(mode)
+                cfg.rgb_mode = mode
+                items.rgb_mode_btn.Text = mode
+                flags[cfg.flag] = flags[cfg.flag] or {}
+                flags[cfg.flag].RGBMode = mode
+                flags[cfg.flag].RGBSpeed = cfg.rgb_speed
+            end
+
+            -- Populate mode dropdown
+            for _, mode in ipairs(rgb_modes) do
+                local btn = library:create("TextButton", {
+                    Parent = items.rgb_mode_dd_list;
+                    Name = "\0";
+                    AutoButtonColor = false;
+                    Text = mode;
+                    TextColor3 = rgb(178, 178, 178);
+                    FontFace = library.font;
+                    TextSize = 9;
+                    Size = dim2(1, 0, 0, 16);
+                    BackgroundColor3 = rgb(20, 20, 20);
+                    BorderSizePixel = 0;
+                    ZIndex = 201
+                })
+                library:create("UIStroke", {
+                    Parent = btn;
+                    Color = rgb(30, 30, 30);
+                    Thickness = 1;
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                })
+                btn.MouseButton1Click:Connect(function()
+                    set_rgb_mode(mode)
+                    mode_dd_open = false
+                    items.rgb_mode_dropdown.Visible = false
+                end)
+            end
+
+            items.rgb_mode_btn.MouseButton1Click:Connect(function()
+                mode_dd_open = not mode_dd_open
+                if mode_dd_open then
+                    local pos = items.rgb_mode_btn.AbsolutePosition
+                    items.rgb_mode_dropdown.Position = dim2(0, pos.X, 0, pos.Y + 16)
+                    items.rgb_mode_dropdown.Size = dim2(0, items.rgb_mode_btn.AbsoluteSize.X, 0, #rgb_modes * 16)
+                    items.rgb_mode_dropdown.Visible = true
+                else
+                    items.rgb_mode_dropdown.Visible = false
+                end
+            end)
+
+            -- Speed slider
+            items.rgb_speed_bar.MouseButton1Down:Connect(function()
+                dragging_speed = true
+            end)
+
+            uis.InputChanged:Connect(function(input)
+                if dragging_speed and input.UserInputType == Enum.UserInputType.MouseMovement then
+                    local mouse = uis:GetMouseLocation()
+                    local barPos = items.rgb_speed_bar.AbsolutePosition
+                    local barSize = items.rgb_speed_bar.AbsoluteSize
+                    local ratio = math.clamp((mouse.X - barPos.X) / barSize.X, 0, 1)
+                    set_rgb_speed(ratio * 20)
+                    flags[cfg.flag] = flags[cfg.flag] or {}
+                    flags[cfg.flag].RGBSpeed = cfg.rgb_speed
+                end
+            end)
+
+            library:connection(uis.InputEnded, function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging_speed = false
+                    if mode_dd_open and not library:mouse_in_frame(items.rgb_mode_dropdown) then
+                        mode_dd_open = false
+                        items.rgb_mode_dropdown.Visible = false
+                    end
+                end
+            end)
+
+            -- Heartbeat to apply RGB modes
+            library:connection(run.Heartbeat, function()
+                if cfg.rgb_mode == "Static" or not items.colorpicker_outline.Visible then return end
+                local speed = cfg.rgb_speed
+                local t = tick()
+                if cfg.rgb_mode == "Rainbow" then
+                    local hue = (t * speed / 10) % 1
+                    h = hue
+                    cfg.set(Color3.fromHSV(h, s, v), nil)
+                elseif cfg.rgb_mode == "Gradient" then
+                    local hue = (t * speed / 10) % 1
+                    h = hue
+                    cfg.set(Color3.fromHSV(h, 1, v), nil)
+                elseif cfg.rgb_mode == "Pulse" then
+                    local pulse = 0.5 + 0.5 * math.sin(t * speed / 3)
+                    local pulseColor = Color3.fromHSV(h, s, pulse)
+                    cfg.set(pulseColor, nil)
+                elseif cfg.rgb_mode == "Hue Shift" then
+                    local hue = (t * speed / 5) % 1
+                    h = hue
+                    cfg.set(Color3.fromHSV(h, s, v), nil)
+                elseif cfg.rgb_mode == "Breathe" then
+                    local breathe = 0.3 + 0.7 * (0.5 + 0.5 * math.sin(t * speed / 4))
+                    cfg.set(Color3.fromHSV(h, s, breathe), nil)
+                end
+            end)
+
+            set_rgb_speed(5)
 
             cfg.set(cfg.color, cfg.alpha)
             config_flags[cfg.flag] = cfg.set
@@ -2822,7 +3048,6 @@
                     AutomaticSize = Enum.AutomaticSize.Y;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
-                library:RegisterSearchable(items[ "object" ], cfg.name)
                 
                 items[ "textbox_outline" ] = library:create( "Frame" , {
                     Name = "\0";
@@ -2925,9 +3150,9 @@
                 flag = options.flag or options.Flag or options.name or options.Name or "please set me a flag 🥺",
                 callback = options.callback or options.Callback or function() end,
                 name = options.name or options.Name or nil, 
-                key = options.key or options.Key or nil, 
+                key = options.key or options.Key or (typeof(options.default or options.Default) == "EnumItem" and (options.default or options.Default)) or nil,
                 mode = options.mode or options.Mode or "Toggle",
-                active = options.default or options.Default or false, 
+                active = (type(options.default or options.Default) == "boolean") and (options.default or options.Default) or false,
 
                 -- ignore
                 open = false,
@@ -2960,7 +3185,6 @@
                         TextSize = 10;
                         BackgroundColor3 = rgb(38, 38, 38)
                     });
-                    library:RegisterSearchable(items.text_label, cfg.name or "")
 
                     library:create( "UIStroke" , {
                         Parent = items.text_label
@@ -3092,7 +3316,8 @@
             end 
 
             function cfg.set(input)
-                if type(input) == "boolean" then 
+                local isBool = type(input) == "boolean"
+                if isBool then 
                     cfg.active = input
 
                     if cfg.mode == "Always" then 
@@ -3123,7 +3348,9 @@
                     cfg.set_mode(cfg.mode) 
                 end 
 
-                cfg.callback(cfg.active)
+                if isBool then
+                    cfg.callback(cfg.active)
+                end
 
                 local text = tostring(cfg.key) ~= "Enums" and (keys[cfg.key] or tostring(cfg.key):gsub("Enum.", "")) or nil
                 local __text = text and (tostring(text):gsub("KeyCode.", ""):gsub("UserInputType.", ""))
@@ -3242,7 +3469,6 @@
                     AutomaticSize = Enum.AutomaticSize.Y;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
-                library:RegisterSearchable(items[ "button" ], cfg.name)
                 
                 items[ "button_outline" ] = library:create( "Frame" , {
                     Name = "\0";
@@ -3283,6 +3509,7 @@
                     TextSize = 10;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
+                library:RegisterTheme(items[ "button_text" ], "TextColor3", {"Text", "Unselected"})
                 
                 library:create( "UIStroke" , {
                     Parent = items[ "button_text" ]
@@ -3298,8 +3525,8 @@
             items[ "button" ].MouseButton1Click:Connect(function()
                 cfg.callback()
 
-                items[ "button_text" ].TextColor3 = rgb(255, 255, 255) 
-                library:tween(items[ "button_text" ], {TextColor3 = rgb(178, 178, 178)})
+                items[ "button_text" ].TextColor3 = library.Theme.Accent 
+                library:tween(items[ "button_text" ], {TextColor3 = resolveThemeColor({"Text", "Unselected"})})
             end)
             
             return setmetatable(cfg, library)
@@ -3427,8 +3654,7 @@
             section:Button({name = "Load", callback = function() library:load_config(readfile(library.directory .. "/configs/" .. flags["config_name_text"] .. ".cfg"))  library:update_config_list() end})
             section:Button({name = "Delete", callback = function() delfile(library.directory .. "/configs/" .. flags["config_name_text"] .. ".cfg")  library:update_config_list() end})
             
-            window.tweening = true 
-            section:Label({Name = "UI Bind"}):Keybind({callback = function(bool) window.toggle_menu(bool) print(window.tweening) end, default = false})
+            section:Label({Name = "UI Bind"}):Keybind({flag = "_ui_bind", callback = function(bool) window.toggle_menu(bool) end, default = true, key = library.MenuKeybind, mode = "Toggle"})
         end
     --
 
@@ -4083,7 +4309,7 @@ function library:KeybindList(options)
 
             local active_count = 0
             for flag, data in pairs(flags) do
-                if type(data) == "table" and data.key and data.active and not tostring(flag):find("^_settings") then
+                if type(data) == "table" and data.key and data.active and not tostring(flag):find("^_settings") and not tostring(flag):find("^_ui_bind") and not tostring(flag):find("^MenuKeybind") then
                     active_count = active_count + 1
                     local entry = library:create("TextLabel", {
                         Parent = list_holder,
@@ -4119,9 +4345,43 @@ function library:KeybindList(options)
 end
 
 function library:PlayerList(options)
+    local callbacks = options or {}
+    local whitelisted = {}
+
     local obj = {
-        SetVisibility = function(self, bool) end,
-        SetWhitelisted = function(player, bool) end
+        Callbacks = callbacks,
+        Whitelisted = whitelisted,
+        SetVisibility = function(self, bool)
+            if callbacks.OnVisibility then
+                pcall(callbacks.OnVisibility, bool)
+            end
+        end,
+        SetWhitelisted = function(player, bool)
+            whitelisted[player] = bool or nil
+        end,
+        IsWhitelisted = function(player)
+            return whitelisted[player] == true
+        end,
+        NotifyWhitelist = function(player)
+            if callbacks.OnWhitelist then
+                pcall(callbacks.OnWhitelist, player)
+            end
+        end,
+        NotifyTarget = function(player)
+            if callbacks.OnTarget then
+                pcall(callbacks.OnTarget, player)
+            end
+        end,
+        NotifyTeleport = function(player)
+            if callbacks.OnTeleport then
+                pcall(callbacks.OnTeleport, player)
+            end
+        end,
+        NotifySpectate = function(player)
+            if callbacks.OnSpectate then
+                pcall(callbacks.OnSpectate, player)
+            end
+        end,
     }
     library.PlayerListObj = obj
     return obj
