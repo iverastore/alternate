@@ -2215,6 +2215,7 @@
             local dragging_sat = false 
             local dragging_hue = false 
             local dragging_alpha = false 
+            local mode_dd_open = false
 
             local h, s, v = cfg.color:ToHSV() 
             local a = cfg.alpha 
@@ -2254,7 +2255,7 @@
                     items[ "colorpicker_outline" ] = library:create( "Frame" , {
                         Parent = library.items;
                         Visible = false;
-                        Size = dim2(0, 161, 0, 180);
+                        Size = dim2(0, 161, 0, 245);
                         Name = "\0";
                         BorderColor3 = rgb(0, 0, 0);
                         ZIndex = 100;
@@ -2311,13 +2312,178 @@
                         PaddingLeft = dim(0, 3)
                     });
                     
+                    -- RGB Modes section
+                    items[ "rgb_divider" ] = library:create( "Frame" , {
+                        Parent = items[ "colorpicker_background" ];
+                        Name = "\0";
+                        BackgroundTransparency = 1;
+                        Size = dim2(1, 0, 0, 1);
+                        Position = dim2(0, 0, 1, -68);
+                        BorderSizePixel = 0;
+                        BackgroundColor3 = rgb(255, 255, 255)
+                    });
+                    
+                    items[ "rgb_divider_line" ] = library:create( "Frame" , {
+                        Parent = items[ "rgb_divider" ];
+                        Name = "\0";
+                        Size = dim2(1, 0, 0, 1);
+                        Position = dim2(0, 0, 0.5, 0);
+                        BorderSizePixel = 0;
+                        BackgroundColor3 = rgb(40, 40, 40)
+                    });
+                    
+                    items[ "rgb_mode_label" ] = library:create( "TextLabel" , {
+                        FontFace = library.font;
+                        TextColor3 = rgb(178, 178, 178);
+                        BorderColor3 = rgb(0, 0, 0);
+                        Text = "Mode";
+                        Parent = items[ "colorpicker_background" ];
+                        Name = "\0";
+                        BackgroundTransparency = 1;
+                        Position = dim2(0, 3, 1, -60);
+                        Size = dim2(0, 30, 0, 14);
+                        BorderSizePixel = 0;
+                        TextSize = 9;
+                        TextXAlignment = Enum.TextXAlignment.Left;
+                        BackgroundColor3 = rgb(255, 255, 255)
+                    });
+                    
+                    items[ "rgb_mode_btn" ] = library:create( "TextButton" , {
+                        Parent = items[ "colorpicker_background" ];
+                        Name = "\0";
+                        AutoButtonColor = false;
+                        Text = "Static";
+                        TextColor3 = rgb(178, 178, 178);
+                        FontFace = library.font;
+                        TextSize = 9;
+                        BackgroundColor3 = rgb(20, 20, 20);
+                        Position = dim2(0, 35, 1, -62);
+                        Size = dim2(1, -38, 0, 16);
+                        BorderSizePixel = 0;
+                        ZIndex = 101
+                    });
+                    
+                    items[ "rgb_mode_outline" ] = library:create( "Frame" , {
+                        Parent = items[ "rgb_mode_btn" ];
+                        Name = "\0";
+                        Size = dim2(1, 0, 1, 0);
+                        BorderSizePixel = 0;
+                        BackgroundTransparency = 1;
+                        ZIndex = 102
+                    });
+                    
+                    library:create( "UIStroke" , {
+                        Parent = items[ "rgb_mode_btn" ];
+                        Color = rgb(40, 40, 40);
+                        Thickness = 1;
+                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                    });
+                    
+                    items[ "rgb_mode_dropdown" ] = library:create( "Frame" , {
+                        Parent = library.items;
+                        Visible = false;
+                        Name = "\0";
+                        ZIndex = 200;
+                        Size = dim2(0, 100, 0, 0);
+                        Position = dim2(0, 0, 0, 0);
+                        BorderSizePixel = 0;
+                        BackgroundColor3 = rgb(0, 0, 0)
+                    });
+                    
+                    items[ "rgb_mode_dd_inline" ] = library:create( "Frame" , {
+                        Parent = items[ "rgb_mode_dropdown" ];
+                        Name = "\0";
+                        Size = dim2(1, -2, 1, -2);
+                        Position = dim2(0, 1, 0, 1);
+                        BorderSizePixel = 0;
+                        BackgroundColor3 = rgb(20, 20, 20)
+                    });
+                    
+                    items[ "rgb_mode_dd_list" ] = library:create( "Frame" , {
+                        Parent = items[ "rgb_mode_dd_inline" ];
+                        Name = "\0";
+                        BackgroundTransparency = 1;
+                        Size = dim2(1, 0, 0, 0);
+                        AutomaticSize = Enum.AutomaticSize.Y;
+                        BorderSizePixel = 0;
+                        BackgroundColor3 = rgb(255, 255, 255)
+                    });
+                    
+                    library:create( "UIListLayout" , {
+                        Parent = items[ "rgb_mode_dd_list" ];
+                        Padding = dim(0, 0);
+                        SortOrder = Enum.SortOrder.LayoutOrder
+                    });
+                    
+                    items[ "rgb_speed_label" ] = library:create( "TextLabel" , {
+                        FontFace = library.font;
+                        TextColor3 = rgb(178, 178, 178);
+                        BorderColor3 = rgb(0, 0, 0);
+                        Text = "Speed";
+                        Parent = items[ "colorpicker_background" ];
+                        Name = "\0";
+                        BackgroundTransparency = 1;
+                        Position = dim2(0, 3, 1, -40);
+                        Size = dim2(0, 30, 0, 14);
+                        BorderSizePixel = 0;
+                        TextSize = 9;
+                        TextXAlignment = Enum.TextXAlignment.Left;
+                        BackgroundColor3 = rgb(255, 255, 255)
+                    });
+                    
+                    items[ "rgb_speed_bar" ] = library:create( "TextButton" , {
+                        Parent = items[ "colorpicker_background" ];
+                        Name = "\0";
+                        AutoButtonColor = false;
+                        Text = "";
+                        BackgroundColor3 = rgb(20, 20, 20);
+                        Position = dim2(0, 35, 1, -42);
+                        Size = dim2(1, -38, 0, 16);
+                        BorderSizePixel = 0;
+                        ZIndex = 101
+                    });
+                    
+                    library:create( "UIStroke" , {
+                        Parent = items[ "rgb_speed_bar" ];
+                        Color = rgb(40, 40, 40);
+                        Thickness = 1;
+                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                    });
+                    
+                    items[ "rgb_speed_fill" ] = library:create( "Frame" , {
+                        Parent = items[ "rgb_speed_bar" ];
+                        Name = "\0";
+                        Size = dim2(0.25, 0, 1, 0);
+                        BorderSizePixel = 0;
+                        BackgroundColor3 = library.Theme.Accent;
+                        ZIndex = 102
+                    });
+                    library:RegisterTheme(items[ "rgb_speed_fill" ], "BackgroundColor3", "Accent")
+                    
+                    items[ "rgb_speed_text" ] = library:create( "TextLabel" , {
+                        FontFace = library.font;
+                        TextColor3 = rgb(255, 255, 255);
+                        BorderColor3 = rgb(0, 0, 0);
+                        Text = "5x";
+                        Parent = items[ "rgb_speed_bar" ];
+                        Name = "\0";
+                        BackgroundTransparency = 1;
+                        Size = dim2(1, 0, 1, 0);
+                        BorderSizePixel = 0;
+                        TextSize = 9;
+                        TextXAlignment = Enum.TextXAlignment.Center;
+                        TextYAlignment = Enum.TextYAlignment.Center;
+                        ZIndex = 103;
+                        BackgroundColor3 = rgb(255, 255, 255)
+                    });
+                    
                     items[ "saturation_outline" ] = library:create( "TextButton" , {
                         Name = "\0";
                         AutoButtonColor = false;
                         Text = "";
                         Parent = items[ "colorpicker_background" ];
                         BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -12, 1, -12);
+                        Size = dim2(1, -12, 1, -80);
                         BorderSizePixel = 0;
                         BackgroundColor3 = rgb(0, 0, 0)
                     });
@@ -2565,6 +2731,10 @@
             function cfg.set_visible(bool) 
                 items.colorpicker_outline.Visible = bool
                 items.colorpicker_outline.Position = dim2(0, items.gear_holder.AbsolutePosition.X - 5, 0, items.gear_holder.AbsolutePosition.Y + items.gear_holder.AbsoluteSize.Y + 60 - 19)
+                if not bool then
+                    items.rgb_mode_dropdown.Visible = false
+                    mode_dd_open = false
+                end
 
                 library.current = cfg
             end
@@ -2651,9 +2821,124 @@
             end)
             
             items.saturation_outline.MouseButton1Down:Connect(function()
-                print("hiu")
                 dragging_sat = true  
             end)
+
+            -- RGB Mode state
+            cfg.rgb_mode = "Static"
+            cfg.rgb_speed = 5
+            local dragging_speed = false
+            local rgb_modes = {"Static", "Rainbow", "Gradient", "Pulse", "Hue Shift", "Breathe"}
+
+            local function set_rgb_speed(val)
+                cfg.rgb_speed = math.clamp(math.floor(val), 1, 20)
+                items.rgb_speed_fill.Size = dim2(cfg.rgb_speed / 20, 0, 1, 0)
+                items.rgb_speed_text.Text = cfg.rgb_speed .. "x"
+            end
+
+            local function set_rgb_mode(mode)
+                cfg.rgb_mode = mode
+                items.rgb_mode_btn.Text = mode
+                flags[cfg.flag] = flags[cfg.flag] or {}
+                flags[cfg.flag].RGBMode = mode
+                flags[cfg.flag].RGBSpeed = cfg.rgb_speed
+            end
+
+            -- Populate mode dropdown
+            for _, mode in ipairs(rgb_modes) do
+                local btn = library:create("TextButton", {
+                    Parent = items.rgb_mode_dd_list;
+                    Name = "\0";
+                    AutoButtonColor = false;
+                    Text = mode;
+                    TextColor3 = rgb(178, 178, 178);
+                    FontFace = library.font;
+                    TextSize = 9;
+                    Size = dim2(1, 0, 0, 16);
+                    BackgroundColor3 = rgb(20, 20, 20);
+                    BorderSizePixel = 0;
+                    ZIndex = 201
+                })
+                library:create("UIStroke", {
+                    Parent = btn;
+                    Color = rgb(30, 30, 30);
+                    Thickness = 1;
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                })
+                btn.MouseButton1Click:Connect(function()
+                    set_rgb_mode(mode)
+                    mode_dd_open = false
+                    items.rgb_mode_dropdown.Visible = false
+                end)
+            end
+
+            items.rgb_mode_btn.MouseButton1Click:Connect(function()
+                mode_dd_open = not mode_dd_open
+                if mode_dd_open then
+                    local pos = items.rgb_mode_btn.AbsolutePosition
+                    items.rgb_mode_dropdown.Position = dim2(0, pos.X, 0, pos.Y + 16)
+                    items.rgb_mode_dropdown.Size = dim2(0, items.rgb_mode_btn.AbsoluteSize.X, 0, #rgb_modes * 16)
+                    items.rgb_mode_dropdown.Visible = true
+                else
+                    items.rgb_mode_dropdown.Visible = false
+                end
+            end)
+
+            -- Speed slider
+            items.rgb_speed_bar.MouseButton1Down:Connect(function()
+                dragging_speed = true
+            end)
+
+            uis.InputChanged:Connect(function(input)
+                if dragging_speed and input.UserInputType == Enum.UserInputType.MouseMovement then
+                    local mouse = uis:GetMouseLocation()
+                    local barPos = items.rgb_speed_bar.AbsolutePosition
+                    local barSize = items.rgb_speed_bar.AbsoluteSize
+                    local ratio = math.clamp((mouse.X - barPos.X) / barSize.X, 0, 1)
+                    set_rgb_speed(ratio * 20)
+                    flags[cfg.flag] = flags[cfg.flag] or {}
+                    flags[cfg.flag].RGBSpeed = cfg.rgb_speed
+                end
+            end)
+
+            library:connection(uis.InputEnded, function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging_speed = false
+                    if mode_dd_open and not library:mouse_in_frame(items.rgb_mode_dropdown) then
+                        mode_dd_open = false
+                        items.rgb_mode_dropdown.Visible = false
+                    end
+                end
+            end)
+
+            -- Heartbeat to apply RGB modes
+            library:connection(run.Heartbeat, function()
+                if cfg.rgb_mode == "Static" or not items.colorpicker_outline.Visible then return end
+                local speed = cfg.rgb_speed
+                local t = tick()
+                if cfg.rgb_mode == "Rainbow" then
+                    local hue = (t * speed / 10) % 1
+                    h = hue
+                    cfg.set(Color3.fromHSV(h, s, v), nil)
+                elseif cfg.rgb_mode == "Gradient" then
+                    local hue = (t * speed / 10) % 1
+                    h = hue
+                    cfg.set(Color3.fromHSV(h, 1, v), nil)
+                elseif cfg.rgb_mode == "Pulse" then
+                    local pulse = 0.5 + 0.5 * math.sin(t * speed / 3)
+                    local pulseColor = Color3.fromHSV(h, s, pulse)
+                    cfg.set(pulseColor, nil)
+                elseif cfg.rgb_mode == "Hue Shift" then
+                    local hue = (t * speed / 5) % 1
+                    h = hue
+                    cfg.set(Color3.fromHSV(h, s, v), nil)
+                elseif cfg.rgb_mode == "Breathe" then
+                    local breathe = 0.3 + 0.7 * (0.5 + 0.5 * math.sin(t * speed / 4))
+                    cfg.set(Color3.fromHSV(h, s, breathe), nil)
+                end
+            end)
+
+            set_rgb_speed(5)
 
             cfg.set(cfg.color, cfg.alpha)
             config_flags[cfg.flag] = cfg.set
@@ -3990,9 +4275,43 @@ function library:KeybindList(options)
 end
 
 function library:PlayerList(options)
+    local callbacks = options or {}
+    local whitelisted = {}
+
     local obj = {
-        SetVisibility = function(self, bool) end,
-        SetWhitelisted = function(player, bool) end
+        Callbacks = callbacks,
+        Whitelisted = whitelisted,
+        SetVisibility = function(self, bool)
+            if callbacks.OnVisibility then
+                pcall(callbacks.OnVisibility, bool)
+            end
+        end,
+        SetWhitelisted = function(player, bool)
+            whitelisted[player] = bool or nil
+        end,
+        IsWhitelisted = function(player)
+            return whitelisted[player] == true
+        end,
+        NotifyWhitelist = function(player)
+            if callbacks.OnWhitelist then
+                pcall(callbacks.OnWhitelist, player)
+            end
+        end,
+        NotifyTarget = function(player)
+            if callbacks.OnTarget then
+                pcall(callbacks.OnTarget, player)
+            end
+        end,
+        NotifyTeleport = function(player)
+            if callbacks.OnTeleport then
+                pcall(callbacks.OnTeleport, player)
+            end
+        end,
+        NotifySpectate = function(player)
+            if callbacks.OnSpectate then
+                pcall(callbacks.OnSpectate, player)
+            end
+        end,
     }
     library.PlayerListObj = obj
     return obj
