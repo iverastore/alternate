@@ -73,26 +73,26 @@
     }
     
     getgenv().library.Theme = {
-        Accent = Color3.fromRGB(138, 100, 255),
-        Background = Color3.fromRGB(13, 10, 24),
-        Inline = Color3.fromRGB(20, 16, 34),
-        Element = Color3.fromRGB(33, 27, 50),
-        ["Element 2"] = Color3.fromRGB(43, 36, 60),
-        ["Hovered Element"] = Color3.fromRGB(55, 47, 72)
+        Accent = Color3.fromRGB(255, 255, 255),
+        Background = Color3.fromRGB(12, 12, 12),
+        Inline = Color3.fromRGB(19, 19, 19),
+        Element = Color3.fromRGB(39, 39, 39),
+        ["Element 2"] = Color3.fromRGB(56, 56, 56),
+        ["Hovered Element"] = Color3.fromRGB(61, 61, 61)
     }
     getgenv().library.CurrentTheme = {
         Text = {
-            Main = Color3.fromRGB(235, 235, 250),
-            Unselected = Color3.fromRGB(105, 100, 130)
+            Main = Color3.fromRGB(230, 230, 230),
+            Unselected = Color3.fromRGB(134, 134, 134)
         },
         Borders = {
-            Outline = Color3.fromRGB(50, 42, 68),
-            Inline = Color3.fromRGB(0, 0, 0)
+            Outline = Color3.fromRGB(40, 40, 40),
+            Inline = Color3.fromRGB(3, 3, 3)
         }
     }
     getgenv().themes = {
         preset = {
-            glow = Color3.fromRGB(138, 100, 255)
+            glow = Color3.fromRGB(255, 255, 255)
         }
     }
     
@@ -106,21 +106,15 @@
     end
     
     local function resolveThemeColor(name)
-        local success, result = pcall(function()
-            if type(name) == "table" then
-                local obj = library.CurrentTheme
-                for i = 1, #name do obj = obj[name[i]] end
-                return obj
-            elseif name == "Accent" or name == "glow" then
-                return library.Theme.Accent
-            else
-                return library.Theme[name]
-            end
-        end)
-        if success and typeof(result) == "Color3" then
-            return result
+        if type(name) == "table" then
+            local obj = library.CurrentTheme
+            for i = 1, #name do obj = obj[name[i]] end
+            return obj
+        elseif name == "Accent" or name == "glow" then
+            return library.Theme.Accent
+        else
+            return library.Theme[name]
         end
-        return rgb(255, 255, 255)
     end
     
     local function applyThemeChange(name, color)
@@ -156,7 +150,7 @@
             elseif name == "Accent" or name == "glow" then
                 library.Theme.Accent = color
                 themes.preset.glow = color
-            elseif type(name) == "string" and library.Theme[name] ~= nil then
+            elseif name == "Background" or name == "Inline" or name == "Element" or name == "Element 2" or name == "Hovered Element" then
                 library.Theme[name] = color
             end
             applyThemeChange(name, color)
@@ -164,7 +158,7 @@
     end
     function library:apply_theme(obj, name, prop)
         pcall(function()
-            obj[prop] = resolveThemeColor(name)
+            obj[prop] = library.Theme.Accent
         end)
     end
     
@@ -335,11 +329,7 @@
     library.__index = library
 
     for _, path in next, library.folders do 
-        pcall(function()
-            if not isfolder(library.directory .. path) then
-                makefolder(library.directory .. path)
-            end
-        end)
+        makefolder(library.directory .. path)
     end
 
     local flags = library.flags 
@@ -386,22 +376,15 @@
 
 -- Library functions 
     -- Misc functions
-        function library:tween(obj, properties, easing_style, easing_direction, time) 
-            local style = easing_style or Enum.EasingStyle.Quint
-            local dir = easing_direction or Enum.EasingDirection.InOut
-            -- Backward compatibility: if easing_direction is a number, treat it as time
-            if type(easing_direction) == "number" then
-                dir = Enum.EasingDirection.InOut
-                time = easing_direction
-            end
-            local tween = tween_service:Create(obj, TweenInfo.new(time or 0.25, style, dir, 0, false, 0), properties)
+        function library:tween(obj, properties, easing_style, time) 
+            local tween = tween_service:Create(obj, TweenInfo.new(time or 0.25, easing_style or Enum.EasingStyle.Quint, Enum.EasingDirection.InOut, 0, false, 0), properties)
             tween:Play()
                 
             return tween
         end
 
-        function library:Tween(obj, properties, easing_style, easing_direction, time)
-            return library:tween(obj, properties, easing_style, easing_direction, time)
+        function library:Tween(obj, properties, easing_style, time)
+            return library:tween(obj, properties, easing_style, time)
         end
 
         function library:CreateButton(options)
@@ -622,16 +605,10 @@
             end
             
             local list = {}
-            local folder = library.directory .. "/configs"
-            local files = {}
-            pcall(function() files = listfiles(folder) end)
             
-            for _, file in ipairs(files) do
-                local name = tostring(file)
-                name = name:match("configs[\\/]([^\\/]+)%.cfg$") or name:match("([^\\/]+)%.cfg$") or name
-                if name and name ~= "" then
-                    list[#list + 1] = name
-                end
+            for idx, file in listfiles(library.directory .. "/configs") do
+                local name = file:gsub(library.directory .. "/configs\\", ""):gsub(".cfg", ""):gsub(library.directory .. "\\configs\\", "")
+                list[#list + 1] = name
             end
 
             config_holder.refresh_options(list)
@@ -644,51 +621,32 @@
                 if type(v) == "table" and v.key then
                     Config[_] = {active = v.active, mode = v.mode, key = tostring(v.key)}
                 elseif type(v) == "table" and v["Transparency"] and v["Color"] then
-                    local color = v["Color"]
-                    if typeof(color) == "Color3" then
-                        Config[_] = {Transparency = v["Transparency"], Color = color:ToHex()}
-                    elseif type(color) == "string" then
-                        Config[_] = {Transparency = v["Transparency"], Color = color}
-                    end
+                    Config[_] = {Transparency = v["Transparency"], Color = v["Color"]:ToHex()}
                 else
                     Config[_] = v
                 end
             end 
             
-            local success, encoded = pcall(function()
-                return http_service:JSONEncode(Config)
-            end)
-            return success and encoded or "{}"
+            return http_service:JSONEncode(Config)
         end
 
         function library:load_config(config_json) 
-            local success, config = pcall(function()
-                return http_service:JSONDecode(config_json)
-            end)
+            local config = http_service:JSONDecode(config_json)
             
-            if not success or type(config) ~= "table" then
-                warn("[library] Failed to decode config:", config_json)
-                return
-            end
-            
-            for key, v in pairs(config) do 
-                if key == "config_name_list" then 
+            for _, v in config do 
+                local function_set = library.config_flags[_]
+                
+                if _ == "config_name_list" then 
                     continue 
                 end
 
-                local function_set = library.config_flags[key]
                 if function_set then 
-                    local ok, err = pcall(function()
-                        if type(v) == "table" and v["Transparency"] and v["Color"] then
-                            function_set(hex(tostring(v["Color"])), tonumber(v["Transparency"]) or 0)
-                        elseif type(v) == "table" and v["active"] ~= nil then 
-                            function_set(v)
-                        else
-                            function_set(v)
-                        end
-                    end)
-                    if not ok then
-                        warn("[library] Failed to set config flag", key, err)
+                    if type(v) == "table" and v["Transparency"] and v["Color"] then
+                        function_set(hex(v["Color"]), v["Transparency"])
+                    elseif type(v) == "table" and v["active"] then 
+                        function_set(v)
+                    else
+                        function_set(v)
                     end
                 end 
             end 
@@ -801,7 +759,7 @@
                     BorderColor3 = rgb(0, 0, 0),
                     BackgroundColor3 = rgb(255, 255, 255),
                     Visible = true,
-                    Image = "rbxassetid://18245826428",
+                    Image = "http://www.roblox.com/asset/?id=18245826428",
                     BackgroundTransparency = 1,
                     ImageTransparency = 0.8, 
                     Position = dim2(0, -20, 0, -20),
@@ -866,15 +824,9 @@
                     BorderColor3 = rgb(0, 0, 0);
                     Size = dim2(1, -63, 1, -40);
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(12, 12, 12);
-                    ClipsDescendants = true
+                    BackgroundColor3 = rgb(12, 12, 12)
                 });
                 library:RegisterTheme(items[ "page_holder" ], "BackgroundColor3", "Background")
-                
-                library:create("UICorner", {
-                    Parent = items[ "page_holder" ];
-                    CornerRadius = dim(0, 6)
-                });
 
                 items[ "bottom_bar" ] = library:create( "Frame" , {
                     Parent = items[ "window" ];
@@ -1195,15 +1147,9 @@
                     BorderColor3 = rgb(0, 0, 0);
                     Size = dim2(1, 0, 1, 0);
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(14, 14, 14);
-                    ClipsDescendants = true
+                    BackgroundColor3 = rgb(14, 14, 14)
                 });
                 library:RegisterTheme(items[ "section_shadow_three" ], "BackgroundColor3", "Inline")
-                
-                library:create("UICorner", {
-                    Parent = items[ "section_shadow_three" ];
-                    CornerRadius = dim(0, 5)
-                });
                 
                 items[ "scrolling" ] = library:create( "ScrollingFrame" , {
                     ScrollBarImageColor3 = rgb(0, 0, 0);
@@ -3760,44 +3706,11 @@
             local textbox;
             local main = window:Tab({name = "Configs", icon = "rbxassetid://72506063321241"})
             local section = main:Section({name = "Settings", side = "right", size = 1, default = true})
-            config_holder = section:Dropdown({Name = "Configs", options = {" "}, callback = function(option) if textbox and option and option ~= " " then textbox.set(option) end end, flag = "config_name_list"}); library:update_config_list()
+            config_holder = section:Dropdown({Name = "Configs", options = {"Report", "This", "Error", "To", "Finobe"}, callback = function(option) if textbox then textbox.set(option) end end, flag = "config_name_list"}); library:update_config_list()
             textbox = section:Textbox({name = "Config name:", flag = "config_name_text"})
-            section:Button({name = "Save", callback = function()
-                local name = flags["config_name_text"]
-                if not name or tostring(name) == "" then
-                    warn("[library] Config name is empty")
-                    return
-                end
-                name = tostring(name):gsub("[^%w _-]", "")
-                pcall(function()
-                    writefile(library.directory .. "/configs/" .. name .. ".cfg", library:get_config())
-                    library:update_config_list()
-                end)
-            end}) 
-            section:Button({name = "Load", callback = function()
-                local name = flags["config_name_text"]
-                if not name or tostring(name) == "" then
-                    warn("[library] Config name is empty")
-                    return
-                end
-                name = tostring(name):gsub("[^%w _-]", "")
-                pcall(function()
-                    library:load_config(readfile(library.directory .. "/configs/" .. name .. ".cfg"))
-                    library:update_config_list()
-                end)
-            end})
-            section:Button({name = "Delete", callback = function()
-                local name = flags["config_name_text"]
-                if not name or tostring(name) == "" then
-                    warn("[library] Config name is empty")
-                    return
-                end
-                name = tostring(name):gsub("[^%w _-]", "")
-                pcall(function()
-                    delfile(library.directory .. "/configs/" .. name .. ".cfg")
-                    library:update_config_list()
-                end)
-            end})
+            section:Button({name = "Save", callback = function() writefile(library.directory .. "/configs/" .. flags["config_name_text"] .. ".cfg", library:get_config()) library:update_config_list() end}) 
+            section:Button({name = "Load", callback = function() library:load_config(readfile(library.directory .. "/configs/" .. flags["config_name_text"] .. ".cfg"))  library:update_config_list() end})
+            section:Button({name = "Delete", callback = function() delfile(library.directory .. "/configs/" .. flags["config_name_text"] .. ".cfg")  library:update_config_list() end})
             
             section:Label({Name = "UI Bind"}):Keybind({flag = "_ui_bind", callback = function(bool) window.toggle_menu(bool) end, default = true, key = library.MenuKeybind, mode = "Toggle"})
         end
@@ -3883,6 +3796,12 @@
 					AutomaticSize = Enum.AutomaticSize.XY;
 					BackgroundColor3 = rgb(21, 21, 21)
 				});	
+				
+				local uigradient = library:create("UIGradient", {
+					Color = rgbseq{rgbkey(0, rgb(255, 0, 0)), rgbkey(0.17, rgb(255, 255, 0)), rgbkey(0.33, rgb(0, 255, 0)), rgbkey(0.5, rgb(0, 255, 255)), rgbkey(0.67, rgb(0, 0, 255)), rgbkey(0.83, rgb(255, 0, 255)), rgbkey(1, rgb(255, 0, 0))};
+					Transparency = numseq{numkey(0, -1), numkey(1, -1)};
+					Parent = menu_title
+				});
 				
 				library:create("UIPadding", {
 					PaddingTop = dim(0, 7);
