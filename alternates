@@ -1663,18 +1663,18 @@
                     Parent = self.items.object or self.items.elements;
                     Name = "\0";
                     BackgroundTransparency = 1;
-                    Size = dim2(0, 0, 0, 12);
+                    Size = dim2(1, 0, 0, 12);
                     BorderColor3 = rgb(0, 0, 0);
                     BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.XY;
+                    AutomaticSize = Enum.AutomaticSize.Y;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
                 
                 library:create( "UIListLayout" , {
                     Parent = items[ "object" ];
-                    Padding = dim(0, 5);
+                    Padding = dim(0, 2);
                     SortOrder = Enum.SortOrder.LayoutOrder;
-                    FillDirection = Enum.FillDirection.Horizontal
+                    FillDirection = Enum.FillDirection.Vertical
                 });
                 
                 items[ "slider_parent" ] = library:create( "TextButton" , {
@@ -1683,7 +1683,7 @@
                     Text = "";
                     Name = "\0";
                     BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 150, 1, 0);
+                    Size = dim2(1, 0, 0, 12);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
@@ -1855,10 +1855,9 @@
                         Parent = self.items.object or self.items.elements;
                         Name = "\0";
                         BackgroundTransparency = 1;
-                        Size = dim2(0, 0, 0, 12);
+                        Size = dim2(1, 0, 0, 16);
                         BorderColor3 = rgb(0, 0, 0);
                         BorderSizePixel = 0;
-                        AutomaticSize = Enum.AutomaticSize.XY;
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
     
@@ -1874,20 +1873,18 @@
                         Text = "";
                         AutoButtonColor = false;
                         Name = "\0";
-                        Size = dim2(0, 0, 0, 16);
+                        Size = dim2(1, 0, 0, 16);
                         BorderSizePixel = 0;
-                        AutomaticSize = Enum.AutomaticSize.X;
                         BackgroundColor3 = rgb(0, 0, 0)
                     });
                     
                     items[ "dropdown_shading" ] = library:create( "Frame" , {
                         Parent = items[ "dropdown_outline" ];
-                        Size = dim2(0, -2, 1, -2);
+                        Size = dim2(1, -2, 1, -2);
                         Name = "\0";
                         Position = dim2(0, 1, 0, 1);
                         BorderColor3 = rgb(0, 0, 0);
                         BorderSizePixel = 0;
-                        AutomaticSize = Enum.AutomaticSize.X;
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
                     
@@ -1904,11 +1901,11 @@
                         Text = "";
                         Parent = items[ "dropdown_shading" ];
                         AnchorPoint = vec2(0, 0.5);
-                        Size = dim2(0, 0, 0, 0);
+                        Size = dim2(1, 0, 0, 0);
                         BackgroundTransparency = 1;
                         Position = dim2(0, 0, 0.5, 0);
                         BorderSizePixel = 0;
-                        AutomaticSize = Enum.AutomaticSize.XY;
+                        TextXAlignment = Enum.TextXAlignment.Left;
                         TextSize = 10;
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
@@ -1923,8 +1920,8 @@
                     
                     library:create( "UIPadding" , {
                         Parent = items[ "dropdown_shading" ];
-                        PaddingRight = dim(0, 40);
-                        PaddingLeft = dim(0, 40)
+                        PaddingRight = dim(0, 20);
+                        PaddingLeft = dim(0, 8)
                     });
                     
                     library:create( "UIPadding" , {
@@ -1950,7 +1947,7 @@
                         Parent = items[ "object" ];
                         Padding = dim(0, 5);
                         SortOrder = Enum.SortOrder.LayoutOrder;
-                        FillDirection = Enum.FillDirection.Horizontal
+                        FillDirection = Enum.FillDirection.Vertical
                     });
                 -- 
 
@@ -1960,6 +1957,7 @@
                         Size = dim2(0, 114, 0, 0);
                         Visible = false;
                         Name = "\0";
+                        ZIndex = 999;
                         Position = dim2(0.05823293328285217, 0, 0.19430045783519745, 0);
                         BorderColor3 = rgb(0, 0, 0);
                         BorderSizePixel = 0;
@@ -2031,7 +2029,7 @@
                 items[ "arrow" ].Rotation = bool and 180 or 0
 
                 items[ "dropdown_holder" ].Size = dim2(0, items.dropdown_outline.AbsoluteSize.X, 0, 0)
-                items[ "dropdown_holder" ].Position = dim2(0, items.dropdown_outline.AbsolutePosition.X, 0, items.dropdown_outline.AbsolutePosition.Y + 75)
+                items[ "dropdown_holder" ].Position = dim2(0, items.dropdown_outline.AbsolutePosition.X, 0, items.dropdown_outline.AbsolutePosition.Y + 20)
                 
                 library.current = cfg
             end
@@ -2050,7 +2048,8 @@
                     end
                 end
 
-                items.inner_text.Text = if isTable then concat(selected, ", ") else selected[1] or ""
+                local displayValue = if isTable then concat(selected, ", ") else selected[1] or ""
+                items.inner_text.Text = cfg.name and (cfg.name .. ": " .. displayValue) or displayValue
                 flags[cfg.flag] = if isTable then selected else selected[1]
                 
                 cfg.callback(flags[cfg.flag]) 
@@ -2098,6 +2097,9 @@
             end
 
             items.dropdown_outline.MouseButton1Click:Connect(function()
+                if not cfg.open then
+                    library:close_current_element(cfg)
+                end
                 cfg.open = not cfg.open
                 cfg.set_visible(cfg.open)
             end)
@@ -2117,10 +2119,6 @@
             cfg.set(cfg.default)
 
             local set = setmetatable(cfg, library)
-
-            if cfg.name then 
-                set:Label({name = cfg.name, padding_bottom = 2})
-            end 
 
             if type(self) == "table" and self.sub_objects then
                 table.insert(self.sub_objects, cfg)
