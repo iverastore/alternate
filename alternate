@@ -730,10 +730,9 @@
         -- Auto screen resize helper
         local function getAutoSize()
             local viewport = camera.ViewportSize
-            local deviceType = uis:GetDevice()
             
             -- Mobile devices get smaller UI
-            if deviceType == Enum.UserInputType.Touch then
+            if uis.TouchEnabled then
                 return dim2(0, math.min(viewport.X - 40, 450), 0, math.min(viewport.Y - 40, 500))
             end
             
