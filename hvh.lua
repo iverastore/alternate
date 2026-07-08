@@ -161,17 +161,17 @@ local Library = {
 
     local Themes = {
         ["Preset"] = {
-            ["Background"] = Color3.fromRGB(21, 21, 21),
-            ["Section Background"] = Color3.fromRGB(22, 22, 22),
-            ["Inline"] = Color3.fromRGB(25, 25, 25),
-            ["Tab Background"] = Color3.fromRGB(30, 30, 30),
-            ["Element"] = Color3.fromRGB(35, 35, 35),
-            ["Text"] = Color3.fromRGB(255, 255, 255),
-            ["Inactive Text"] = Color3.fromRGB(100, 100, 100),
-            ["Accent"] = Color3.fromRGB(67, 133, 255),
+            ["Background"] = Color3.fromRGB(13, 10, 24),
+            ["Section Background"] = Color3.fromRGB(16, 13, 28),
+            ["Inline"] = Color3.fromRGB(20, 16, 34),
+            ["Tab Background"] = Color3.fromRGB(26, 21, 42),
+            ["Element"] = Color3.fromRGB(33, 27, 50),
+            ["Text"] = Color3.fromRGB(235, 235, 250),
+            ["Inactive Text"] = Color3.fromRGB(105, 100, 130),
+            ["Accent"] = Color3.fromRGB(138, 100, 255),
             ["Border"] = Color3.fromRGB(0, 0, 0),
-            ["Outline"] = Color3.fromRGB(45, 45, 45),
-            ["Hovered Element"] = Color3.fromRGB(45, 45, 45),
+            ["Outline"] = Color3.fromRGB(50, 42, 68),
+            ["Hovered Element"] = Color3.fromRGB(43, 36, 60),
         }
     }
 
@@ -2315,10 +2315,26 @@ local Library = {
                     Parent = Library.Holder.Instance,
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     Position = UDim2.new(0.5, 0, 0.5, 0),
-                    Size = UDim2.new(0, 695, 0, 713),
+                    Size = UDim2.new(0, 580, 0, 560),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Library.Theme["Background"]
                 }):AddToTheme({BackgroundColor3 = 'Background'})
+                
+                -- Glow effect
+                Library:Create("ImageLabel", {
+                    Name = "\0",
+                    Parent = Items["MainFrame"].Instance,
+                    Image = "http://www.roblox.com/asset/?id=18245826428",
+                    ScaleType = Enum.ScaleType.Slice,
+                    SliceCenter = Rect.new(Vector2.new(21, 21), Vector2.new(79, 79)),
+                    ImageColor3 = Library.Theme["Accent"],
+                    ImageTransparency = 0.6,
+                    BackgroundTransparency = 1,
+                    Position = UDim2.new(0, -20, 0, -20),
+                    Size = UDim2.new(1, 40, 1, 40),
+                    ZIndex = -1,
+                    BorderSizePixel = 0
+                }):AddToTheme({ImageColor3 = 'Accent'})
                 
                 Items["MainFrame"]:MakeDraggable()
                 Items["MainFrame"]:MakeResizeable(Vector2.new(Items["MainFrame"].Instance.AbsoluteSize.X, Items["MainFrame"].Instance.AbsoluteSize.Y))
@@ -2463,7 +2479,18 @@ local Library = {
                 Debounce = true 
 
                 Window.IsOpen = Bool
+
+                if Bool then
+                    Items["MainFrame"].Instance.Visible = true
+                    local TargetSize = UDim2.new(0, 580, 0, 560)
+                    Items["MainFrame"].Instance.Size = TargetSize - UDim2.new(0, 30, 0, 30)
+                    Items["MainFrame"]:Tween({Size = TargetSize}, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out))
+                end
+
                 Items["MainFrame"]:FadeDescendants(Bool, function()
+                    if not Bool then
+                        Items["MainFrame"].Instance.Visible = false
+                    end
                     Debounce = false
                 end)
 
@@ -4099,6 +4126,416 @@ local Library = {
             end
             
             return setmetatable(Textbox, Library)
+        end
+
+        Library.TargetHUD = function(Self, Params)
+            Params = Params or { }
+
+            local TargetHUD = {
+                Target = nil,
+                IsVisible = false,
+                Items = { }
+            }
+
+            local HUDHeight = 95
+            local HUDWidth = 290
+
+            local Items = { } do
+                Items["Main"] = Library:Create("Frame", {
+                    Name = "\0",
+                    Parent = Library.Holder.Instance,
+                    AnchorPoint = Vector2.new(0.5, 0.5),
+                    Position = Params.Position or UDim2.new(0.5, 200, 0.5, 0),
+                    Size = UDim2.new(0, HUDWidth, 0, HUDHeight),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Library.Theme["Background"],
+                    Visible = false,
+                    ClipsDescendants = true
+                }):AddToTheme({BackgroundColor3 = 'Background'})
+
+                Items["Main"]:MakeDraggable()
+
+                -- Glow
+                Library:Create("ImageLabel", {
+                    Name = "\0",
+                    Parent = Items["Main"].Instance,
+                    Image = "http://www.roblox.com/asset/?id=18245826428",
+                    ScaleType = Enum.ScaleType.Slice,
+                    SliceCenter = Rect.new(Vector2.new(21, 21), Vector2.new(79, 79)),
+                    ImageColor3 = Library.Theme["Accent"],
+                    ImageTransparency = 0.6,
+                    BackgroundTransparency = 1,
+                    Position = UDim2.new(0, -15, 0, -15),
+                    Size = UDim2.new(1, 30, 1, 30),
+                    ZIndex = -1,
+                    BorderSizePixel = 0
+                }):AddToTheme({ImageColor3 = 'Accent'})
+
+                -- Strokes
+                Library:Create("UIStroke", {
+                    Name = "\0",
+                    Parent = Items["Main"].Instance,
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                    LineJoinMode = Enum.LineJoinMode.Miter,
+                    Color = Library.Theme["Outline"]
+                }):AddToTheme({Color = 'Outline'})
+
+                Library:Create("UIStroke", {
+                    Name = "\0",
+                    Parent = Items["Main"].Instance,
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                    LineJoinMode = Enum.LineJoinMode.Miter,
+                    BorderOffset = UDim.new(0, 1)
+                }):AddToTheme({Color = 'Border'})
+
+                -- Accent stroke
+                Library:Create("UIStroke", {
+                    Name = "\0",
+                    Parent = Items["Main"].Instance,
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                    LineJoinMode = Enum.LineJoinMode.Miter,
+                    Color = Library.Theme["Accent"],
+                    BorderOffset = UDim.new(0, -1)
+                }):AddToTheme({Color = 'Accent'})
+
+                -- Content padding
+                Items["Content"] = Library:Create("Frame", {
+                    Name = "\0",
+                    Parent = Items["Main"].Instance,
+                    BackgroundTransparency = 1,
+                    Position = UDim2.new(0, 8, 0, 8),
+                    Size = UDim2.new(1, -16, 1, -16),
+                    BorderSizePixel = 0
+                })
+
+                -- Avatar
+                Items["Avatar"] = Library:Create("ImageLabel", {
+                    Name = "\0",
+                    Parent = Items["Content"].Instance,
+                    Size = UDim2.new(0, 50, 0, 50),
+                    Position = UDim2.new(0, 0, 0, 0),
+                    BackgroundColor3 = Library.Theme["Element"],
+                    BorderSizePixel = 0,
+                    Image = "",
+                    ScaleType = Enum.ScaleType.Crop
+                }):AddToTheme({BackgroundColor3 = 'Element'})
+
+                Library:Create("UICorner", {
+                    Name = "\0",
+                    Parent = Items["Avatar"].Instance,
+                    CornerRadius = UDim.new(0, 6)
+                })
+
+                Library:Create("UIStroke", {
+                    Name = "\0",
+                    Parent = Items["Avatar"].Instance,
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                    LineJoinMode = Enum.LineJoinMode.Miter,
+                    Color = Library.Theme["Outline"]
+                }):AddToTheme({Color = 'Outline'})
+
+                -- Name
+                Items["Name"] = Library:Create("TextLabel", {
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextSize = Library.FontSize,
+                    Parent = Items["Content"].Instance,
+                    TextColor3 = Library.Theme["Text"],
+                    Text = "",
+                    Size = UDim2.new(1, -58, 0, 15),
+                    Position = UDim2.new(0, 58, 0, 0),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    RichText = true
+                }):AddToTheme({TextColor3 = 'Text'})
+
+                Library:Create("UIStroke", {
+                    Name = "\0",
+                    Parent = Items["Name"].Instance,
+                    LineJoinMode = Enum.LineJoinMode.Miter
+                })
+
+                -- Display Name
+                Items["DisplayName"] = Library:Create("TextLabel", {
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextSize = Library.FontSize - 3,
+                    Parent = Items["Content"].Instance,
+                    TextColor3 = Library.Theme["Inactive Text"],
+                    Text = "",
+                    Size = UDim2.new(1, -58, 0, 12),
+                    Position = UDim2.new(0, 58, 0, 17),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    TextXAlignment = Enum.TextXAlignment.Left
+                }):AddToTheme({TextColor3 = 'Inactive Text'})
+
+                -- Health bar background
+                Items["HealthBarBg"] = Library:Create("Frame", {
+                    Name = "\0",
+                    Parent = Items["Content"].Instance,
+                    Position = UDim2.new(0, 58, 0, 35),
+                    Size = UDim2.new(1, -58, 0, 10),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Library.Theme["Element"]
+                }):AddToTheme({BackgroundColor3 = 'Element'})
+
+                Library:Create("UICorner", {
+                    Name = "\0",
+                    Parent = Items["HealthBarBg"].Instance,
+                    CornerRadius = UDim.new(0, 4)
+                })
+
+                -- Health bar clip (width changes with health)
+                Items["HealthClip"] = Library:Create("Frame", {
+                    Name = "\0",
+                    Parent = Items["HealthBarBg"].Instance,
+                    Size = UDim2.new(1, 0, 1, 0),
+                    BorderSizePixel = 0,
+                    BackgroundTransparency = 1,
+                    ClipsDescendants = true
+                })
+
+                Library:Create("UICorner", {
+                    Name = "\0",
+                    Parent = Items["HealthClip"].Instance,
+                    CornerRadius = UDim.new(0, 4)
+                })
+
+                -- Health bar fill (fixed full width inside clip)
+                Items["HealthBar"] = Library:Create("Frame", {
+                    Name = "\0",
+                    Parent = Items["HealthClip"].Instance,
+                    Size = UDim2.new(0, 232, 0, 10),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Color3.fromRGB(80, 255, 80)
+                })
+
+                -- Gradient on health bar (red -> yellow -> green)
+                Items["HealthGradient"] = Library:Create("UIGradient", {
+                    Name = "\0",
+                    Parent = Items["HealthBar"].Instance,
+                    Rotation = 0,
+                    Color = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 50)),
+                        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 200, 50)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 255, 80))
+                    }
+                })
+
+                -- Health text
+                Items["HealthText"] = Library:Create("TextLabel", {
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextSize = Library.FontSize - 4,
+                    Parent = Items["Content"].Instance,
+                    TextColor3 = Library.Theme["Text"],
+                    Text = "100",
+                    Size = UDim2.new(0, 35, 0, 11),
+                    Position = UDim2.new(1, -35, 0, 34),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    TextXAlignment = Enum.TextXAlignment.Right,
+                    ZIndex = 5
+                }):AddToTheme({TextColor3 = 'Text'})
+
+                -- Stats container
+                Items["Stats"] = Library:Create("Frame", {
+                    Name = "\0",
+                    Parent = Items["Content"].Instance,
+                    BackgroundTransparency = 1,
+                    Position = UDim2.new(0, 0, 0, 58),
+                    Size = UDim2.new(1, 0, 0, 13),
+                    BorderSizePixel = 0
+                })
+
+                -- Accent liner for stats
+                Items["StatsLiner"] = Library:Create("Frame", {
+                    Name = "\0",
+                    Parent = Items["Content"].Instance,
+                    Position = UDim2.new(0, 0, 0, 54),
+                    Size = UDim2.new(1, 0, 0, 1),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Library.Theme["Accent"]
+                }):AddToTheme({BackgroundColor3 = 'Accent'})
+
+                -- Distance
+                Items["Distance"] = Library:Create("TextLabel", {
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextSize = Library.FontSize - 4,
+                    Parent = Items["Stats"].Instance,
+                    TextColor3 = Library.Theme["Inactive Text"],
+                    Text = "Distance: 0",
+                    Size = UDim2.new(0, 85, 0, 11),
+                    Position = UDim2.new(0, 0, 0, 0),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    TextXAlignment = Enum.TextXAlignment.Left
+                }):AddToTheme({TextColor3 = 'Inactive Text'})
+
+                -- Velocity
+                Items["Velocity"] = Library:Create("TextLabel", {
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextSize = Library.FontSize - 4,
+                    Parent = Items["Stats"].Instance,
+                    TextColor3 = Library.Theme["Inactive Text"],
+                    Text = "Velocity: 0",
+                    Size = UDim2.new(0, 85, 0, 11),
+                    Position = UDim2.new(0, 90, 0, 0),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    TextXAlignment = Enum.TextXAlignment.Left
+                }):AddToTheme({TextColor3 = 'Inactive Text'})
+
+                -- Tool
+                Items["Tool"] = Library:Create("TextLabel", {
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextSize = Library.FontSize - 4,
+                    Parent = Items["Stats"].Instance,
+                    TextColor3 = Library.Theme["Inactive Text"],
+                    Text = "Tool: None",
+                    Size = UDim2.new(0, 100, 0, 11),
+                    Position = UDim2.new(0, 180, 0, 0),
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    TextXAlignment = Enum.TextXAlignment.Left
+                }):AddToTheme({TextColor3 = 'Inactive Text'})
+            end
+
+            local UpdateConnection
+
+            function TargetHUD:SetTarget(Player)
+                TargetHUD.Target = Player
+
+                if not Player then
+                    TargetHUD:SetVisible(false)
+                    return
+                end
+
+                local Success, Thumbnail = pcall(function()
+                    return Players:GetUserThumbnailAsync(Player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+                end)
+
+                if Success and Thumbnail then
+                    Items["Avatar"].Instance.Image = Thumbnail
+                end
+
+                Items["Name"].Instance.Text = '<font color="rgb(' .. tostring(Library.Theme.Accent.R * 255) .. ',' .. tostring(Library.Theme.Accent.G * 255) .. ',' .. tostring(Library.Theme.Accent.B * 255) .. ')">' .. Player.Name .. '</font>'
+                Items["DisplayName"].Instance.Text = Player.DisplayName ~= Player.Name and Player.DisplayName or ""
+            end
+
+            function TargetHUD:SetVisible(Bool)
+                if Bool == TargetHUD.IsVisible then return end
+                TargetHUD.IsVisible = Bool
+
+                local Info = TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+
+                if Bool then
+                    Items["Main"].Instance.Visible = true
+                    Items["Main"].Instance.Size = UDim2.new(0, 0, 0, 0)
+                    Items["Main"].Instance.BackgroundTransparency = 1
+
+                    for _, Child in Items["Main"].Instance:GetDescendants() do
+                        if Child:IsA("TextLabel") then
+                            Child.TextTransparency = 1
+                        elseif Child:IsA("ImageLabel") then
+                            Child.ImageTransparency = 1
+                        elseif Child:IsA("UIStroke") then
+                            Child.Transparency = 1
+                        end
+                    end
+
+                    Items["Main"]:Tween({Size = UDim2.new(0, HUDWidth, 0, HUDHeight)}, Info)
+                    Items["Main"]:Tween({BackgroundTransparency = 0}, Info)
+
+                    for _, Child in Items["Main"].Instance:GetDescendants() do
+                        if Child:IsA("TextLabel") then
+                            TweenService:Create(Child, Info, {TextTransparency = 0}):Play()
+                        elseif Child:IsA("ImageLabel") and Child.Image ~= "" then
+                            TweenService:Create(Child, Info, {ImageTransparency = 0}):Play()
+                        elseif Child:IsA("UIStroke") then
+                            TweenService:Create(Child, Info, {Transparency = 0}):Play()
+                        end
+                    end
+
+                    if UpdateConnection then
+                        UpdateConnection:Disconnect()
+                    end
+                    UpdateConnection = Library:Connect(RunService.RenderStepped, function()
+                        if not TargetHUD.Target then return end
+
+                        local Player = TargetHUD.Target
+                        local Character = Player.Character
+                        local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+                        local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
+                        local LocalRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+                        if not Character or not Humanoid then
+                            return
+                        end
+
+                        local Health = Humanoid.Health
+                        local MaxHealth = Humanoid.MaxHealth
+                        local HealthPercent = math.clamp(Health / MaxHealth, 0, 1)
+
+                        Items["HealthClip"].Instance.Size = UDim2.new(HealthPercent, 0, 1, 0)
+                        Items["HealthText"].Instance.Text = tostring(math.floor(Health))
+
+                        if RootPart and LocalRoot then
+                            local Distance = (RootPart.Position - LocalRoot.Position).Magnitude
+                            Items["Distance"].Instance.Text = "Distance: " .. tostring(math.floor(Distance))
+                        end
+
+                        if RootPart then
+                            local Velocity = RootPart.AssemblyLinearVelocity
+                            local Speed = math.floor(Vector3.new(Velocity.X, 0, Velocity.Z).Magnitude)
+                            Items["Velocity"].Instance.Text = "Velocity: " .. tostring(Speed)
+                        end
+
+                        local Tool = Character:FindFirstChildOfClass("Tool")
+                        Items["Tool"].Instance.Text = "Tool: " .. (Tool and Tool.Name or "None")
+                    end)
+                else
+                    Items["Main"]:Tween({Size = UDim2.new(0, 0, 0, 0)}, Info)
+                    Items["Main"]:Tween({BackgroundTransparency = 1}, Info)
+
+                    for _, Child in Items["Main"].Instance:GetDescendants() do
+                        if Child:IsA("TextLabel") then
+                            TweenService:Create(Child, Info, {TextTransparency = 1}):Play()
+                        elseif Child:IsA("ImageLabel") and Child.Image ~= "" then
+                            TweenService:Create(Child, Info, {ImageTransparency = 1}):Play()
+                        elseif Child:IsA("UIStroke") then
+                            TweenService:Create(Child, Info, {Transparency = 1}):Play()
+                        end
+                    end
+
+                    task.wait(0.45)
+                    Items["Main"].Instance.Visible = false
+
+                    if UpdateConnection then
+                        UpdateConnection:Disconnect()
+                        UpdateConnection = nil
+                    end
+                end
+            end
+
+            function TargetHUD:SetPosition(Pos)
+                Items["Main"].Instance.Position = Pos
+            end
+
+            function TargetHUD:Exit()
+                if UpdateConnection then
+                    UpdateConnection:Disconnect()
+                end
+                Items["Main"].Instance:Destroy()
+            end
+
+            TargetHUD.Items = Items
+            return setmetatable(TargetHUD, Library)
         end
 
         Library.CreateSettingsPage = function(Self)
