@@ -2797,9 +2797,9 @@
                 flag = options.flag or options.Flag or options.name or options.Name or "please set me a flag 🥺",
                 callback = options.callback or options.Callback or function() end,
                 name = options.name or options.Name or nil, 
-                key = options.key or options.Key or nil, 
+                key = options.key or options.Key or (typeof(options.default or options.Default) == "EnumItem" and (options.default or options.Default)) or nil,
                 mode = options.mode or options.Mode or "Toggle",
-                active = options.default or options.Default or false, 
+                active = (type(options.default or options.Default) == "boolean") and (options.default or options.Default) or false,
 
                 -- ignore
                 open = false,
