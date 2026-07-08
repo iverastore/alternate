@@ -335,7 +335,11 @@
     library.__index = library
 
     for _, path in next, library.folders do 
-        makefolder(library.directory .. path)
+        pcall(function()
+            if not isfolder(library.directory .. path) then
+                makefolder(library.directory .. path)
+            end
+        end)
     end
 
     local flags = library.flags 
