@@ -8,7 +8,7 @@
     local lighting = game:GetService("Lighting")
     local run = game:GetService("RunService")
     local stats = game:GetService("Stats")
-    local coregui = game:GetService("CoreGui")
+    local coregui = (pcall(function() return game:GetService("CoreGui") end) and game:GetService("CoreGui")) or (players.LocalPlayer and players.LocalPlayer:FindFirstChildOfClass("PlayerGui")) or game:GetService("CoreGui")
     local debris = game:GetService("Debris")
     local tween_service = game:GetService("TweenService")
     local sound_service = game:GetService("SoundService")
@@ -153,13 +153,16 @@
                 local obj = library.CurrentTheme
                 for i = 1, #name - 1 do obj = obj[name[i]] end
                 obj[name[#name]] = color
+                applyThemeChange(name, color)
             elseif name == "Accent" or name == "glow" then
                 library.Theme.Accent = color
                 themes.preset.glow = color
+                applyThemeChange("Accent", color)
+                applyThemeChange("glow", color)
             elseif type(name) == "string" and library.Theme[name] ~= nil then
                 library.Theme[name] = color
+                applyThemeChange(name, color)
             end
-            applyThemeChange(name, color)
         end)
     end
     function library:apply_theme(obj, name, prop)
@@ -773,6 +776,7 @@
                 Enabled = true;
                 ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
                 IgnoreGuiInset = true;
+                DisplayOrder = 99999999;
             });
             
             library[ "other" ] = library:create( "ScreenGui" , {
@@ -781,7 +785,8 @@
                 Enabled = false;
                 ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
                 IgnoreGuiInset = true;
-            }); 
+                DisplayOrder = 99999999;
+            }); 	
 
             local items = cfg.items; do
                 items[ "window" ] = library:create( "Frame" , {
@@ -2016,11 +2021,10 @@
                         Visible = false;
                         Name = "\0";
                         ZIndex = 9999;
-                        ClipsDescendants = false;
+                        ClipsDescendants = true;
                         Position = dim2(0, 0, 0, 0);
                         BorderColor3 = rgb(0, 0, 0);
                         BorderSizePixel = 0;
-                        AutomaticSize = Enum.AutomaticSize.Y;
                         BackgroundColor3 = rgb(0, 0, 0)
                     });
                     
@@ -2053,12 +2057,16 @@
                         Parent = items[ "dropdown_shading" ]
                     });            
                 -- 
+
+                library:RegisterTheme(items[ "dropdown_outline" ], "BackgroundColor3", {"Borders", "Outline"})
+                library:RegisterTheme(items[ "dropdown_holder" ], "BackgroundColor3", {"Borders", "Outline"})
+                library:RegisterTheme(items.inner_text, "TextColor3", {"Text", "Unselected"})
             end 
 
             function cfg.render_option(text)
                 local button = library:create( "TextButton" , {
                     FontFace = library.font;
-                    TextColor3 = rgb(178, 178, 178);
+                    TextColor3 = resolveThemeColor({"Text", "Unselected"});
                     BorderColor3 = rgb(0, 0, 0);
                     Text = text;
                     Parent = items[ "dropdown_shading" ];
@@ -2080,7 +2088,7 @@
                 });
 
                 button.MouseEnter:Connect(function()
-                    library:tween(button, {TextColor3 = rgb(255, 255, 255)})
+                    library:tween(button, {TextColor3 = resolveThemeColor({"Text", "Main"})})
                 end)
                 button.MouseLeave:Connect(function()
                     local isSelected = false
@@ -2090,7 +2098,7 @@
                         isSelected = flags[cfg.flag] == button.Text
                     end
                     if not isSelected then
-                        library:tween(button, {TextColor3 = rgb(174, 174, 174)})
+                        library:tween(button, {TextColor3 = resolveThemeColor({"Text", "Unselected"})})
                     end
                 end)
 
@@ -2106,23 +2114,30 @@
                     local absPos = items.dropdown_outline.AbsolutePosition
                     local absSize = items.dropdown_outline.AbsoluteSize
                     
-                    -- Position BELOW the dropdown button (opens DOWN)
-                    items[ "dropdown_holder" ].Position = dim2(0, absPos.X, 0, absPos.Y + absSize.Y + 2)
                     items[ "dropdown_holder" ].Size = dim2(0, absSize.X, 0, 0)
                     items[ "dropdown_holder" ].Visible = true
                     
-                    print("[Dropdown] Position:", absPos.X, absPos.Y + absSize.Y + 2, "Size:", absSize.X)
-
                     -- Animate arrow rotation
                     library:tween(items[ "arrow" ], {Rotation = 180}, Enum.EasingStyle.Back, 0.2)
 
-                    -- Animate open
+                    -- Animate open after layout computes Y size
                     task.spawn(function()
                         task.wait()
                         if gen ~= cfg._vis_gen then return end
-                        local targetH = items[ "dropdown_holder" ].AbsoluteSize.Y
-                        print("[Dropdown] Target height:", targetH)
-                        if targetH > 0 then
+                        local targetH = items[ "dropdown_shading" ].AbsoluteSize.Y + 2
+                        local viewport_y = camera.ViewportSize.Y
+                        
+                        local openUp = (absPos.Y + absSize.Y + 2 + targetH > viewport_y)
+                        
+                        if openUp then
+                            items[ "dropdown_holder" ].AnchorPoint = vec2(0, 1)
+                            items[ "dropdown_holder" ].Position = dim2(0, absPos.X, 0, absPos.Y - 2)
+                        else
+                            items[ "dropdown_holder" ].AnchorPoint = vec2(0, 0)
+                            items[ "dropdown_holder" ].Position = dim2(0, absPos.X, 0, absPos.Y + absSize.Y + 2)
+                        end
+                        
+                        if targetH > 2 then
                             library:tween(items[ "dropdown_holder" ], {Size = dim2(0, absSize.X, 0, targetH)}, Enum.EasingStyle.Quint, 0.2)
                         end
                     end)
@@ -2152,9 +2167,9 @@
                     if option.Text == value or (isTable and find(value, option.Text)) then 
                         insert(selected, option.Text)
                         cfg.multi_items = selected
-                        option.TextColor3 = rgb(255, 255, 255)
+                        option.TextColor3 = resolveThemeColor({"Text", "Main"})
                     else
-                        option.TextColor3 = rgb(174, 174, 174)
+                        option.TextColor3 = resolveThemeColor({"Text", "Unselected"})
                     end
                 end
 
@@ -2215,12 +2230,12 @@
             end
 
             items.dropdown_outline.MouseEnter:Connect(function()
-                library:tween(items.inner_text, {TextColor3 = rgb(255, 255, 255)})
-                library:tween(items[ "arrow" ], {ImageColor3 = rgb(255, 255, 255)})
+                library:tween(items.inner_text, {TextColor3 = resolveThemeColor({"Text", "Main"})})
+                library:tween(items[ "arrow" ], {ImageColor3 = resolveThemeColor({"Text", "Main"})})
             end)
             items.dropdown_outline.MouseLeave:Connect(function()
-                library:tween(items.inner_text, {TextColor3 = rgb(178, 178, 178)})
-                library:tween(items[ "arrow" ], {ImageColor3 = rgb(178, 178, 178)})
+                library:tween(items.inner_text, {TextColor3 = resolveThemeColor({"Text", "Unselected"})})
+                library:tween(items[ "arrow" ], {ImageColor3 = resolveThemeColor({"Text", "Unselected"})})
             end)
 
             items.dropdown_outline.MouseButton1Click:Connect(function()
