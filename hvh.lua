@@ -2324,7 +2324,7 @@ local Library = {
                 Library:Create("ImageLabel", {
                     Name = "\0",
                     Parent = Items["MainFrame"].Instance,
-                    Image = "http://www.roblox.com/asset/?id=18245826428",
+                    Image = "rbxassetid://18245826428",
                     ScaleType = Enum.ScaleType.Slice,
                     SliceCenter = Rect.new(Vector2.new(21, 21), Vector2.new(79, 79)),
                     ImageColor3 = Library.Theme["Accent"],
@@ -2479,18 +2479,7 @@ local Library = {
                 Debounce = true 
 
                 Window.IsOpen = Bool
-
-                if Bool then
-                    Items["MainFrame"].Instance.Visible = true
-                    local TargetSize = UDim2.new(0, 580, 0, 560)
-                    Items["MainFrame"].Instance.Size = TargetSize - UDim2.new(0, 30, 0, 30)
-                    Items["MainFrame"]:Tween({Size = TargetSize}, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out))
-                end
-
                 Items["MainFrame"]:FadeDescendants(Bool, function()
-                    if not Bool then
-                        Items["MainFrame"].Instance.Visible = false
-                    end
                     Debounce = false
                 end)
 
