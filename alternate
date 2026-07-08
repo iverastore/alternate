@@ -731,17 +731,12 @@
         local function getAutoSize()
             local viewport = camera.ViewportSize
             
-            -- Mobile devices get smaller UI
-            if uis.TouchEnabled then
-                return dim2(0, math.min(viewport.X - 40, 450), 0, math.min(viewport.Y - 40, 500))
-            end
-            
-            -- Tablet (medium screens)
+            -- Small screens
             if viewport.X < 1024 then
-                return dim2(0, math.min(viewport.X - 60, 550), 0, math.min(viewport.Y - 60, 450))
+                return dim2(0, math.min(viewport.X - 40, 550), 0, math.min(viewport.Y - 40, 450))
             end
             
-            -- Desktop (large screens) - default
+            -- Large screens - default
             return dim2(0, 650, 0, 400)
         end
 
