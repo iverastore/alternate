@@ -108,17 +108,12 @@
     local function resolveThemeColor(name)
         if type(name) == "table" then
             local obj = library.CurrentTheme
-            for i = 1, #name do 
-                if not obj then 
-                    return library.Theme.Accent 
-                end
-                obj = obj[name[i]] 
-            end
-            return obj or library.Theme.Accent
+            for i = 1, #name do obj = obj[name[i]] end
+            return obj
         elseif name == "Accent" or name == "glow" then
             return library.Theme.Accent
         else
-            return library.Theme[name] or library.Theme.Accent
+            return library.Theme[name]
         end
     end
     
@@ -636,14 +631,7 @@
         end
 
         function library:load_config(config_json) 
-            local success, config = pcall(function()
-                return http_service:JSONDecode(config_json)
-            end)
-            
-            if not success then
-                warn("[ui.lua] Failed to decode config:", config)
-                return
-            end
+            local config = http_service:JSONDecode(config_json)
             
             for _, v in config do 
                 local function_set = library.config_flags[_]
@@ -653,19 +641,12 @@
                 end
 
                 if function_set then 
-                    if type(v) == "table" and v["Transparency"] ~= nil and v["Color"] then
-                        pcall(function()
-                            local color = Color3.fromHex(v["Color"])
-                            function_set(color, v["Transparency"])
-                        end)
-                    elseif type(v) == "table" and v["active"] ~= nil then 
-                        pcall(function()
-                            function_set(v)
-                        end)
+                    if type(v) == "table" and v["Transparency"] and v["Color"] then
+                        function_set(hex(v["Color"]), v["Transparency"])
+                    elseif type(v) == "table" and v["active"] then 
+                        function_set(v)
                     else
-                        pcall(function()
-                            function_set(v)
-                        end)
+                        function_set(v)
                     end
                 end 
             end 
@@ -727,26 +708,12 @@
     --
     
     -- Library element functions
-        -- Auto screen resize helper
-        local function getAutoSize()
-            local viewport = camera.ViewportSize
-            
-            -- Small screens
-            if viewport.X < 1024 then
-                return dim2(0, math.min(viewport.X - 40, 550), 0, math.min(viewport.Y - 40, 450))
-            end
-            
-            -- Large screens - default
-            return dim2(0, 650, 0, 400)
-        end
-
         function library:window(properties)
             local cfg = { 
                 -- Properties
                 name = properties.name or properties.Name or "nebula";
-                size = properties.size or properties.Size or getAutoSize();
+                size = properties.size or properties.Size or dim2(0, 650, 0, 400);
                 logo = properties.logo or properties.Logo or "rbxassetid://132488048637620";
-                auto_resize = properties.auto_resize ~= false; -- Default to true
 
                 selected_tab;
                 items = {};
@@ -802,14 +769,6 @@
                     SliceCenter = rect(vec2(21, 21), vec2(79, 79))
                 })
                 library:RegisterTheme(items[ "glow" ], "ImageColor3", "Accent")
-                
-                -- Auto resize on viewport change
-                if cfg.auto_resize then
-                    library:connection(uis:GetPropertyChangedSignal("ViewportSize"), function()
-                        local newSize = getAutoSize()
-                        items["window"].Size = newSize
-                    end)
-                end
                 
                 items[ "inline" ] = library:create( "Frame" , {
                     Parent = items[ "window" ];
