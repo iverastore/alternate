@@ -1958,6 +1958,7 @@
                         Visible = false;
                         Name = "\0";
                         ZIndex = 999;
+                        ClipsDescendants = true;
                         Position = dim2(0.05823293328285217, 0, 0.19430045783519745, 0);
                         BorderColor3 = rgb(0, 0, 0);
                         BorderSizePixel = 0;
@@ -2020,16 +2021,76 @@
                     Parent = button
                 });
 
+                button.MouseEnter:Connect(function()
+                    library:tween(button, {TextColor3 = rgb(255, 255, 255)})
+                end)
+                button.MouseLeave:Connect(function()
+                    local isSelected = false
+                    if cfg.multi then
+                        isSelected = find(cfg.multi_items, button.Text) ~= nil
+                    else
+                        isSelected = flags[cfg.flag] == button.Text
+                    end
+                    if not isSelected then
+                        library:tween(button, {TextColor3 = rgb(174, 174, 174)})
+                    end
+                end)
+
                 return button
             end
             
+            cfg._vis_gen = 0
             function cfg.set_visible(bool)
-                local a = bool and cfg.y_size or 0
-                items[ "dropdown_holder" ].Visible = bool 
-                items[ "arrow" ].Rotation = bool and 180 or 0
+                cfg._vis_gen = (cfg._vis_gen or 0) + 1
+                local gen = cfg._vis_gen
+                items[ "dropdown_holder" ].ClipsDescendants = true
 
-                items[ "dropdown_holder" ].Size = dim2(0, items.dropdown_outline.AbsoluteSize.X, 0, 0)
-                items[ "dropdown_holder" ].Position = dim2(0, items.dropdown_outline.AbsolutePosition.X, 0, items.dropdown_outline.AbsolutePosition.Y + 20)
+                if bool then
+                    local absPos = items.dropdown_outline.AbsolutePosition
+                    local absSize = items.dropdown_outline.AbsoluteSize
+
+                    -- Position BELOW the dropdown button (opens DOWN)
+                    items[ "dropdown_holder" ].Position = dim2(0, absPos.X, 0, absPos.Y + absSize.Y + 2)
+                    items[ "dropdown_holder" ].Size = dim2(0, absSize.X, 0, 0)
+                    items[ "dropdown_holder" ].Visible = true
+
+                    -- Animate arrow rotation
+                    library:tween(items[ "arrow" ], {Rotation = 180}, Enum.EasingStyle.Back, 0.2)
+
+                    -- Wait one frame for AutomaticSize to compute target height, then slide down
+                    task.spawn(function()
+                        task.wait()
+                        if gen ~= cfg._vis_gen then return end
+                        local targetH = items[ "dropdown_holder" ].AbsoluteSize.Y
+                        if targetH > 0 then
+                            items[ "dropdown_holder" ].AutomaticSize = Enum.AutomaticSize.None
+                            items[ "dropdown_holder" ].Size = dim2(0, absSize.X, 0, 0)
+                            library:tween(items[ "dropdown_holder" ], {Size = dim2(0, absSize.X, 0, targetH)}, Enum.EasingStyle.Quint, 0.25)
+                            task.delay(0.3, function()
+                                if gen == cfg._vis_gen and items[ "dropdown_holder" ].Visible then
+                                    items[ "dropdown_holder" ].AutomaticSize = Enum.AutomaticSize.Y
+                                    items[ "dropdown_holder" ].ClipsDescendants = false
+                                end
+                            end)
+                        end
+                    end)
+                else
+                    -- Animate arrow back
+                    library:tween(items[ "arrow" ], {Rotation = 0}, Enum.EasingStyle.Back, 0.2)
+
+                    -- Slide up close animation
+                    local currentH = items[ "dropdown_holder" ].AbsoluteSize.Y
+                    items[ "dropdown_holder" ].AutomaticSize = Enum.AutomaticSize.None
+                    items[ "dropdown_holder" ].Size = dim2(0, items.dropdown_outline.AbsoluteSize.X, 0, currentH)
+
+                    local closeTween = library:tween(items[ "dropdown_holder" ], {Size = dim2(0, items.dropdown_outline.AbsoluteSize.X, 0, 0)}, Enum.EasingStyle.Quint, 0.2)
+                    library:connection(closeTween.Completed, function()
+                        if gen ~= cfg._vis_gen then return end
+                        items[ "dropdown_holder" ].Visible = false
+                        items[ "dropdown_holder" ].AutomaticSize = Enum.AutomaticSize.Y
+                        items[ "dropdown_holder" ].ClipsDescendants = false
+                    end)
+                end
                 
                 library.current = cfg
             end
@@ -2049,7 +2110,7 @@
                 end
 
                 local displayValue = if isTable then concat(selected, ", ") else selected[1] or ""
-                items.inner_text.Text = cfg.name and (cfg.name .. ": " .. displayValue) or displayValue
+                items.inner_text.Text = displayValue
                 flags[cfg.flag] = if isTable then selected else selected[1]
                 
                 cfg.callback(flags[cfg.flag]) 
@@ -2095,6 +2156,15 @@
             function cfg.Set(value)
                 cfg.set(value)
             end
+
+            items.dropdown_outline.MouseEnter:Connect(function()
+                library:tween(items.inner_text, {TextColor3 = rgb(255, 255, 255)})
+                library:tween(items[ "arrow" ], {ImageColor3 = rgb(255, 255, 255)})
+            end)
+            items.dropdown_outline.MouseLeave:Connect(function()
+                library:tween(items.inner_text, {TextColor3 = rgb(178, 178, 178)})
+                library:tween(items[ "arrow" ], {ImageColor3 = rgb(178, 178, 178)})
+            end)
 
             items.dropdown_outline.MouseButton1Click:Connect(function()
                 if not cfg.open then
