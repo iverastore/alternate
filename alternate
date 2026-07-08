@@ -2011,11 +2011,11 @@
 
                 -- Element Holder
                     items[ "dropdown_holder" ] = library:create( "Frame" , {
-                        Parent = self.items.window or library.items;
+                        Parent = library.items;
                         Size = dim2(0, 114, 0, 0);
                         Visible = false;
                         Name = "\0";
-                        ZIndex = 1000;
+                        ZIndex = 9999;
                         ClipsDescendants = false;
                         Position = dim2(0, 0, 0, 0);
                         BorderColor3 = rgb(0, 0, 0);
@@ -2103,17 +2103,15 @@
                 local gen = cfg._vis_gen
 
                 if bool then
-                    local btnPos = items.dropdown_outline.AbsolutePosition
-                    local btnSize = items.dropdown_outline.AbsoluteSize
-                    local windowPos = (self.items.window and self.items.window.AbsolutePosition) or Vector2.new(0, 0)
+                    local absPos = items.dropdown_outline.AbsolutePosition
+                    local absSize = items.dropdown_outline.AbsoluteSize
                     
-                    -- Calculate position relative to window
-                    local relativeX = btnPos.X - windowPos.X
-                    local relativeY = btnPos.Y - windowPos.Y + btnSize.Y + 2
-                    
-                    items[ "dropdown_holder" ].Position = dim2(0, relativeX, 0, relativeY)
-                    items[ "dropdown_holder" ].Size = dim2(0, btnSize.X, 0, 0)
+                    -- Position BELOW the dropdown button (opens DOWN)
+                    items[ "dropdown_holder" ].Position = dim2(0, absPos.X, 0, absPos.Y + absSize.Y + 2)
+                    items[ "dropdown_holder" ].Size = dim2(0, absSize.X, 0, 0)
                     items[ "dropdown_holder" ].Visible = true
+                    
+                    print("[Dropdown] Position:", absPos.X, absPos.Y + absSize.Y + 2, "Size:", absSize.X)
 
                     -- Animate arrow rotation
                     library:tween(items[ "arrow" ], {Rotation = 180}, Enum.EasingStyle.Back, 0.2)
@@ -2123,8 +2121,9 @@
                         task.wait()
                         if gen ~= cfg._vis_gen then return end
                         local targetH = items[ "dropdown_holder" ].AbsoluteSize.Y
+                        print("[Dropdown] Target height:", targetH)
                         if targetH > 0 then
-                            library:tween(items[ "dropdown_holder" ], {Size = dim2(0, btnSize.X, 0, targetH)}, Enum.EasingStyle.Quint, 0.2)
+                            library:tween(items[ "dropdown_holder" ], {Size = dim2(0, absSize.X, 0, targetH)}, Enum.EasingStyle.Quint, 0.2)
                         end
                     end)
                 else
