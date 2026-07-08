@@ -7,8 +7,10 @@
     If you have any issues or bugs, please let me know in the ticket or dms.
 ]]
 
-if getgenv().Library and getgenv().Library.Exit then
-    getgenv().Library:Exit()
+if getgenv().Library and type(getgenv().Library) == "table" and type(getgenv().Library.Exit) == "function" then
+    pcall(function()
+        getgenv().Library:Exit()
+    end)
 end
 
 -- Bad executor support (atleast by a bit)
@@ -178,20 +180,28 @@ local Library = {
     Library.Theme = Themes.Preset
 
     Library.Exit = function(Self)
-        for _, Connection in Library.Connections do 
-            Connection:Disconnect()
+        pcall(function()
+            for _, Connection in Library.Connections do 
+                Connection:Disconnect()
+            end
+        end)
+
+        pcall(function()
+            for _, Thread in Library.Threads do 
+                coroutine.close(Thread)
+            end
+        end)
+
+        if Self.Holder and Self.Holder.Instance then 
+            pcall(function()
+                Self.Holder.Instance:Destroy()
+            end)
         end
 
-        for _, Thread in Library.Threads do 
-            coroutine.close(Thread)
-        end
-
-        if Self.Holder then 
-            Self.Holder.Instance:Destroy()
-        end
-
-        if Self.UnusedHolder then 
-            Self.UnusedHolder.Instance:Destroy()
+        if Self.UnusedHolder and Self.UnusedHolder.Instance then 
+            pcall(function()
+                Self.UnusedHolder.Instance:Destroy()
+            end)
         end
 
         Library = nil
