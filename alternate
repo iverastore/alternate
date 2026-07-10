@@ -200,78 +200,91 @@
         local menu = library:create("Frame", {
             Parent = library.items;
             Name = "\0";
-            BackgroundColor3 = rgb(15, 15, 15);
+            BackgroundColor3 = rgb(0, 0, 0);
             BorderSizePixel = 0;
-            Size = dim2(0, 150, 0, 0);
+            Size = dim2(0, 0, 0, 0);
             Position = dim2(0, mouseX, 0, mouseY);
-            AutomaticSize = Enum.AutomaticSize.Y;
+            AutomaticSize = Enum.AutomaticSize.XY;
             ZIndex = 200;
             Visible = true;
         })
         library.ContextMenu = menu
+        library:RegisterTheme(menu, "BackgroundColor3", {"Borders", "Outline"})
         
-        library:create("UIStroke", {
+        local inline = library:create("Frame", {
             Parent = menu;
-            Color = rgb(45, 45, 45);
-            Thickness = 1;
-            ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual;
+            Name = "\0";
+            Size = dim2(1, -2, 1, -2);
+            Position = dim2(0, 1, 0, 1);
+            BorderSizePixel = 0;
+            AutomaticSize = Enum.AutomaticSize.XY;
+            BackgroundColor3 = rgb(255, 255, 255);
         })
+        library:RegisterTheme(inline, "BackgroundColor3", "Inline")
         
-        library:create("UIPadding", {
-            Parent = menu;
-            PaddingTop = dim(0, 4);
-            PaddingBottom = dim(0, 4);
-            PaddingLeft = dim(0, 0);
-            PaddingRight = dim(0, 0);
+        library:create("UIGradient", {
+            Rotation = 90;
+            Parent = inline;
+            Color = rgbseq{rgbkey(0, rgb(33, 33, 33)), rgbkey(1, rgb(8, 8, 8))}
         })
         
         library:create("UIListLayout", {
-            Parent = menu;
-            Padding = dim(0, 0);
+            Parent = inline;
+            Padding = dim(0, 5);
             SortOrder = Enum.SortOrder.LayoutOrder;
+        })
+        
+        library:create("UIPadding", {
+            Parent = inline;
+            PaddingTop = dim(0, 5);
+            PaddingBottom = dim(0, 5);
+            PaddingLeft = dim(0, 1);
+            PaddingRight = dim(0, 1);
         })
         
         for _, opt in ipairs(options) do
             if opt.separator then
                 library:create("Frame", {
-                    Parent = menu;
+                    Parent = inline;
                     Name = "\0";
                     Size = dim2(1, 0, 0, 1);
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(35, 35, 35);
+                    BackgroundColor3 = rgb(19, 19, 19);
                 })
             else
                 local btn = library:create("TextButton", {
-                    Parent = menu;
+                    Parent = inline;
                     Name = "\0";
-                    BackgroundTransparency = 1;
-                    Size = dim2(1, 0, 0, 24);
                     AutoButtonColor = false;
-                    Text = "";
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255);
-                })
-                local label = library:create("TextLabel", {
-                    Parent = btn;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, 8, 0, 0);
-                    Size = dim2(1, -8, 1, 0);
                     Text = opt.text or "";
-                    TextColor3 = rgb(200, 200, 200);
+                    TextColor3 = rgb(178, 178, 178);
                     FontFace = library.font;
-                    TextSize = 11;
-                    TextXAlignment = Enum.TextXAlignment.Left;
-                    TextYAlignment = Enum.TextYAlignment.Center;
+                    TextSize = 10;
+                    Size = dim2(1, 0, 0, 0);
                     BorderSizePixel = 0;
+                    AutomaticSize = Enum.AutomaticSize.XY;
+                    BackgroundTransparency = 1;
+                    BackgroundColor3 = rgb(255, 255, 255);
+                    ZIndex = 201;
                 })
+                library:RegisterTheme(btn, "TextColor3", {"Text", "Unselected"})
+                
+                library:create("UIStroke", {
+                    Parent = btn;
+                })
+                
+                library:create("UIPadding", {
+                    Parent = btn;
+                    PaddingTop = dim(0, 1);
+                    PaddingRight = dim(0, 5);
+                    PaddingLeft = dim(0, 5);
+                })
+                
                 btn.MouseEnter:Connect(function()
-                    library:tween(label, {TextColor3 = rgb(255, 255, 255)})
-                    library:tween(btn, {BackgroundTransparency = 0.9})
+                    library:tween(btn, {TextColor3 = resolveThemeColor({"Text", "Main"})})
                 end)
                 btn.MouseLeave:Connect(function()
-                    library:tween(label, {TextColor3 = rgb(200, 200, 200)})
-                    library:tween(btn, {BackgroundTransparency = 1})
+                    library:tween(btn, {TextColor3 = resolveThemeColor({"Text", "Unselected"})})
                 end)
                 btn.MouseButton1Click:Connect(function()
                     library:CloseContextMenu()
@@ -2365,7 +2378,6 @@
             local dragging_sat = false 
             local dragging_hue = false 
             local dragging_alpha = false 
-            local mode_dd_open = false
 
             local h, s, v = cfg.color:ToHSV() 
             local a = cfg.alpha 
@@ -2405,7 +2417,7 @@
                     items[ "colorpicker_outline" ] = library:create( "Frame" , {
                         Parent = library.items;
                         Visible = false;
-                        Size = dim2(0, 161, 0, 245);
+                        Size = dim2(0, 161, 0, 180);
                         Name = "\0";
                         BorderColor3 = rgb(0, 0, 0);
                         ZIndex = 100;
@@ -2463,180 +2475,6 @@
                         Parent = items[ "colorpicker_background" ];
                         PaddingRight = dim(0, 3);
                         PaddingLeft = dim(0, 3)
-                    });
-                    
-                    -- RGB Modes section
-                    items[ "rgb_divider" ] = library:create( "Frame" , {
-                        Parent = items[ "colorpicker_background" ];
-                        Name = "\0";
-                        BackgroundTransparency = 1;
-                        Size = dim2(1, 0, 0, 1);
-                        Position = dim2(0, 0, 1, -68);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });
-                    
-                    items[ "rgb_divider_line" ] = library:create( "Frame" , {
-                        Parent = items[ "rgb_divider" ];
-                        Name = "\0";
-                        Size = dim2(1, 0, 0, 1);
-                        Position = dim2(0, 0, 0.5, 0);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(19, 19, 19)
-                    });
-                    library:RegisterTheme(items[ "rgb_divider_line" ], "BackgroundColor3", "Inline")
-                    
-                    items[ "rgb_mode_label" ] = library:create( "TextLabel" , {
-                        FontFace = library.font;
-                        TextColor3 = rgb(178, 178, 178);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Text = "Mode";
-                        Parent = items[ "colorpicker_background" ];
-                        Name = "\0";
-                        BackgroundTransparency = 1;
-                        Position = dim2(0, 3, 1, -60);
-                        Size = dim2(0, 30, 0, 14);
-                        BorderSizePixel = 0;
-                        TextSize = 9;
-                        TextXAlignment = Enum.TextXAlignment.Left;
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });
-                    
-                    items[ "rgb_mode_btn" ] = library:create( "TextButton" , {
-                        Parent = items[ "colorpicker_background" ];
-                        Name = "\0";
-                        AutoButtonColor = false;
-                        Text = "Static";
-                        TextColor3 = rgb(178, 178, 178);
-                        FontFace = library.font;
-                        TextSize = 9;
-                        BackgroundColor3 = rgb(39, 39, 39);
-                        Position = dim2(0, 35, 1, -62);
-                        Size = dim2(1, -38, 0, 16);
-                        BorderSizePixel = 0;
-                        ZIndex = 101
-                    });
-                    library:RegisterTheme(items[ "rgb_mode_btn" ], "BackgroundColor3", "Element")
-                    
-                    items[ "rgb_mode_outline" ] = library:create( "Frame" , {
-                        Parent = items[ "rgb_mode_btn" ];
-                        Name = "\0";
-                        Size = dim2(1, 0, 1, 0);
-                        BorderSizePixel = 0;
-                        BackgroundTransparency = 1;
-                        ZIndex = 102
-                    });
-                    
-                    library:create( "UIStroke" , {
-                        Parent = items[ "rgb_mode_btn" ];
-                        Color = rgb(19, 19, 19);
-                        Thickness = 1;
-                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                    });
-                    
-                    items[ "rgb_mode_dropdown" ] = library:create( "Frame" , {
-                        Parent = library.items;
-                        Visible = false;
-                        Name = "\0";
-                        ZIndex = 200;
-                        Size = dim2(0, 100, 0, 0);
-                        Position = dim2(0, 0, 0, 0);
-                        BorderSizePixel = 0;
-                        ClipsDescendants = true;
-                        BackgroundColor3 = rgb(0, 0, 0)
-                    });
-                    library:RegisterTheme(items[ "rgb_mode_dropdown" ], "BackgroundColor3", {"Borders", "Outline"})
-                    
-                    items[ "rgb_mode_dd_inline" ] = library:create( "Frame" , {
-                        Parent = items[ "rgb_mode_dropdown" ];
-                        Name = "\0";
-                        Size = dim2(1, -2, 0, -2);
-                        Position = dim2(0, 1, 0, 1);
-                        BorderColor3 = rgb(0, 0, 0);
-                        BorderSizePixel = 0;
-                        AutomaticSize = Enum.AutomaticSize.Y;
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });
-                    
-                    library:create( "UIGradient" , {
-                        Rotation = 90;
-                        Parent = items[ "rgb_mode_dd_inline" ];
-                        Color = rgbseq{rgbkey(0, rgb(33, 33, 33)), rgbkey(1, rgb(8, 8, 8))}
-                    });
-                    
-                    library:create( "UIListLayout" , {
-                        Parent = items[ "rgb_mode_dd_inline" ];
-                        Padding = dim(0, 5);
-                        SortOrder = Enum.SortOrder.LayoutOrder
-                    });
-                    
-                    library:create( "UIPadding" , {
-                        PaddingBottom = dim(0, 5);
-                        PaddingTop = dim(0, 5);
-                        Parent = items[ "rgb_mode_dd_inline" ]
-                    });
-                    
-                    items[ "rgb_speed_label" ] = library:create( "TextLabel" , {
-                        FontFace = library.font;
-                        TextColor3 = rgb(178, 178, 178);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Text = "Speed";
-                        Parent = items[ "colorpicker_background" ];
-                        Name = "\0";
-                        BackgroundTransparency = 1;
-                        Position = dim2(0, 3, 1, -40);
-                        Size = dim2(0, 30, 0, 14);
-                        BorderSizePixel = 0;
-                        TextSize = 9;
-                        TextXAlignment = Enum.TextXAlignment.Left;
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });
-                    
-                    items[ "rgb_speed_bar" ] = library:create( "TextButton" , {
-                        Parent = items[ "colorpicker_background" ];
-                        Name = "\0";
-                        AutoButtonColor = false;
-                        Text = "";
-                        BackgroundColor3 = rgb(39, 39, 39);
-                        Position = dim2(0, 35, 1, -42);
-                        Size = dim2(1, -38, 0, 16);
-                        BorderSizePixel = 0;
-                        ZIndex = 101
-                    });
-                    library:RegisterTheme(items[ "rgb_speed_bar" ], "BackgroundColor3", "Element")
-                    
-                    library:create( "UIStroke" , {
-                        Parent = items[ "rgb_speed_bar" ];
-                        Color = rgb(19, 19, 19);
-                        Thickness = 1;
-                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                    });
-                    
-                    items[ "rgb_speed_fill" ] = library:create( "Frame" , {
-                        Parent = items[ "rgb_speed_bar" ];
-                        Name = "\0";
-                        Size = dim2(0.25, 0, 1, 0);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = library.Theme.Accent;
-                        ZIndex = 102
-                    });
-                    library:RegisterTheme(items[ "rgb_speed_fill" ], "BackgroundColor3", "Accent")
-                    
-                    items[ "rgb_speed_text" ] = library:create( "TextLabel" , {
-                        FontFace = library.font;
-                        TextColor3 = rgb(255, 255, 255);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Text = "5x";
-                        Parent = items[ "rgb_speed_bar" ];
-                        Name = "\0";
-                        BackgroundTransparency = 1;
-                        Size = dim2(1, 0, 1, 0);
-                        BorderSizePixel = 0;
-                        TextSize = 9;
-                        TextXAlignment = Enum.TextXAlignment.Center;
-                        TextYAlignment = Enum.TextYAlignment.Center;
-                        ZIndex = 103;
-                        BackgroundColor3 = rgb(255, 255, 255)
                     });
                     
                     items[ "saturation_outline" ] = library:create( "TextButton" , {
@@ -2874,9 +2712,6 @@
                     });
 
                     library:RegisterTheme(items.title, "TextColor3", {"Text", "Main"})
-                    library:RegisterTheme(items[ "rgb_mode_label" ], "TextColor3", {"Text", "Unselected"})
-                    library:RegisterTheme(items[ "rgb_speed_label" ], "TextColor3", {"Text", "Unselected"})
-                    library:RegisterTheme(items[ "rgb_mode_btn" ], "TextColor3", {"Text", "Unselected"})
                 --  
             end;
 
@@ -2886,7 +2721,7 @@
                     local absX = items.gear_holder.AbsolutePosition.X
                     local absY = items.gear_holder.AbsolutePosition.Y + items.gear_holder.AbsoluteSize.Y + 2
                     local pickerW = 161
-                    local pickerH = 245
+                    local pickerH = 180
                     local viewportW = camera.ViewportSize.X
                     local viewportH = camera.ViewportSize.Y
                     if absX + pickerW > viewportW then
@@ -2899,8 +2734,6 @@
                     items.colorpicker_outline.Visible = true
                 else
                     items.colorpicker_outline.Visible = false
-                    items.rgb_mode_dropdown.Visible = false
-                    mode_dd_open = false
                 end
 
                 library.current = cfg
@@ -2994,159 +2827,6 @@
             items.saturation_outline.MouseButton1Down:Connect(function()
                 dragging_sat = true  
             end)
-
-            -- RGB Mode state
-            cfg.rgb_mode = "Static"
-            cfg.rgb_speed = 5
-            local dragging_speed = false
-            local rgb_modes = {"Static", "Rainbow", "Gradient", "Pulse", "Hue Shift", "Breathe"}
-
-            local function set_rgb_speed(val)
-                cfg.rgb_speed = math.clamp(math.floor(val), 1, 20)
-                items.rgb_speed_fill.Size = dim2(cfg.rgb_speed / 20, 0, 1, 0)
-                items.rgb_speed_text.Text = cfg.rgb_speed .. "x"
-            end
-
-            local function set_rgb_mode(mode)
-                cfg.rgb_mode = mode
-                items.rgb_mode_btn.Text = mode
-                flags[cfg.flag] = flags[cfg.flag] or {}
-                flags[cfg.flag].RGBMode = mode
-                flags[cfg.flag].RGBSpeed = cfg.rgb_speed
-            end
-
-            -- Populate mode dropdown
-            for _, mode in ipairs(rgb_modes) do
-                local btn = library:create("TextButton", {
-                    Parent = items.rgb_mode_dd_inline;
-                    Name = "\0";
-                    AutoButtonColor = false;
-                    Text = mode;
-                    TextColor3 = resolveThemeColor({"Text", "Unselected"});
-                    FontFace = library.font;
-                    TextSize = 10;
-                    Size = dim2(1, 0, 0, 0);
-                    BackgroundTransparency = 1;
-                    TextXAlignment = Enum.TextXAlignment.Center;
-                    BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    BackgroundColor3 = rgb(255, 255, 255);
-                    ZIndex = 201
-                })
-                library:create("UIStroke", {
-                    Parent = btn
-                })
-                library:create("UIPadding", {
-                    Parent = btn
-                })
-                btn.MouseEnter:Connect(function()
-                    library:tween(btn, {TextColor3 = resolveThemeColor({"Text", "Main"})})
-                end)
-                btn.MouseLeave:Connect(function()
-                    local isSelected = cfg.rgb_mode == mode
-                    if not isSelected then
-                        library:tween(btn, {TextColor3 = resolveThemeColor({"Text", "Unselected"})})
-                    end
-                end)
-                btn.MouseButton1Click:Connect(function()
-                    set_rgb_mode(mode)
-                    mode_dd_open = false
-                    local closeTween = library:tween(items.rgb_mode_dropdown, {Size = dim2(0, items.rgb_mode_btn.AbsoluteSize.X, 0, 0)}, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0.15)
-                    library:connection(closeTween.Completed, function()
-                        items.rgb_mode_dropdown.Visible = false
-                    end)
-                end)
-            end
-
-            items.rgb_mode_btn.MouseButton1Click:Connect(function()
-                mode_dd_open = not mode_dd_open
-                if mode_dd_open then
-                    local pos = items.rgb_mode_btn.AbsolutePosition
-                    local viewportH = camera.ViewportSize.Y
-                    
-                    items.rgb_mode_dropdown.Size = dim2(0, items.rgb_mode_btn.AbsoluteSize.X, 0, 0)
-                    items.rgb_mode_dropdown.Visible = true
-
-                    task.spawn(function()
-                        task.wait()
-                        local ddH = items.rgb_mode_dd_inline.AbsoluteSize.Y + 2
-                        local ddY = pos.Y + 16
-                        if ddY + ddH > viewportH then
-                            ddY = pos.Y - ddH - 2
-                        end
-                        items.rgb_mode_dropdown.Position = dim2(0, pos.X, 0, ddY)
-                        library:tween(items.rgb_mode_dropdown, {Size = dim2(0, items.rgb_mode_btn.AbsoluteSize.X, 0, ddH)}, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0.15)
-                    end)
-                else
-                    local closeTween = library:tween(items.rgb_mode_dropdown, {Size = dim2(0, items.rgb_mode_btn.AbsoluteSize.X, 0, 0)}, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0.15)
-                    library:connection(closeTween.Completed, function()
-                        items.rgb_mode_dropdown.Visible = false
-                    end)
-                end
-            end)
-
-            items.rgb_mode_btn.MouseEnter:Connect(function()
-                library:tween(items.rgb_mode_btn, {TextColor3 = resolveThemeColor({"Text", "Main"})})
-            end)
-            items.rgb_mode_btn.MouseLeave:Connect(function()
-                library:tween(items.rgb_mode_btn, {TextColor3 = resolveThemeColor({"Text", "Unselected"})})
-            end)
-
-            -- Speed slider
-            items.rgb_speed_bar.MouseButton1Down:Connect(function()
-                dragging_speed = true
-            end)
-
-            uis.InputChanged:Connect(function(input)
-                if dragging_speed and input.UserInputType == Enum.UserInputType.MouseMovement then
-                    local mouse = uis:GetMouseLocation()
-                    local barPos = items.rgb_speed_bar.AbsolutePosition
-                    local barSize = items.rgb_speed_bar.AbsoluteSize
-                    local ratio = math.clamp((mouse.X - barPos.X) / barSize.X, 0, 1)
-                    set_rgb_speed(ratio * 20)
-                    flags[cfg.flag] = flags[cfg.flag] or {}
-                    flags[cfg.flag].RGBSpeed = cfg.rgb_speed
-                end
-            end)
-
-            library:connection(uis.InputEnded, function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    dragging_speed = false
-                    if mode_dd_open and not library:mouse_in_frame(items.rgb_mode_dropdown) then
-                        mode_dd_open = false
-                        items.rgb_mode_dropdown.Visible = false
-                    end
-                end
-            end)
-
-            -- Heartbeat to apply RGB modes
-            library:connection(run.Heartbeat, function()
-                if cfg.rgb_mode == "Static" or not items.colorpicker_outline.Visible then return end
-                local speed = cfg.rgb_speed
-                local t = tick()
-                if cfg.rgb_mode == "Rainbow" then
-                    local hue = (t * speed / 10) % 1
-                    h = hue
-                    cfg.set(Color3.fromHSV(h, s, v), nil)
-                elseif cfg.rgb_mode == "Gradient" then
-                    local hue = (t * speed / 10) % 1
-                    h = hue
-                    cfg.set(Color3.fromHSV(h, 1, v), nil)
-                elseif cfg.rgb_mode == "Pulse" then
-                    local pulse = 0.5 + 0.5 * math.sin(t * speed / 3)
-                    local pulseColor = Color3.fromHSV(h, s, pulse)
-                    cfg.set(pulseColor, nil)
-                elseif cfg.rgb_mode == "Hue Shift" then
-                    local hue = (t * speed / 5) % 1
-                    h = hue
-                    cfg.set(Color3.fromHSV(h, s, v), nil)
-                elseif cfg.rgb_mode == "Breathe" then
-                    local breathe = 0.3 + 0.7 * (0.5 + 0.5 * math.sin(t * speed / 4))
-                    cfg.set(Color3.fromHSV(h, s, breathe), nil)
-                end
-            end)
-
-            set_rgb_speed(5)
 
             cfg.set(cfg.color, cfg.alpha)
             config_flags[cfg.flag] = cfg.set
