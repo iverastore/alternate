@@ -87,7 +87,7 @@
             Unselected = Color3.fromRGB(120, 120, 120)
         },
         Borders = {
-            Outline = Color3.fromRGB(255, 255, 255),
+            Outline = Color3.fromRGB(30, 30, 30),
             Inline = Color3.fromRGB(0, 0, 0)
         }
     }
@@ -1869,19 +1869,6 @@
 
             items[ "slider_parent" ].MouseButton1Down:Connect(function()
                 cfg.dragging = true 
-            end)
-
-            items[ "slider_parent" ].MouseButton2Click:Connect(function()
-                local mouseLoc = uis:GetMouseLocation()
-                library:CreateContextMenu({
-                    {text = "Reset to Default", callback = function()
-                        cfg.set(cfg.default)
-                    end},
-                    {separator = true},
-                    {text = "Copy Value", callback = function()
-                        if setclipboard then setclipboard(tostring(cfg.value)) end
-                    end},
-                }, mouseLoc.X, mouseLoc.Y)
             end)
 
             library:connection(uis.InputChanged, function(input)
