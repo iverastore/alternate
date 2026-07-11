@@ -75,20 +75,20 @@
     
     getgenv().library.Theme = {
         Accent = Color3.fromRGB(255, 255, 255),
-        Background = Color3.fromRGB(12, 12, 12),
-        Inline = Color3.fromRGB(19, 19, 19),
-        Element = Color3.fromRGB(39, 39, 39),
-        ["Element 2"] = Color3.fromRGB(56, 56, 56),
-        ["Hovered Element"] = Color3.fromRGB(61, 61, 61)
+        Background = Color3.fromRGB(0, 0, 0),
+        Inline = Color3.fromRGB(10, 10, 10),
+        Element = Color3.fromRGB(20, 20, 20),
+        ["Element 2"] = Color3.fromRGB(35, 35, 35),
+        ["Hovered Element"] = Color3.fromRGB(45, 45, 45)
     }
     getgenv().library.CurrentTheme = {
         Text = {
-            Main = Color3.fromRGB(230, 230, 230),
-            Unselected = Color3.fromRGB(134, 134, 134)
+            Main = Color3.fromRGB(255, 255, 255),
+            Unselected = Color3.fromRGB(120, 120, 120)
         },
         Borders = {
-            Outline = Color3.fromRGB(40, 40, 40),
-            Inline = Color3.fromRGB(3, 3, 3)
+            Outline = Color3.fromRGB(255, 255, 255),
+            Inline = Color3.fromRGB(0, 0, 0)
         }
     }
     getgenv().themes = {
@@ -249,7 +249,7 @@
                     Name = "\0";
                     Size = dim2(1, 0, 0, 1);
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(19, 19, 19);
+                    BackgroundColor3 = rgb(10, 10, 10);
                 })
             else
                 local btn = library:create("TextButton", {
@@ -3785,7 +3785,7 @@ function library:Watermark(options)
 
     local container = library:create("Frame", {
         Parent = watermark_gui,
-        BackgroundColor3 = rgb(40, 40, 40),
+        BackgroundColor3 = rgb(255, 255, 255),
         BorderSizePixel = 0,
         Position = dim2(0.9, -150, 0, 15),
         Size = dim2(0, 200, 0, 28),
@@ -3905,7 +3905,7 @@ function library:TargetHUD(options)
     
     local container = library:create("Frame", {
         Parent = hud_gui,
-        BackgroundColor3 = rgb(40, 40, 40),
+        BackgroundColor3 = rgb(255, 255, 255),
         BorderSizePixel = 0,
         Position = dim2(0.5, -100, 0.7, 0),
         Size = dim2(0, 200, 0, 70),
@@ -4050,7 +4050,7 @@ function library:KeybindList(options)
 
     local container = library:create("Frame", {
         Parent = keylist_gui,
-        BackgroundColor3 = rgb(40, 40, 40),
+        BackgroundColor3 = rgb(255, 255, 255),
         BorderSizePixel = 0,
         Position = dim2(0.05, 0, 0.3, 0),
         Size = dim2(0, 180, 0, 30),
@@ -4116,7 +4116,7 @@ function library:KeybindList(options)
 
     local header_line = library:create("Frame", {
         Parent = content,
-        BackgroundColor3 = rgb(40, 40, 40),
+        BackgroundColor3 = rgb(255, 255, 255),
         BorderSizePixel = 0,
         Position = dim2(0, 0, 0, 22),
         Size = dim2(1, 0, 0, 1),
