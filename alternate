@@ -1955,7 +1955,24 @@
                     end 
 
                     if cfg.name then
-                        self:Label({Name = cfg.name})
+                        items[ "name_text" ] = library:create( "TextLabel" , {
+                            FontFace = library.font;
+                            TextColor3 = rgb(178, 178, 178);
+                            BorderColor3 = rgb(0, 0, 0);
+                            Text = cfg.name;
+                            Parent = items[ "object" ];
+                            BackgroundTransparency = 1;
+                            Position = dim2(0, 0, 0, 0);
+                            Size = dim2(0.4, 0, 0, 16);
+                            BorderSizePixel = 0;
+                            TextXAlignment = Enum.TextXAlignment.Left;
+                            TextYAlignment = Enum.TextYAlignment.Center;
+                            TextSize = 10;
+                            BackgroundColor3 = rgb(255, 255, 255)
+                        });
+                        library:create( "UIStroke" , {
+                            Parent = items[ "name_text" ]
+                        });
                     end
 
                     items[ "dropdown_outline" ] = library:create( "TextButton" , {
@@ -1963,7 +1980,8 @@
                         Text = "";
                         AutoButtonColor = false;
                         Name = "\0";
-                        Size = dim2(1, 0, 0, 16);
+                        Position = dim2(0.4, 0, 0, 0);
+                        Size = dim2(0.6, 0, 0, 16);
                         BorderSizePixel = 0;
                         BackgroundColor3 = rgb(0, 0, 0)
                     });
@@ -2033,12 +2051,7 @@
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
                     
-                    library:create( "UIListLayout" , {
-                        Parent = items[ "object" ];
-                        Padding = dim(0, 5);
-                        SortOrder = Enum.SortOrder.LayoutOrder;
-                        FillDirection = Enum.FillDirection.Vertical
-                    });
+                    -- No UIListLayout needed, name and dropdown are manually positioned
                 -- 
 
                 -- Element Holder
