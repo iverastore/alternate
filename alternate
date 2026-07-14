@@ -1939,7 +1939,11 @@
                             PaddingTop = dim(0, -2)
                         });                        
                     end 
-                    
+
+                    if cfg.name then
+                        self:Label({Name = cfg.name})
+                    end
+
                     items[ "dropdown_outline" ] = library:create( "TextButton" , {
                         Parent = items[ "object" ];
                         Text = "";
