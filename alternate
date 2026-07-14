@@ -1238,7 +1238,6 @@
                 items[ "scrolling" ] = library:create( "ScrollingFrame" , {
                     ScrollBarImageColor3 = rgb(0, 0, 0);
                     Active = true;
-                    AutomaticCanvasSize = Enum.AutomaticSize.Y;
                     ScrollBarThickness = 0;
                     Parent = items[ "section_shadow_three" ];
                     Name = "\0";
@@ -1276,8 +1275,10 @@
                 });
                 
                 local function updateSectionCanvas()
-                    local h = sectionLayout.AbsoluteContentSize.Y
+                    local scale = library._current_scale or 1
+                    local h = sectionLayout.AbsoluteContentSize.Y / scale
                     items[ "elements" ].Size = dim2(1, -24, 0, h)
+                    items[ "scrolling" ].CanvasSize = dim2(0, 0, 0, h + 24)
                 end
                 sectionLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionCanvas)
                 library._scale_update_callbacks = library._scale_update_callbacks or {}
@@ -1490,7 +1491,6 @@
                     subItems[ "scrolling" ] = library:create( "ScrollingFrame" , {
                         ScrollBarImageColor3 = rgb(0, 0, 0);
                         Active = true;
-                        AutomaticCanvasSize = Enum.AutomaticSize.Y;
                         ScrollBarThickness = 0;
                         Parent = items[ "content_area" ];
                         Name = "\0";
@@ -1528,8 +1528,10 @@
                     });
 
                     local function updateSubCanvas()
-                        local h = subLayout.AbsoluteContentSize.Y
+                        local scale = library._current_scale or 1
+                        local h = subLayout.AbsoluteContentSize.Y / scale
                         subItems[ "elements" ].Size = dim2(1, -24, 0, h)
+                        subItems[ "scrolling" ].CanvasSize = dim2(0, 0, 0, h + 24)
                     end
                     subLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSubCanvas)
                     library._scale_update_callbacks = library._scale_update_callbacks or {}
@@ -1962,10 +1964,10 @@
                             Text = cfg.name;
                             Parent = items[ "object" ];
                             BackgroundTransparency = 1;
-                            Position = dim2(0, 0, 0, 0);
-                            Size = dim2(0.4, 0, 0, 16);
+                            Position = dim2(0.6, 4, 0, 0);
+                            Size = dim2(0.4, -4, 0, 16);
                             BorderSizePixel = 0;
-                            TextXAlignment = Enum.TextXAlignment.Left;
+                            TextXAlignment = Enum.TextXAlignment.Right;
                             TextYAlignment = Enum.TextYAlignment.Center;
                             TextSize = 10;
                             BackgroundColor3 = rgb(255, 255, 255)
@@ -1980,7 +1982,7 @@
                         Text = "";
                         AutoButtonColor = false;
                         Name = "\0";
-                        Position = dim2(0.4, 0, 0, 0);
+                        Position = dim2(0, 0, 0, 0);
                         Size = dim2(0.6, 0, 0, 16);
                         BorderSizePixel = 0;
                         BackgroundColor3 = rgb(0, 0, 0)
@@ -3792,9 +3794,15 @@ function library:set_element_scale(scale)
         end
     end
     library._scale_update_callbacks = library._scale_update_callbacks or {}
-    for _, cb in ipairs(library._scale_update_callbacks) do
+    local callbacks = library._scale_update_callbacks
+    for _, cb in ipairs(callbacks) do
         pcall(cb)
     end
+    task.defer(function()
+        for _, cb in ipairs(callbacks) do
+            pcall(cb)
+        end
+    end)
 end
 
 function library:get_element_scale()
