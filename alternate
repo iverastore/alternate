@@ -1258,7 +1258,6 @@
                     Position = dim2(0, 12, 0, 12);
                     Size = dim2(1, -24, 0, 0);
                     BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.Y;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
                 
@@ -1270,11 +1269,19 @@
                 library._section_scales = library._section_scales or {}
                 table.insert(library._section_scales, items[ "element_scale" ])
                 
-                library:create( "UIListLayout" , {
+                local sectionLayout = library:create( "UIListLayout" , {
                     Parent = items[ "elements" ];
                     Padding = dim(0, 5);
                     SortOrder = Enum.SortOrder.LayoutOrder
                 });
+                
+                local function updateSectionCanvas()
+                    local h = sectionLayout.AbsoluteContentSize.Y
+                    items[ "elements" ].Size = dim2(1, -24, 0, h)
+                end
+                sectionLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionCanvas)
+                library._scale_update_callbacks = library._scale_update_callbacks or {}
+                table.insert(library._scale_update_callbacks, updateSectionCanvas)
                 
                 
                 items.text = library:create( "TextLabel" , {
@@ -1504,7 +1511,6 @@
                         Position = dim2(0, 12, 0, 12);
                         Size = dim2(1, -24, 0, 0);
                         BorderSizePixel = 0;
-                        AutomaticSize = Enum.AutomaticSize.Y;
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
 
@@ -1515,11 +1521,19 @@
                     library._section_scales = library._section_scales or {}
                     table.insert(library._section_scales, subScale)
 
-                    library:create( "UIListLayout" , {
+                    local subLayout = library:create( "UIListLayout" , {
                         Parent = subItems[ "elements" ];
                         Padding = dim(0, 5);
                         SortOrder = Enum.SortOrder.LayoutOrder
                     });
+
+                    local function updateSubCanvas()
+                        local h = subLayout.AbsoluteContentSize.Y
+                        subItems[ "elements" ].Size = dim2(1, -24, 0, h)
+                    end
+                    subLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSubCanvas)
+                    library._scale_update_callbacks = library._scale_update_callbacks or {}
+                    table.insert(library._scale_update_callbacks, updateSubCanvas)
                 end
 
                 function sub.set_visible(vis)
@@ -3763,6 +3777,10 @@ function library:set_element_scale(scale)
         if uiScale and uiScale.Parent then
             uiScale.Scale = scale
         end
+    end
+    library._scale_update_callbacks = library._scale_update_callbacks or {}
+    for _, cb in ipairs(library._scale_update_callbacks) do
+        pcall(cb)
     end
 end
 
