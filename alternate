@@ -1262,6 +1262,14 @@
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
                 
+                items[ "element_scale" ] = library:create( "UIScale" , {
+                    Parent = items[ "scrolling" ];
+                    Scale = 1
+                });
+                
+                library._section_scales = library._section_scales or {}
+                table.insert(library._section_scales, items[ "element_scale" ])
+                
                 library:create( "UIListLayout" , {
                     Parent = items[ "elements" ];
                     Padding = dim(0, 5);
@@ -1500,6 +1508,13 @@
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
 
+                    local subScale = library:create( "UIScale" , {
+                        Parent = subItems[ "scrolling" ];
+                        Scale = 1
+                    });
+                    library._section_scales = library._section_scales or {}
+                    table.insert(library._section_scales, subScale)
+
                     library:create( "UIListLayout" , {
                         Parent = subItems[ "elements" ];
                         Padding = dim(0, 5);
@@ -1698,20 +1713,6 @@
             items[ "object" ].MouseButton1Click:Connect(function()
                 cfg.enabled = not cfg.enabled 
                 cfg.set(cfg.enabled)
-            end)
-            
-            items[ "object" ].MouseButton2Click:Connect(function()
-                local mouseLoc = uis:GetMouseLocation()
-                library:CreateContextMenu({
-                    {text = "Reset to Default", callback = function()
-                        cfg.set(cfg.default)
-                        cfg.enabled = cfg.default
-                    end},
-                    {separator = true},
-                    {text = "Copy Value", callback = function()
-                        if setclipboard then setclipboard(tostring(cfg.enabled)) end
-                    end},
-                }, mouseLoc.X, mouseLoc.Y)
             end)
             
             cfg.set(cfg.default)
@@ -3749,6 +3750,20 @@ function library:SetVisibility(vis)
     if main_gui then
         main_gui.Visible = vis
     end
+end
+
+function library:set_element_scale(scale)
+    library._current_scale = scale
+    library._section_scales = library._section_scales or {}
+    for _, uiScale in ipairs(library._section_scales) do
+        if uiScale and uiScale.Parent then
+            uiScale.Scale = scale
+        end
+    end
+end
+
+function library:get_element_scale()
+    return library._current_scale or 1
 end
 
 function library:Notify(text, duration)
