@@ -3245,15 +3245,56 @@
                 -- 
                 
                 -- Connections 
-                    outline.MouseButton2Down:Connect(function()
-                        local modes = {"toggle", "hold", "always"}
-                        local current = table.find(modes, cfg.mode) or 1
-                        local nextMode = modes[(current % 3) + 1]
-                        cfg.set_mode(nextMode)
-                        if notifications and notifications.create_notification then
-                            notifications:create_notification({name = "Mode set to: " .. nextMode})
-                        end
-                    end)
+                                          outline.MouseButton2Down:Connect(function()
+                          if cfg.open_context_menu then cfg.open_context_menu() return end
+                          
+                          local menu = library:create("Frame", {
+                              Parent = library.gui,
+                              Size = dim2(0, 100, 0, 60),
+                              Position = dim2(0, uis:GetMouseLocation().X, 0, uis:GetMouseLocation().Y),
+                              BackgroundColor3 = rgb(25, 25, 25),
+                              ZIndex = 100
+                          })
+                          library:create("UIStroke", { Parent = menu, Color = rgb(45, 45, 45) })
+                          library:create("UIListLayout", { Parent = menu })
+                          
+                          local function closeMenu() if menu then menu:Destroy() cfg.open_context_menu = nil end end
+                          cfg.open_context_menu = closeMenu
+                          
+                          local modes = {"toggle", "hold", "always"}
+                          for _, m in ipairs(modes) do
+                              local btn = library:create("TextButton", {
+                                  Parent = menu,
+                                  Size = dim2(1, 0, 0, 20),
+                                  BackgroundTransparency = 1,
+                                  Text = "  " .. m:sub(1,1):upper() .. m:sub(2),
+                                  TextColor3 = (cfg.mode == m) and library.theme.Accent or rgb(200, 200, 200),
+                                  FontFace = library.font,
+                                  TextSize = library.font_size,
+                                  TextXAlignment = Enum.TextXAlignment.Left,
+                                  ZIndex = 101
+                              })
+                              btn.MouseButton1Click:Connect(function()
+                                  cfg.set_mode(m)
+                                  closeMenu()
+                              end)
+                          end
+                          
+                          -- Close if clicked outside
+                          task.spawn(function()
+                              local conn; conn = uis.InputBegan:Connect(function(input)
+                                  if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 then
+                                      local mp = uis:GetMouseLocation()
+                                      local ap = menu.AbsolutePosition
+                                      local as = menu.AbsoluteSize
+                                      if mp.X < ap.X or mp.X > ap.X + as.X or mp.Y < ap.Y or mp.Y > ap.Y + as.Y then
+                                          closeMenu()
+                                          conn:Disconnect()
+                                      end
+                                  end
+                              end)
+                          end)
+                      end)
                     
                     outline.MouseButton1Down:Connect(function()
                         task.wait()
