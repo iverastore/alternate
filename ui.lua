@@ -2697,7 +2697,7 @@
                             end
                         end
 
-                        text.Text = isTable and concat(selected, ", ") or selected[1]
+                        text.Text = isTable and concat(selected, ", ") or selected[1] or ""
                         flags[cfg.flag] = isTable and selected or selected[1]
                             
                         cfg.callback(flags[cfg.flag]) 
