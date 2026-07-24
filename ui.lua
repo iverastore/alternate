@@ -159,6 +159,12 @@
     
     library.__index = library
 
+    function library:visible(bool)
+        if self.__ui then
+            self.__ui.Visible = bool
+        end
+    end
+
     for _, path in next, library.folders do 
         makefolder(library.directory .. path)
     end
@@ -2198,6 +2204,8 @@
                     end)
                 -- 
 
+                cfg.__ui = toggle
+
                 return setmetatable(cfg, library)
             end
             
@@ -2412,6 +2420,8 @@
                 -- 
 
                 cfg.set(cfg.default)
+
+                cfg.__ui = slider
 
                 config_flags[cfg.flag] = cfg.set
 
@@ -2755,6 +2765,8 @@
                     end)
                 -- 
 
+                cfg.__ui = dropdown_path
+
                 return setmetatable(cfg, library)
             end 
             
@@ -2845,6 +2857,8 @@
 
                     colorpicker.outline.Position = dim_offset(button.AbsolutePosition.X + 1, button.AbsolutePosition.Y + button.AbsoluteSize.Y + 63)
                 -- 
+
+                cfg.__ui = outline
 
                 return setmetatable(cfg, library)
             end 
@@ -2945,6 +2959,8 @@
                         FillDirection = Enum.FillDirection.Vertical
                     })
                 -- 
+
+                cfg.__ui = label
 
                 return setmetatable(cfg, library)
             end 
@@ -3113,21 +3129,33 @@
                     end)
                 -- 
                 
+                cfg.__ui = textbox_holder
+
                 return setmetatable(cfg, library)
             end 
             
             function library:addKeyBind(options) 
+                local parent_set = nil
+                if self and self.set and type(self.set) == "function" and self ~= library then
+                    parent_set = self.set
+                end
+
                 local cfg = {
                     flag = options.flag or "SET ME A FLAG NOWWW!!!!",
-                    callback = options.callback or function() end,
+                    callback = options.callback or (parent_set and function(bool)
+                        if self then
+                            self.enabled = bool
+                        end
+                        parent_set(bool)
+                    end) or function() end,
                     open = false,
                     binding = nil, 
                     name = options.name or nil, 
                     ignore_key = options.ignore or false, 
     
-                    key = options.key or nil, 
-                    mode = options.mode or "toggle",
-                    active = options.default or false, 
+                    key = options.key or (typeof(options.default) == "EnumItem" and options.default) or nil, 
+                    mode = (options.mode and string.lower(options.mode)) or "toggle",
+                    active = (type(options.default) == "boolean") and options.default or false, 
     
                     hold_instances = {},
                 }
@@ -3198,8 +3226,8 @@
                             cfg.key = input or "..."	
 
                             cfg.callback(cfg.active or false)
-                        elseif find({"toggle", "hold", "always"}, input) then 
-                            cfg.set_mode(input)
+                        elseif type(input) == "string" and find({"toggle", "hold", "always"}, string.lower(input)) then 
+                            cfg.set_mode(string.lower(input))
 
                             if input == "always" then 
                                 cfg.active = true 
@@ -3212,21 +3240,28 @@
                             input.key = input.key == Enum.KeyCode.Escape and "..." or input.key
                             cfg.key = input.key or "..."
                             
-                            cfg.mode = input.mode or "toggle"
+                            cfg.mode = (input.mode and string.lower(input.mode)) or "toggle"
 
                             if input.active then
                                 cfg.active = input.active
                             end
                         end 
 
+                        local flag_key = cfg.key
+                        if flag_key == "..." or flag_key == nil then
+                            flag_key = nil
+                        end
                         flags[cfg.flag] = {
                             mode = cfg.mode,
                             key = cfg.key, 
-                            active = cfg.active
+                            Key = flag_key,
+                            active = cfg.active,
+                            Toggled = cfg.active == true,
+                            name = cfg.name or (self and self.name) or cfg.flag,
                         }
 
                         local text = tostring(cfg.key) ~= "Enums" and (keys[cfg.key] or tostring(cfg.key):gsub("Enum.", "")) or nil
-                        local __text = text and (tostring(text):gsub("KeyCode.", ""):gsub("UserInputType.", ""))
+                        local __text = text and (tostring(text):gsub("KeyCode.", ""):gsub("UserInputType.", "")) or "..."
                         
                         text_label.Text = "[" .. string.lower(__text) .. "]"
 
@@ -3250,8 +3285,8 @@
                         local current = table.find(modes, cfg.mode) or 1
                         local nextMode = modes[(current % 3) + 1]
                         cfg.set_mode(nextMode)
-                        if notifications and notifications.create_notification then
-                            notifications:create_notification({name = "Mode set to: " .. nextMode})
+                        if library.notifications and library.notifications.create_notification then
+                            library.notifications:create_notification({name = "Mode set to: " .. nextMode})
                         end
                     end)
                     
@@ -3259,8 +3294,10 @@
                         task.wait()
                         text_label.Text = "[ ... ]"	
 
-                        cfg.binding = library:connection(uis.InputBegan, function(keycode, game_event)  
-                            cfg.set(keycode.KeyCode)
+                        cfg.binding = library:connection(uis.InputBegan, function(input, game_event)  
+                            if game_event then return end
+                            local selected_key = input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode or input.UserInputType
+                            cfg.set(selected_key)
 
                             cfg.binding:Disconnect() 
                             cfg.binding = nil
@@ -3269,7 +3306,8 @@
 
                     library:connection(uis.InputBegan, function(input, game_event) 
                         if not game_event then 
-                            if input.KeyCode == cfg.key then 
+                            local selected_key = input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode or input.UserInputType
+                            if selected_key == cfg.key then 
                                 if cfg.mode == "toggle" then 
                                     cfg.active = not cfg.active
                                     cfg.set(cfg.active)
@@ -3296,6 +3334,8 @@
             
                     cfg.set({mode = cfg.mode, active = cfg.active, key = cfg.key})
                 --      
+
+                cfg.__ui = outline
                     
                 config_flags[cfg.flag] = cfg.set
 
@@ -3665,6 +3705,9 @@
                         PaddingLeft = dim(0, 1)
                     })
                     
+                cfg.__ui = button_holder
+
+                return setmetatable(cfg, library)
             end
         -- 
     -- 
@@ -3863,7 +3906,7 @@ end
 function library:keybindList(options)
     local kl = library:create("Frame", {
         Parent = library.gui,
-        Size = dim2(0, 180, 0, 200),
+        Size = dim2(0, 180, 0, 25),
         Position = dim2(0, 20, 0, 200),
         BackgroundColor3 = rgb(25, 25, 25),
         BorderColor3 = rgb(0, 0, 0),
@@ -3883,7 +3926,54 @@ function library:keybindList(options)
         TextSize = 12
     })
     library:applyTheme(title, "accent", "TextColor3")
+
+    local list_holder = library:create("Frame", {
+        Parent = kl,
+        Name = "",
+        BackgroundTransparency = 1,
+        Position = dim2(0, 0, 0, 22),
+        Size = dim2(1, 0, 0, 0),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    library:create("UIListLayout", {
+        Parent = list_holder,
+        Padding = dim(0, 2),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        FillDirection = Enum.FillDirection.Vertical
+    })
+
     library:draggify(kl)
+
+    task.spawn(function()
+        while task.wait(0.2) do
+            for _, child in ipairs(list_holder:GetChildren()) do
+                if child:IsA("TextLabel") then child:Destroy() end
+            end
+            local active_count = 0
+            for flag, data in pairs(flags) do
+                if type(data) == "table" and data.Key and data.Toggled and not tostring(flag):find("^_") then
+                    active_count = active_count + 1
+                    local key_display = keys[data.Key] or tostring(data.Key):gsub("Enum.KeyCode.", ""):gsub("Enum.UserInputType.", "")
+                    local entry = library:create("TextLabel", {
+                        Parent = list_holder,
+                        Text = string.format("%s [%s]", tostring(data.name or flag), key_display),
+                        FontFace = library.font,
+                        TextColor3 = rgb(200, 200, 200),
+                        BackgroundTransparency = 1,
+                        Size = dim2(1, -4, 0, 14),
+                        Position = dim2(0, 2, 0, 0),
+                        BorderSizePixel = 0,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        TextSize = 11,
+                        BackgroundColor3 = rgb(255, 255, 255)
+                    })
+                end
+            end
+            kl.Size = dim2(0, 180, 0, 25 + (active_count * 16))
+        end
+    end)
+
     return kl
 end
 
