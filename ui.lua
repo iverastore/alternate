@@ -3245,6 +3245,16 @@
                 -- 
                 
                 -- Connections 
+                    outline.MouseButton2Down:Connect(function()
+                        local modes = {"toggle", "hold", "always"}
+                        local current = table.find(modes, cfg.mode) or 1
+                        local nextMode = modes[(current % 3) + 1]
+                        cfg.set_mode(nextMode)
+                        if notifications and notifications.create_notification then
+                            notifications:create_notification({name = "Mode set to: " .. nextMode})
+                        end
+                    end)
+                    
                     outline.MouseButton1Down:Connect(function()
                         task.wait()
                         text_label.Text = "[ ... ]"	
