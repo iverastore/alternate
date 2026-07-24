@@ -84,7 +84,7 @@
 
     local themes = {
         preset = {
-            ["accent"] = hex("#AA55EB"),
+            ["accent"] = hex("#FFFFFF"),
             -- ["glow"] = hex("#AA55EB"), -- ignore
         }, 	
 
@@ -3875,9 +3875,79 @@ function library:keybindList(options)
 end
 
 function library:subtab(properties)
-    -- For Obelus, we can treat a subtab as returning a column wrapper or just returning the tab itself
-    -- since native subtabs aren't fully implemented without massive UI engine rewrites
-    return self
+    local cfg = {
+        name = properties.name or properties.Name or "subtab",
+    }
+    
+    if not self.subtab_holder then
+        -- Convert tab's page to vertical layout for subtabs
+        local layout = self.page:FindFirstChildWhichIsA("UIListLayout")
+        if layout then
+            layout.FillDirection = Enum.FillDirection.Vertical
+            layout.Padding = dim(0, 5)
+        end
+        
+        self.subtab_holder = library:create("Frame", {
+            Parent = self.page,
+            BackgroundTransparency = 1,
+            Size = dim2(1, 0, 0, 25)
+        })
+        library:create("UIListLayout", {
+            Parent = self.subtab_holder,
+            FillDirection = Enum.FillDirection.Horizontal,
+            Padding = dim(0, 5)
+        })
+        
+        self.subpage_holder = library:create("Frame", {
+            Parent = self.page,
+            BackgroundTransparency = 1,
+            Size = dim2(1, 0, 1, -30) -- fill rest of page
+        })
+    end
+    
+    -- subtab button
+    local btn = library:create("TextButton", {
+        Parent = self.subtab_holder,
+        Text = cfg.name,
+        FontFace = library.font,
+        TextSize = 12,
+        TextColor3 = rgb(140, 140, 140),
+        BackgroundColor3 = rgb(25, 25, 25),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(0, 80, 1, 0)
+    })
+    
+    -- subpage
+    cfg.page = library:create("Frame", {
+        Parent = self.subpage_holder,
+        BackgroundTransparency = 1,
+        Size = dim2(1, 0, 1, 0),
+        Visible = false
+    })
+    library:create("UIListLayout", {
+        Parent = cfg.page,
+        FillDirection = Enum.FillDirection.Horizontal,
+        HorizontalFlex = Enum.UIFlexAlignment.Fill,
+        Padding = dim(0, 11),
+        VerticalFlex = Enum.UIFlexAlignment.Fill
+    })
+    
+    function cfg.open_subtab()
+        if self.selected_subtab then
+            self.selected_subtab.btn.TextColor3 = rgb(140, 140, 140)
+            self.selected_subtab.page.Visible = false
+        end
+        btn.TextColor3 = themes.preset.accent
+        cfg.page.Visible = true
+        self.selected_subtab = {btn = btn, page = cfg.page}
+    end
+    
+    btn.MouseButton1Down:Connect(cfg.open_subtab)
+    if not self.selected_subtab then
+        cfg.open_subtab()
+    end
+    
+    return setmetatable(cfg, library)
 end
 
 return library, notifications, themes
