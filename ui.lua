@@ -3874,7 +3874,7 @@ function library:keybindList(options)
     return kl
 end
 
-function library.tab:subtab(properties)
+function library:subtab(properties)
     -- For Obelus, we can treat a subtab as returning a column wrapper or just returning the tab itself
     -- since native subtabs aren't fully implemented without massive UI engine rewrites
     return self
