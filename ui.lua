@@ -1467,6 +1467,7 @@
                 Enabled = true,
                 ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
                 IgnoreGuiInset = true,
+                DisplayOrder = 999,
             })
 
             local outline = library:create("Frame", {
@@ -3749,12 +3750,13 @@
         
         -- Instances
             local outline = library:create("Frame", {
-                Parent = gethui();
+                Parent = library.gui;
                 Size = dim2(0, 0, 0, 0);
                 BorderColor3 = rgb(0, 0, 0);
                 BorderSizePixel = 0;
                 AutomaticSize = Enum.AutomaticSize.XY;
-                BackgroundColor3 = rgb(46, 46, 46)
+                BackgroundColor3 = rgb(0, 0, 0);
+                ZIndex = 999;
             });
 
             local inline = library:create("Frame", {
@@ -3763,30 +3765,33 @@
                 BorderColor3 = rgb(0, 0, 0);
                 BorderSizePixel = 0;
                 AutomaticSize = Enum.AutomaticSize.XY;
-                BackgroundColor3 = rgb(21, 21, 21)
+                BackgroundColor3 = rgb(48, 48, 48)
             });	
             
-            local uigradient = library:create("UIGradient", {
-                Color = rgbseq{rgbkey(0, rgb(255, 0, 0)), rgbkey(0.17, rgb(255, 255, 0)), rgbkey(0.33, rgb(0, 255, 0)), rgbkey(0.5, rgb(0, 255, 255)), rgbkey(0.67, rgb(0, 0, 255)), rgbkey(0.83, rgb(255, 0, 255)), rgbkey(1, rgb(255, 0, 0))};
-                Transparency = numseq{numkey(0, -1), numkey(1, -1)};
-                Parent = menu_title
+            local background = library:create("Frame", {
+                Parent = inline;
+                Position = dim2(0, 1, 0, 1);
+                BorderColor3 = rgb(0, 0, 0);
+                BorderSizePixel = 0;
+                AutomaticSize = Enum.AutomaticSize.XY;
+                BackgroundColor3 = rgb(12, 12, 12)
             });
             
             library:create("UIPadding", {
                 PaddingTop = dim(0, 7);
                 PaddingBottom = dim(0, 6);
-                Parent = inline;
+                Parent = background;
                 PaddingRight = dim(0, 8);
                 PaddingLeft = dim(0, 4)
             });
             
             local misc_text = library:create("TextLabel", {
                 FontFace = library.font;
-                Parent = inline;
+                Parent = background;
                 LineHeight = 1.75;
-                TextColor3 = rgb(255, 255, 255);
+                TextColor3 = rgb(135, 135, 135);
                 BorderColor3 = rgb(0, 0, 0);
-                Text = string.format("[ fecurity.lua ] %s", cfg.name);
+                Text = string.format("[ alternate.lol ] %s", cfg.name);
                 AutomaticSize = Enum.AutomaticSize.XY;
                 Size = dim2(1, -4, 1, 0);
                 Position = dim2(0, 4, 0, -2);
@@ -3846,19 +3851,38 @@
 -- 
 
 function library:watermark(options)
-    local wm = library:create("TextLabel", {
+    local wm = library:create("Frame", {
         Parent = library.gui,
-        Text = " " .. (options.name or "obelus watermark"),
         Size = dim2(0, 200, 0, 25),
         Position = dim2(0, 20, 0, 20),
-        BackgroundColor3 = rgb(25, 25, 25),
-        TextColor3 = rgb(255, 255, 255),
-        BorderColor3 = rgb(0, 0, 0),
-        BorderSizePixel = 1,
+        BackgroundColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        ZIndex = 999
+    })
+    local wm_inline = library:create("Frame", {
+        Parent = wm,
+        Position = dim2(0, 1, 0, 1),
+        Size = dim2(1, -2, 1, -2),
+        BackgroundColor3 = rgb(48, 48, 48),
+        BorderSizePixel = 0
+    })
+    local wm_bg = library:create("Frame", {
+        Parent = wm_inline,
+        Position = dim2(0, 1, 0, 1),
+        Size = dim2(1, -2, 1, -2),
+        BackgroundColor3 = rgb(12, 12, 12),
+        BorderSizePixel = 0
+    })
+    local wm_text = library:create("TextLabel", {
+        Parent = wm_bg,
+        Text = " " .. (options.name or "obelus watermark"),
+        Size = dim2(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        TextColor3 = rgb(135, 135, 135),
         TextSize = 12,
         TextXAlignment = Enum.TextXAlignment.Left,
         FontFace = library.font,
-        ZIndex = 999
+        BorderSizePixel = 0
     })
     local accentLine = library:create("Frame", {
         Parent = wm,
@@ -3875,32 +3899,187 @@ end
 function library:targetHud(options)
     local hud = library:create("Frame", {
         Parent = library.gui,
-        Size = dim2(0, 250, 0, 80),
+        Size = dim2(0, 260, 0, 90),
         Position = dim2(0.5, 100, 0.5, 0),
-        BackgroundColor3 = rgb(25, 25, 25),
-        BorderColor3 = rgb(0, 0, 0),
-        BorderSizePixel = 1,
+        BackgroundColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
         Visible = false,
         ZIndex = 999
     })
-    local name = library:create("TextLabel", {
+    local hud_inline = library:create("Frame", {
         Parent = hud,
-        Text = "Target: None",
-        Size = dim2(1, -60, 0, 20),
-        Position = dim2(0, 60, 0, 5),
+        Position = dim2(0, 1, 0, 1),
+        Size = dim2(1, -2, 1, -2),
+        BackgroundColor3 = rgb(48, 48, 48),
+        BorderSizePixel = 0
+    })
+    local hud_bg = library:create("Frame", {
+        Parent = hud_inline,
+        Position = dim2(0, 1, 0, 1),
+        Size = dim2(1, -2, 1, -2),
+        BackgroundColor3 = rgb(12, 12, 12),
+        BorderSizePixel = 0
+    })
+    local accentLine = library:create("Frame", {
+        Parent = hud,
+        Size = dim2(1, 0, 0, 2),
+        Position = dim2(0, 0, 0, 0),
+        BackgroundColor3 = themes.preset.accent,
+        BorderSizePixel = 0
+    })
+    library:applyTheme(accentLine, "accent", "BackgroundColor3")
+
+    local avatar = library:create("ImageLabel", {
+        Parent = hud_bg,
+        Size = dim2(0, 48, 0, 48),
+        Position = dim2(0, 8, 0, 8),
+        BackgroundColor3 = rgb(20, 20, 20),
+        BorderSizePixel = 0,
+        Image = "",
+        ScaleType = Enum.ScaleType.Stretch,
+        ZIndex = 2
+    })
+    local avatar_stroke = library:create("UIStroke", {
+        Parent = avatar,
+        Color = rgb(48, 48, 48),
+        Thickness = 1,
+        LineJoinMode = Enum.LineJoinMode.Miter
+    })
+    local avatar_corner = library:create("UICorner", {
+        Parent = avatar,
+        CornerRadius = dim(0, 4)
+    })
+
+    local display_name = library:create("TextLabel", {
+        Parent = hud_bg,
+        Text = "",
+        Size = dim2(1, -68, 0, 16),
+        Position = dim2(0, 64, 0, 8),
         BackgroundTransparency = 1,
         TextColor3 = rgb(255, 255, 255),
         TextXAlignment = Enum.TextXAlignment.Left,
         FontFace = library.font,
-        TextSize = 14
+        TextSize = 13,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+        ZIndex = 2
     })
+    local username = library:create("TextLabel", {
+        Parent = hud_bg,
+        Text = "",
+        Size = dim2(1, -68, 0, 14),
+        Position = dim2(0, 64, 0, 25),
+        BackgroundTransparency = 1,
+        TextColor3 = rgb(135, 135, 135),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        FontFace = library.font,
+        TextSize = 11,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+        ZIndex = 2
+    })
+
+    local hp_bar_bg = library:create("Frame", {
+        Parent = hud_bg,
+        Size = dim2(1, -16, 0, 4),
+        Position = dim2(0, 8, 1, -22),
+        BackgroundColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        ZIndex = 2
+    })
+    local hp_bar_fill = library:create("Frame", {
+        Parent = hp_bar_bg,
+        Size = dim2(1, 0, 1, 0),
+        BackgroundColor3 = rgb(0, 255, 0),
+        BorderSizePixel = 0,
+        ZIndex = 3
+    })
+
+    local hp_text = library:create("TextLabel", {
+        Parent = hud_bg,
+        Text = "100",
+        Size = dim2(0, 40, 0, 14),
+        Position = dim2(1, -48, 1, -38),
+        BackgroundTransparency = 1,
+        TextColor3 = rgb(135, 135, 135),
+        TextXAlignment = Enum.TextXAlignment.Right,
+        FontFace = library.font,
+        TextSize = 11,
+        ZIndex = 2
+    })
+    local dist_text = library:create("TextLabel", {
+        Parent = hud_bg,
+        Text = "0st",
+        Size = dim2(0, 50, 0, 14),
+        Position = dim2(0, 64, 1, -18),
+        BackgroundTransparency = 1,
+        TextColor3 = rgb(135, 135, 135),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        FontFace = library.font,
+        TextSize = 11,
+        ZIndex = 2
+    })
+
     library:draggify(hud)
-    return {
-        update = function(targetName, health) 
-            hud.Visible = targetName ~= nil 
-            if targetName then name.Text = "Target: " .. targetName end
+
+    local currentTarget = nil
+    local hudObj = {
+        Items = { Container = hud },
+        SetVisibility = function(self, v)
+            hud.Visible = v
+        end,
+        SetTarget = function(self, target)
+            currentTarget = target
+            if not target then
+                hud.Visible = false
+                return
+            end
+            hud.Visible = true
+            local isPlayer = target:IsA("Player")
+            local char = isPlayer and target.Character or target
+            local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+
+            if isPlayer then
+                display_name.Text = target.DisplayName
+                username.Text = "@" .. target.Name
+                avatar.Image = "rbxthumb://type=AvatarHeadShot&id=" .. target.UserId .. "&w=48&h=48"
+            else
+                display_name.Text = target.Name
+                username.Text = "Model"
+                avatar.Image = ""
+            end
+
+            if humanoid then
+                local hp = math.floor(humanoid.Health)
+                local maxHp = math.floor(humanoid.MaxHealth)
+                hp_text.Text = tostring(hp)
+                local ratio = math.clamp(humanoid.GetHealth and humanoid:GetHealth() or humanoid.Health, 0, maxHp) / math.max(maxHp, 1)
+                hp_bar_fill.Size = dim2(ratio, 0, 1, 0)
+                if ratio > 0.5 then
+                    hp_bar_fill.BackgroundColor3 = rgb(0, 255, 0)
+                elseif ratio > 0.25 then
+                    hp_bar_fill.BackgroundColor3 = rgb(255, 170, 0)
+                else
+                    hp_bar_fill.BackgroundColor3 = rgb(255, 0, 0)
+                end
+            else
+                hp_text.Text = "N/A"
+                hp_bar_fill.Size = dim2(0, 0, 1, 0)
+            end
+
+            if root then
+                local dist = math.floor((workspace.CurrentCamera.CFrame.Position - root.Position).Magnitude)
+                dist_text.Text = tostring(dist) .. "st"
+            else
+                dist_text.Text = "N/A"
+            end
+        end,
+        Update = function(self)
+            if currentTarget and hud.Visible then
+                self:SetTarget(currentTarget)
+            end
         end
     }
+    return hudObj
 end
 
 function library:keybindList(options)
@@ -3908,31 +4087,54 @@ function library:keybindList(options)
         Parent = library.gui,
         Size = dim2(0, 180, 0, 25),
         Position = dim2(0, 20, 0, 200),
-        BackgroundColor3 = rgb(25, 25, 25),
-        BorderColor3 = rgb(0, 0, 0),
-        BorderSizePixel = 1,
+        BackgroundColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
         Visible = false,
         ZIndex = 999
     })
-    local title = library:create("TextLabel", {
+    local kl_inline = library:create("Frame", {
         Parent = kl,
+        Position = dim2(0, 1, 0, 1),
+        Size = dim2(1, -2, 1, -2),
+        BackgroundColor3 = rgb(48, 48, 48),
+        BorderSizePixel = 0
+    })
+    local kl_bg = library:create("Frame", {
+        Parent = kl_inline,
+        Position = dim2(0, 1, 0, 1),
+        Size = dim2(1, -2, 1, -2),
+        BackgroundColor3 = rgb(12, 12, 12),
+        BorderSizePixel = 0
+    })
+    local title = library:create("TextLabel", {
+        Parent = kl_bg,
         Text = "Keybinds",
         Size = dim2(1, 0, 0, 20),
-        BackgroundColor3 = rgb(20, 20, 20),
+        BackgroundTransparency = 1,
         TextColor3 = themes.preset.accent,
-        BorderColor3 = rgb(0, 0, 0),
-        BorderSizePixel = 1,
+        BorderSizePixel = 0,
         FontFace = library.font,
-        TextSize = 12
+        TextSize = 12,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextWrapped = false
     })
     library:applyTheme(title, "accent", "TextColor3")
 
-    local list_holder = library:create("Frame", {
+    local accentLine = library:create("Frame", {
         Parent = kl,
+        Size = dim2(1, 0, 0, 2),
+        Position = dim2(0, 0, 0, 0),
+        BackgroundColor3 = themes.preset.accent,
+        BorderSizePixel = 0
+    })
+    library:applyTheme(accentLine, "accent", "BackgroundColor3")
+
+    local list_holder = library:create("Frame", {
+        Parent = kl_bg,
         Name = "",
         BackgroundTransparency = 1,
-        Position = dim2(0, 0, 0, 22),
-        Size = dim2(1, 0, 0, 0),
+        Position = dim2(0, 4, 0, 22),
+        Size = dim2(1, -4, 0, 0),
         BorderSizePixel = 0,
         BackgroundColor3 = rgb(255, 255, 255)
     })
@@ -3959,10 +4161,10 @@ function library:keybindList(options)
                         Parent = list_holder,
                         Text = string.format("%s [%s]", tostring(data.name or flag), key_display),
                         FontFace = library.font,
-                        TextColor3 = rgb(200, 200, 200),
+                        TextColor3 = rgb(135, 135, 135),
                         BackgroundTransparency = 1,
-                        Size = dim2(1, -4, 0, 14),
-                        Position = dim2(0, 2, 0, 0),
+                        Size = dim2(1, 0, 0, 14),
+                        Position = dim2(0, 0, 0, 0),
                         BorderSizePixel = 0,
                         TextXAlignment = Enum.TextXAlignment.Left,
                         TextSize = 11,
