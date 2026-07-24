@@ -60,7 +60,7 @@
 
 -- Library init
     if getgenv().library then 
-        library:unloadMenu()
+        pcall(function() getgenv().library:unloadMenu() end)
     end 
 
     getgenv().library = {
