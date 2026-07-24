@@ -3804,7 +3804,8 @@ function library:watermark(options)
         BorderSizePixel = 1,
         TextSize = 12,
         TextXAlignment = Enum.TextXAlignment.Left,
-        FontFace = library.font
+        FontFace = library.font,
+        ZIndex = 999
     })
     local accentLine = library:create("Frame", {
         Parent = wm,
@@ -3826,7 +3827,8 @@ function library:targetHud(options)
         BackgroundColor3 = rgb(25, 25, 25),
         BorderColor3 = rgb(0, 0, 0),
         BorderSizePixel = 1,
-        Visible = false
+        Visible = false,
+        ZIndex = 999
     })
     local name = library:create("TextLabel", {
         Parent = hud,
@@ -3856,7 +3858,8 @@ function library:keybindList(options)
         BackgroundColor3 = rgb(25, 25, 25),
         BorderColor3 = rgb(0, 0, 0),
         BorderSizePixel = 1,
-        Visible = false
+        Visible = false,
+        ZIndex = 999
     })
     local title = library:create("TextLabel", {
         Parent = kl,
@@ -3912,10 +3915,20 @@ function library:subtab(properties)
         FontFace = library.font,
         TextSize = 12,
         TextColor3 = rgb(140, 140, 140),
-        BackgroundColor3 = rgb(25, 25, 25),
-        BorderColor3 = rgb(0, 0, 0),
-        Size = dim2(0, 80, 1, 0)
+        BackgroundTransparency = 1,
+        AutomaticSize = Enum.AutomaticSize.X,
+        Size = dim2(0, 0, 1, 0)
     })
+    
+    local underline = library:create("Frame", {
+        Parent = btn,
+        BackgroundColor3 = themes.preset.accent,
+        BorderSizePixel = 0,
+        Size = dim2(1, 0, 0, 2),
+        Position = dim2(0, 0, 1, -2),
+        Visible = false
+    })
+    library:applyTheme(underline, "accent", "BackgroundColor3")
     
     -- subpage
     cfg.page = library:create("Frame", {
@@ -3935,11 +3948,13 @@ function library:subtab(properties)
     function cfg.open_subtab()
         if self.selected_subtab then
             self.selected_subtab.btn.TextColor3 = rgb(140, 140, 140)
+            self.selected_subtab.underline.Visible = false
             self.selected_subtab.page.Visible = false
         end
         btn.TextColor3 = themes.preset.accent
+        underline.Visible = true
         cfg.page.Visible = true
-        self.selected_subtab = {btn = btn, page = cfg.page}
+        self.selected_subtab = {btn = btn, underline = underline, page = cfg.page}
     end
     
     btn.MouseButton1Down:Connect(cfg.open_subtab)
