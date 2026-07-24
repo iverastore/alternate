@@ -3804,7 +3804,7 @@ function library:watermark(options)
         BorderSizePixel = 1,
         TextSize = 12,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = library.font
+        FontFace = library.font
     })
     local accentLine = library:create("Frame", {
         Parent = wm,
@@ -3836,7 +3836,7 @@ function library:targetHud(options)
         BackgroundTransparency = 1,
         TextColor3 = rgb(255, 255, 255),
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = library.font,
+        FontFace = library.font,
         TextSize = 14
     })
     library:draggify(hud)
@@ -3866,7 +3866,7 @@ function library:keybindList(options)
         TextColor3 = themes.preset.accent,
         BorderColor3 = rgb(0, 0, 0),
         BorderSizePixel = 1,
-        Font = library.font,
+        FontFace = library.font,
         TextSize = 12
     })
     library:applyTheme(title, "accent", "TextColor3")
