@@ -2261,6 +2261,14 @@
                 cfg.set(value)
             end
 
+            function cfg.SetVisibility(bool)
+                if items.object then items.object.Visible = bool end
+                if not bool and cfg.open then
+                    cfg.open = false
+                    cfg.set_visible(false)
+                end
+            end
+
             items.dropdown_outline.MouseEnter:Connect(function()
                 library:tween(items.inner_text, {TextColor3 = resolveThemeColor({"Text", "Main"})})
                 library:tween(items[ "arrow" ], {ImageColor3 = resolveThemeColor({"Text", "Main"})})
@@ -3002,6 +3010,9 @@
                 Active = cfg.active,
                 Toggled = cfg.active
             }
+
+            library.KeybindNames = library.KeybindNames or {}
+            library.KeybindNames[cfg.flag] = cfg.name or (type(self) == "table" and self.name) or tostring(cfg.flag)
 
             local items = cfg.items; do 
                 -- Component
@@ -4183,18 +4194,33 @@ function library:KeybindList(options)
     library:draggify(container)
 
     task.spawn(function()
-        while task.wait(0.2) do
-            for _, child in ipairs(list_holder:GetChildren()) do
-                if child:IsA("TextLabel") then
-                    child:Destroy()
-                end
-            end
-
-            local active_count = 0
+        local pool = {}
+        local last_sig = nil
+        while task.wait(0.1) do
+            local actives = {}
             for flag, data in pairs(flags) do
                 if type(data) == "table" and (data.key or data.Key) and not tostring(flag):find("^_settings") and not tostring(flag):find("^_ui_bind") and not tostring(flag):find("^MenuKeybind") then
-                    active_count = active_count + 1
-                    local keyName = tostring(data.key or data.Key or "None"):gsub("Enum.KeyCode.", ""):gsub("Enum.UserInputType.", "")
+                    local isActive = (data.active == true) or (data.Active == true) or (data.Toggled == true)
+                    local keyRaw = data.key or data.Key
+                    local keyName = tostring(keyRaw):gsub("Enum.KeyCode.", ""):gsub("Enum.UserInputType.", "")
+                    if isActive and keyRaw ~= nil and keyName ~= "NONE" and keyName ~= "Unknown" and keyName ~= "nil" and keyName ~= "" then
+                        local dispName = (library.KeybindNames and library.KeybindNames[flag]) or tostring(flag):gsub("Bind$", "")
+                        local mode = tostring(data.mode or data.Mode or "Toggle"):lower()
+                        actives[#actives + 1] = {name = dispName, key = keyName, mode = mode}
+                    end
+                end
+            end
+            table.sort(actives, function(a, b) return a.name < b.name end)
+
+            local sig = ""
+            for i = 1, #actives do
+                local a = actives[i]
+                sig = sig .. a.name .. "\1" .. a.key .. "\1" .. a.mode .. "\n"
+            end
+
+            if sig ~= last_sig then
+                last_sig = sig
+                for i = #pool + 1, #actives do
                     local entry = library:create("TextLabel", {
                         Parent = list_holder,
                         BackgroundTransparency = 1,
@@ -4202,7 +4228,7 @@ function library:KeybindList(options)
                         TextColor3 = rgb(178, 178, 178),
                         FontFace = library.font,
                         TextSize = 9,
-                        Text = string.format("%s [%s]", tostring(flag), keyName),
+                        Text = "",
                         TextXAlignment = Enum.TextXAlignment.Left,
                         ZIndex = 4
                     })
@@ -4213,9 +4239,21 @@ function library:KeybindList(options)
                         Thickness = 1,
                         Transparency = 0.5
                     })
+
+                    pool[i] = entry
                 end
+                for i = 1, #pool do
+                    local entry = pool[i]
+                    local a = actives[i]
+                    if a then
+                        entry.Text = string.format("%s [%s] [%s]", a.name, a.key, a.mode)
+                        entry.Visible = true
+                    else
+                        entry.Visible = false
+                    end
+                end
+                container.Size = dim2(0, 180, 0, 25 + (#actives * 17))
             end
-            container.Size = dim2(0, 180, 0, 25 + (active_count * 17))
         end
     end)
 
