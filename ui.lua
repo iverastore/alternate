@@ -4136,7 +4136,7 @@ function library:watermark(options)
         SliceCenter = rect(vec2(21, 21), vec2(79, 79)),
         ResampleMode = Enum.ResamplerMode.Pixelated
     }); library:applyTheme(wm_glow, "glow", "ImageColor3")
-    wm._glow = wm_glow
+    wm:SetAttribute("glow", wm_glow)
     local wm_inline = library:create("Frame", {
         Parent = wm,
         Position = dim2(0, 1, 0, 1),
@@ -4230,7 +4230,7 @@ function library:targetHud(options)
         SliceCenter = rect(vec2(21, 21), vec2(79, 79)),
         ResampleMode = Enum.ResamplerMode.Pixelated
     }); library:applyTheme(hud_glow, "glow", "ImageColor3")
-    hud._glow = hud_glow
+    hud:SetAttribute("glow", hud_glow)
     local hud_inline = library:create("Frame", {
         Parent = hud,
         Position = dim2(0, 1, 0, 1),
@@ -4498,7 +4498,7 @@ function library:keybindList(options)
         SliceCenter = rect(vec2(21, 21), vec2(79, 79)),
         ResampleMode = Enum.ResamplerMode.Pixelated
     }); library:applyTheme(kl_glow, "glow", "ImageColor3")
-    kl._glow = kl_glow
+    kl:SetAttribute("glow", kl_glow)
     local kl_inline = library:create("Frame", {
         Parent = kl,
         Position = dim2(0, 1, 0, 1),
