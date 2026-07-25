@@ -208,7 +208,7 @@
     local flags = library.flags 
     local config_flags = library.config_flags
 
-    if not LPH_OBFUSCATED then
+    if not LPH_NO_VIRTUALIZE then
         getfenv().LPH_NO_VIRTUALIZE = function(...) return (...) end
     end
 
