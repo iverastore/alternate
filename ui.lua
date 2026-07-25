@@ -85,7 +85,7 @@
     local themes = {
         preset = {
             ["accent"] = hex("#FFFFFF"),
-            -- ["glow"] = hex("#AA55EB"), -- ignore
+            ["text_outline"] = rgb(0, 0, 0),
         }, 	
 
         utility = {
@@ -95,10 +95,9 @@
                 ["ImageColor3"] = {}, 
                 ["ScrollBarImageColor3"] = {} 
             },
-            -- UNCOMMENT THIS TO ADD GLOW TO YOUR UI (modify it yourself.)
-            -- ["glow"] = {
-            --     ["ImageColor3"] = {}, 	
-            -- }, 
+            ["text_outline"] = {
+                ["Color"] = {},
+            },
         }, 
     }
 
@@ -3854,7 +3853,7 @@
 function library:watermark(options)
     local wm = library:create("Frame", {
         Parent = library.gui,
-        Size = dim2(0, 200, 0, 25),
+        Size = dim2(0, 320, 0, 25),
         Position = dim2(0, 20, 0, 20),
         BackgroundColor3 = rgb(0, 0, 0),
         BorderSizePixel = 0,
@@ -3876,10 +3875,10 @@ function library:watermark(options)
     })
     local wm_text = library:create("TextLabel", {
         Parent = wm_bg,
-        Text = " " .. (options.name or "obelus watermark"),
+        Text = " " .. (options.name or "alternate.lol"),
         Size = dim2(1, 0, 1, 0),
         BackgroundTransparency = 1,
-        TextColor3 = rgb(135, 135, 135),
+        TextColor3 = rgb(255, 255, 255),
         TextSize = 12,
         TextXAlignment = Enum.TextXAlignment.Left,
         FontFace = library.font,
@@ -3894,6 +3893,28 @@ function library:watermark(options)
     })
     library:applyTheme(accentLine, "accent", "BackgroundColor3")
     library:draggify(wm)
+
+    task.spawn(function()
+        local fpsCount = 0
+        local fpsTime = tick()
+        local lastFps = 60
+        while wm and wm.Parent do
+            fpsCount = fpsCount + 1
+            local now = tick()
+            if now - fpsTime >= 1 then
+                lastFps = math.round(fpsCount / (now - fpsTime))
+                fpsCount = 0
+                fpsTime = now
+            end
+            task.wait(0.1)
+            if wm_text and wm_text.Parent then
+                local players = #game:GetService("Players"):GetPlayers()
+                local time = os.date("%H:%M:%S")
+                wm_text.Text = string.format(" %s | FPS: %d | Players: %d | %s", options.name or "alternate.lol", lastFps, players, time)
+            end
+        end
+    end)
+
     return wm
 end
 
