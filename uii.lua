@@ -3897,7 +3897,7 @@ function library:watermark(options)
         rsConn = run.RenderStepped:Connect(function()
             fpsCount = fpsCount + 1
         end)
-        library:connection(rsConn)
+        insert(library.connections, rsConn)
         while wm and wm.Parent do
             local now = tick()
             if now - fpsTime >= 1 then
