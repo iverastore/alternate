@@ -310,7 +310,7 @@
                     )
                     frame.Size = current_size
                 end
-            end)
+            end))
         end
 
         function library:mouseInFrame(uiobject)
@@ -380,7 +380,7 @@
 
                     frame.Position = current_position
                 end
-            end)
+            end))
         end 
 
         function library:convertEnum(enum)
