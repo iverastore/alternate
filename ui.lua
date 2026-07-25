@@ -107,6 +107,8 @@
             },
             ["text_outline"] = {
                 ["Color"] = {},
+                ["BackgroundColor3"] = {},
+                ["BorderColor3"] = {},
             },
             ["background"] = {
                 ["BackgroundColor3"] = {},
@@ -131,9 +133,11 @@
             },
             ["unselected"] = {
                 ["TextColor3"] = {},
+                ["BackgroundColor3"] = {},
             },
             ["border"] = {
                 ["BackgroundColor3"] = {},
+                ["BorderColor3"] = {},
             },
         }, 
     }
@@ -3978,9 +3982,9 @@
                 BorderColor3 = rgb(0, 0, 0);
                 BorderSizePixel = 0;
                 AutomaticSize = Enum.AutomaticSize.XY;
-                BackgroundColor3 = rgb(0, 0, 0);
+                BackgroundColor3 = themes.preset.outline;
                 ZIndex = 999;
-            });
+            }); library:applyTheme(outline, "outline", "BackgroundColor3")
 
             local inline = library:create("Frame", {
                 Parent = outline;
@@ -3988,8 +3992,8 @@
                 BorderColor3 = rgb(0, 0, 0);
                 BorderSizePixel = 0;
                 AutomaticSize = Enum.AutomaticSize.XY;
-                BackgroundColor3 = rgb(25, 25, 25)
-            });	
+                BackgroundColor3 = themes.preset.inline
+            }); library:applyTheme(inline, "inline", "BackgroundColor3")
             
             local background = library:create("Frame", {
                 Parent = inline;
@@ -3997,8 +4001,8 @@
                 BorderColor3 = rgb(0, 0, 0);
                 BorderSizePixel = 0;
                 AutomaticSize = Enum.AutomaticSize.XY;
-                BackgroundColor3 = rgb(0, 0, 0)
-            });
+                BackgroundColor3 = themes.preset.background
+            }); library:applyTheme(background, "background", "BackgroundColor3")
             
             library:create("UIPadding", {
                 PaddingTop = dim(0, 7);
@@ -4013,7 +4017,7 @@
                 FontFace = library.font;
                 Parent = background;
                 LineHeight = 1.75;
-                TextColor3 = rgb(135, 135, 135);
+                TextColor3 = themes.preset.text;
                 BorderColor3 = rgb(0, 0, 0);
                 Text = notifText;
                 AutomaticSize = Enum.AutomaticSize.XY;
@@ -4025,7 +4029,7 @@
                 ZIndex = 2;
                 TextSize = 12;
                 BackgroundColor3 = rgb(255, 255, 255)
-            });
+            }); library:applyTheme(misc_text, "text", "TextColor3")
             
             library:create("UIPadding", {
                 PaddingBottom = dim(0, 1);
@@ -4110,35 +4114,35 @@ function library:watermark(options)
         Parent = library.gui,
         Size = dim2(0, 200, 0, 25),
         Position = dim2(0, 20, 0, 20),
-        BackgroundColor3 = rgb(0, 0, 0),
+        BackgroundColor3 = themes.preset.outline,
         BorderSizePixel = 0,
         ZIndex = 999
-    })
+    }); library:applyTheme(wm, "outline", "BackgroundColor3")
     local wm_inline = library:create("Frame", {
         Parent = wm,
         Position = dim2(0, 1, 0, 1),
         Size = dim2(1, -2, 1, -2),
-        BackgroundColor3 = rgb(25, 25, 25),
+        BackgroundColor3 = themes.preset.inline,
         BorderSizePixel = 0
-    })
+    }); library:applyTheme(wm_inline, "inline", "BackgroundColor3")
     local wm_bg = library:create("Frame", {
         Parent = wm_inline,
         Position = dim2(0, 1, 0, 1),
         Size = dim2(1, -2, 1, -2),
-        BackgroundColor3 = rgb(0, 0, 0),
+        BackgroundColor3 = themes.preset.background,
         BorderSizePixel = 0
-    })
+    }); library:applyTheme(wm_bg, "background", "BackgroundColor3")
     local wm_text = library:create("TextLabel", {
         Parent = wm_bg,
         Text = " " .. (options.name or "alternate.lol"),
         Size = dim2(1, 0, 1, 0),
         BackgroundTransparency = 1,
-        TextColor3 = rgb(255, 255, 255),
+        TextColor3 = themes.preset.text,
         TextSize = 12,
         TextXAlignment = Enum.TextXAlignment.Left,
         FontFace = library.font,
         BorderSizePixel = 0
-    })
+    }); library:applyTheme(wm_text, "text", "TextColor3")
     local accentLine = library:create("Frame", {
         Parent = wm,
         Size = dim2(1, 0, 0, 2),
@@ -4185,25 +4189,25 @@ function library:targetHud(options)
         Parent = library.gui,
         Size = dim2(0, 280, 0, 100),
         Position = dim2(0.5, 100, 0.5, 0),
-        BackgroundColor3 = rgb(0, 0, 0),
+        BackgroundColor3 = themes.preset.outline,
         BorderSizePixel = 0,
         Visible = false,
         ZIndex = 999
-    })
+    }); library:applyTheme(hud, "outline", "BackgroundColor3")
     local hud_inline = library:create("Frame", {
         Parent = hud,
         Position = dim2(0, 1, 0, 1),
         Size = dim2(1, -2, 1, -2),
-        BackgroundColor3 = rgb(25, 25, 25),
+        BackgroundColor3 = themes.preset.inline,
         BorderSizePixel = 0
-    })
+    }); library:applyTheme(hud_inline, "inline", "BackgroundColor3")
     local hud_bg = library:create("Frame", {
         Parent = hud_inline,
         Position = dim2(0, 1, 0, 1),
         Size = dim2(1, -2, 1, -2),
-        BackgroundColor3 = rgb(15, 15, 15),
+        BackgroundColor3 = themes.preset.background,
         BorderSizePixel = 0
-    })
+    }); library:applyTheme(hud_bg, "background", "BackgroundColor3")
     local accentBar = library:create("Frame", {
         Parent = hud,
         Size = dim2(0, 3, 1, 0),
@@ -4242,26 +4246,26 @@ function library:targetHud(options)
         Size = dim2(1, -84, 0, 18),
         Position = dim2(0, 74, 0, 10),
         BackgroundTransparency = 1,
-        TextColor3 = rgb(255, 255, 255),
+        TextColor3 = themes.preset.text,
         TextXAlignment = Enum.TextXAlignment.Left,
         FontFace = library.font,
         TextSize = 14,
         TextTruncate = Enum.TextTruncate.AtEnd,
         ZIndex = 2
-    })
+    }); library:applyTheme(display_name, "text", "TextColor3")
     local username = library:create("TextLabel", {
         Parent = hud_bg,
         Text = "",
         Size = dim2(1, -84, 0, 14),
         Position = dim2(0, 28, 0, 28),
         BackgroundTransparency = 1,
-        TextColor3 = rgb(120, 120, 120),
+        TextColor3 = themes.preset.unselected,
         TextXAlignment = Enum.TextXAlignment.Left,
         FontFace = library.font,
         TextSize = 11,
         TextTruncate = Enum.TextTruncate.AtEnd,
         ZIndex = 2
-    })
+    }); library:applyTheme(username, "unselected", "TextColor3")
 
     local info_row = library:create("Frame", {
         Parent = hud_bg,
@@ -4275,49 +4279,49 @@ function library:targetHud(options)
         Text = "Dist:",
         Size = dim2(0, 30, 1, 0),
         BackgroundTransparency = 1,
-        TextColor3 = rgb(100, 100, 100),
+        TextColor3 = themes.preset.unselected,
         TextXAlignment = Enum.TextXAlignment.Left,
         FontFace = library.font,
         TextSize = 11,
         ZIndex = 2
-    })
+    }); library:applyTheme(dist_label, "unselected", "TextColor3")
     local dist_text = library:create("TextLabel", {
         Parent = info_row,
         Text = "0",
         Size = dim2(0, 50, 1, 0),
         Position = dim2(0, 28, 0, 0),
         BackgroundTransparency = 1,
-        TextColor3 = rgb(200, 200, 200),
+        TextColor3 = themes.preset.text,
         TextXAlignment = Enum.TextXAlignment.Left,
         FontFace = library.font,
         TextSize = 11,
         ZIndex = 2
-    })
+    }); library:applyTheme(dist_text, "text", "TextColor3")
     local tool_label = library:create("TextLabel", {
         Parent = info_row,
         Text = "Tool:",
         Size = dim2(0, 30, 1, 0),
         Position = dim2(0, 80, 0, 0),
         BackgroundTransparency = 1,
-        TextColor3 = rgb(100, 100, 100),
+        TextColor3 = themes.preset.unselected,
         TextXAlignment = Enum.TextXAlignment.Left,
         FontFace = library.font,
         TextSize = 11,
         ZIndex = 2
-    })
+    }); library:applyTheme(tool_label, "unselected", "TextColor3")
     local tool_text = library:create("TextLabel", {
         Parent = info_row,
         Text = "None",
         Size = dim2(0, 80, 1, 0),
         Position = dim2(0, 108, 0, 0),
         BackgroundTransparency = 1,
-        TextColor3 = rgb(200, 200, 200),
+        TextColor3 = themes.preset.text,
         TextXAlignment = Enum.TextXAlignment.Left,
         FontFace = library.font,
         TextSize = 11,
         TextTruncate = Enum.TextTruncate.AtEnd,
         ZIndex = 2
-    })
+    }); library:applyTheme(tool_text, "text", "TextColor3")
 
     local hp_bar_bg = library:create("Frame", {
         Parent = hud_bg,
@@ -4347,12 +4351,12 @@ function library:targetHud(options)
         Size = dim2(0, 80, 0, 14),
         Position = dim2(1, -90, 1, -42),
         BackgroundTransparency = 1,
-        TextColor3 = rgb(180, 180, 180),
+        TextColor3 = themes.preset.text,
         TextXAlignment = Enum.TextXAlignment.Right,
         FontFace = library.font,
         TextSize = 11,
         ZIndex = 2
-    })
+    }); library:applyTheme(hp_text, "text", "TextColor3")
 
     library:draggify(hud)
 
@@ -4435,25 +4439,25 @@ function library:keybindList(options)
         Parent = library.gui,
         Size = dim2(0, 180, 0, 25),
         Position = dim2(0, 20, 0, 200),
-        BackgroundColor3 = rgb(0, 0, 0),
+        BackgroundColor3 = themes.preset.outline,
         BorderSizePixel = 0,
         Visible = false,
         ZIndex = 999
-    })
+    }); library:applyTheme(kl, "outline", "BackgroundColor3")
     local kl_inline = library:create("Frame", {
         Parent = kl,
         Position = dim2(0, 1, 0, 1),
         Size = dim2(1, -2, 1, -2),
-        BackgroundColor3 = rgb(25, 25, 25),
+        BackgroundColor3 = themes.preset.inline,
         BorderSizePixel = 0
-    })
+    }); library:applyTheme(kl_inline, "inline", "BackgroundColor3")
     local kl_bg = library:create("Frame", {
         Parent = kl_inline,
         Position = dim2(0, 1, 0, 1),
         Size = dim2(1, -2, 1, -2),
-        BackgroundColor3 = rgb(0, 0, 0),
+        BackgroundColor3 = themes.preset.background,
         BorderSizePixel = 0
-    })
+    }); library:applyTheme(kl_bg, "background", "BackgroundColor3")
     local title = library:create("TextLabel", {
         Parent = kl_bg,
         Text = "Keybinds",
@@ -4510,7 +4514,7 @@ function library:keybindList(options)
                         Parent = list_holder,
                         Text = string.format("%s [%s] [%s]", tostring(data.name or flag), key_display, mode_display),
                         FontFace = library.font,
-                        TextColor3 = rgb(135, 135, 135),
+                        TextColor3 = themes.preset.unselected,
                         BackgroundTransparency = 1,
                         Size = dim2(1, 0, 0, 14),
                         Position = dim2(0, 0, 0, 0),
@@ -4518,7 +4522,7 @@ function library:keybindList(options)
                         TextXAlignment = Enum.TextXAlignment.Left,
                         TextSize = 11,
                         BackgroundColor3 = rgb(255, 255, 255)
-                    })
+                    }); library:applyTheme(entry, "unselected", "TextColor3")
                 end
             end
             kl.Size = dim2(0, 180, 0, 25 + (active_count * 16))
