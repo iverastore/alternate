@@ -2405,7 +2405,7 @@
 
                             cfg.set(value)
                         end
-                    end)
+                    end))
 
                     library:connection(uis.InputEnded, function(input)
                         if input.UserInputType == Enum.UserInputType.MouseButton1 then
