@@ -3713,11 +3713,51 @@
     local notifications = library.notifications
 
     function notifications:refresh_notifs() 
-        local yOffset = 50
+        local settings = library.NotifSettings or {}
+        local pos = settings.Position or "Top Right"
+        local maxShown = settings.MaxShown or 5
+        local viewport = camera.ViewportSize
+        local padding = 20
+        local yOffset = padding
+        local reverse = pos:find("Bottom") ~= nil
+        local visibleNotifs = {}
         for i, v in ipairs(notifications.notifs) do
-            local Position = vec2(20, yOffset)
-            tween_service:Create(v, TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Position = dim_offset(Position.X, Position.Y)}):Play()
-            yOffset = yOffset + v.AbsoluteSize.Y + 10
+            if v.Parent then
+                table.insert(visibleNotifs, v)
+            end
+        end
+        if #visibleNotifs > maxShown then
+            for i = maxShown + 1, #visibleNotifs do
+                local old = visibleNotifs[i]
+                notifications:fade(old, true)
+                task.delay(1, function() if old then old:Destroy() end end)
+                for idx, n in ipairs(notifications.notifs) do
+                    if n == old then table.remove(notifications.notifs, idx) break end
+                end
+            end
+            visibleNotifs = {}
+            for i, v in ipairs(notifications.notifs) do
+                if v.Parent then table.insert(visibleNotifs, v) end
+            end
+        end
+        if reverse then
+            yOffset = viewport.Y - padding
+        end
+        for i, v in ipairs(visibleNotifs) do
+            local xPos = padding
+            if pos:find("Right") then
+                xPos = viewport.X - v.AbsoluteSize.X - padding
+            elseif pos:find("Center") then
+                xPos = (viewport.X - v.AbsoluteSize.X) * 0.5
+            end
+            local yPos = yOffset
+            if reverse then
+                yPos = yOffset - v.AbsoluteSize.Y
+                yOffset = yPos - 10
+            else
+                yOffset = yOffset + v.AbsoluteSize.Y + 10
+            end
+            tween_service:Create(v, TweenInfo.new(0.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Position = dim_offset(xPos, yPos)}):Play()
         end
     end
     
@@ -3738,6 +3778,10 @@
     end 
     
     function notifications:create_notification(options)
+        local settings = library.NotifSettings or {}
+        local duration = options.duration or settings.Duration or 3
+        local notifType = settings.Type or "Full"
+        local animation = settings.Animation or "Slide"
         local cfg = {
             name = options.name or "Hit: q3sm (finobe) in the Head for 100 Damage!",
             outline; 
@@ -3780,13 +3824,14 @@
                 PaddingLeft = dim(0, 4)
             });
             
+            local notifText = notifType == "Text" and cfg.name or string.format("[ alternate.lol ] %s", cfg.name)
             local misc_text = library:create("TextLabel", {
                 FontFace = library.font;
                 Parent = background;
                 LineHeight = 1.75;
                 TextColor3 = rgb(135, 135, 135);
                 BorderColor3 = rgb(0, 0, 0);
-                Text = string.format("[ alternate.lol ] %s", cfg.name);
+                Text = notifText;
                 AutomaticSize = Enum.AutomaticSize.XY;
                 Size = dim2(1, -4, 1, 0);
                 Position = dim2(0, 4, 0, -2);
@@ -3828,14 +3873,45 @@
         local index = #notifications.notifs + 1
         notifications.notifs[index] = outline
         
+        local pos = (library.NotifSettings or {}).Position or "Top Right"
+        local viewport = camera.ViewportSize
+        local startX, startY = 20, 20
+        if pos:find("Right") then
+            startX = viewport.X + 300
+        elseif pos:find("Center") then
+            startX = viewport.X * 0.5
+        end
+        if pos:find("Bottom") then
+            startY = viewport.Y
+        end
+        outline.Position = dim_offset(startX, startY)
+
+        if animation == "Fade" then
+            outline.BackgroundTransparency = 1
+            for _, inst in outline:GetDescendants() do
+                if inst:IsA("TextLabel") then inst.TextTransparency = 1
+                elseif inst:IsA("Frame") then inst.BackgroundTransparency = 1
+                elseif inst:IsA("UIStroke") then inst.Transparency = 1 end
+            end
+        elseif animation == "Pop" then
+            outline.Size = dim2(0, 0, 0, 0)
+            outline.AnchorPoint = vec2(0.5, 0.5)
+        end
+
         notifications:refresh_notifs()
-        tween_service:Create(outline, TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {AnchorPoint = vec2(0, 0)}):Play()
-        
-        notifications:fade(outline, false)
+
+        if animation == "Slide" then
+            notifications:fade(outline, false)
+        elseif animation == "Fade" then
+            notifications:fade(outline, false)
+        elseif animation == "Pop" then
+            tween_service:Create(outline, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = dim2(0, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.XY}):Play()
+            notifications:fade(outline, false)
+        end
 
         task.spawn(function()
-            tween_service:Create(line, TweenInfo.new(3, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = dim2(1, -1, 0, 1)}):Play()
-            task.wait(3)
+            tween_service:Create(line, TweenInfo.new(duration, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = dim2(1, -1, 0, 1)}):Play()
+            task.wait(duration)
             notifications.notifs[index] = nil
             notifications:fade(outline, true)
             task.wait(1)
