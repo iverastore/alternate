@@ -2178,9 +2178,10 @@
                 -- Functions 
                     function cfg.set(bool) 
                         accent.Visible = bool 
-                        cfg.callback(bool)
 
                         flags[cfg.flag] = bool
+
+                        cfg.callback(bool)
 
                         if cfg.folding then 
                             cfg.background.Visible = bool
