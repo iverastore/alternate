@@ -523,7 +523,7 @@
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, -2, 1, -2),
                 BorderSizePixel = 0,
-                BackgroundColor3 = rgb(45, 45, 45)
+                BackgroundColor3 = rgb(25, 25, 25)
             })  
             
             local INSTANCE_HOLDERS = library:create("Frame", {
@@ -533,7 +533,7 @@
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, -2, 1, -2),
                 BorderSizePixel = 0,
-                BackgroundColor3 = rgb(12, 12, 12)
+                BackgroundColor3 = rgb(0, 0, 0)
             })
 
             local h, s, v = color(1, 1, 1):ToHSV() 
@@ -569,7 +569,7 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(45, 45, 45)
+                    BackgroundColor3 = rgb(25, 25, 25)
                 })
                 
                 local background = library:create("Frame", {
@@ -657,7 +657,7 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(45, 45, 45)
+                    BackgroundColor3 = rgb(25, 25, 25)
                 })
                 
                 local Frame = library:create("Frame", {
@@ -706,7 +706,7 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(45, 45, 45)
+                    BackgroundColor3 = rgb(25, 25, 25)
                 })
                 
                 local alpha_drag = library:create("Frame", {
@@ -1073,7 +1073,7 @@
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, -2, 1, -2),
                 BorderSizePixel = 0,
-                BackgroundColor3 = rgb(45, 45, 45)
+                BackgroundColor3 = rgb(25, 25, 25)
             })  
             
             local INSTANCE_HOLDERS = library:create("Frame", {
@@ -1083,7 +1083,7 @@
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(1, -2, 1, -2),
                 BorderSizePixel = 0,
-                BackgroundColor3 = rgb(12, 12, 12)
+                BackgroundColor3 = rgb(0, 0, 0)
             })
 
             local h, s, v = color(1, 1, 1):ToHSV() 
@@ -1119,7 +1119,7 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(45, 45, 45)
+                    BackgroundColor3 = rgb(25, 25, 25)
                 })
                 
                 local background = library:create("Frame", {
@@ -1207,7 +1207,7 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(45, 45, 45)
+                    BackgroundColor3 = rgb(25, 25, 25)
                 })
                 
                 local Frame = library:create("Frame", {
@@ -1256,7 +1256,7 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(45, 45, 45)
+                    BackgroundColor3 = rgb(25, 25, 25)
                 })
                 
                 local alpha_drag = library:create("Frame", {
@@ -1509,7 +1509,7 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(48, 48, 48)
+                    BackgroundColor3 = rgb(25, 25, 25)
                 })
                 
                 local background = library:create("Frame", {
@@ -1519,7 +1519,7 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(12, 12, 12)
+                    BackgroundColor3 = rgb(0, 0, 0)
                 })
                 
                 local title_holder = library:create("Frame", {
@@ -1848,7 +1848,7 @@
                 BorderColor3 = rgb(0, 0, 0),
                 Size = dim2(0, 100, 0, 100),
                 BorderSizePixel = 0,
-                BackgroundColor3 = rgb(12, 12, 12)
+                BackgroundColor3 = rgb(0, 0, 0)
             })
             
             library:create("UIListLayout", {
@@ -1875,7 +1875,7 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = self.fill and dim2(1, 0, 0, 0) or cfg.size,
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(12, 12, 12)
+                    BackgroundColor3 = rgb(0, 0, 0)
                 })
                 
                 local inline = library:create("Frame", {
@@ -1885,7 +1885,7 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(45, 45, 45)
+                    BackgroundColor3 = rgb(25, 25, 25)
                 })
                 
                 local background = library:create("Frame", {
@@ -1895,9 +1895,9 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(19, 19, 19)
+                    BackgroundColor3 = rgb(0, 0, 0)
                 })
-
+                
                 local scrollbar_fill = library:create("Frame", {
                     Parent = background,
                     Name = "",
@@ -1907,7 +1907,7 @@
                     BorderColor3 = rgb(0, 0, 0),
                     ZIndex = 4,
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(45, 45, 45)
+                    BackgroundColor3 = rgb(25, 25, 25)
                 })
                 
                 local shadow = library:create("Frame", {
@@ -1918,7 +1918,7 @@
                     BorderColor3 = rgb(0, 0, 0),
                     ZIndex = 999,
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(19, 19, 19)
+                    BackgroundColor3 = rgb(0, 0, 0)
                 })
                 
                 local UIGradient = library:create("UIGradient", {
@@ -1931,7 +1931,7 @@
                 local elements_scroll = library:create("ScrollingFrame", {
                     Parent = background,
                     Name = "",
-                    ScrollBarImageColor3 = rgb(65, 65, 65),
+                    ScrollBarImageColor3 = rgb(25, 25, 25),
                     Active = true,
                     AutomaticCanvasSize = Enum.AutomaticSize.Y,
                     ScrollBarThickness = 4,
@@ -1988,7 +1988,7 @@
                     BorderSizePixel = 0,
                     ZIndex = 2,
                     TextSize = 12,
-                    BackgroundColor3 = rgb(19, 19, 19)
+                    BackgroundColor3 = rgb(0, 0, 0)
                 })
 
                 local section_filler = library:create("Frame", {
@@ -1999,7 +1999,7 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(0, section_title.TextBounds.X, 0, 3),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(19, 19, 19)
+                    BackgroundColor3 = rgb(0, 0, 0)
                 })
             -- 
 
@@ -2518,7 +2518,7 @@
                         BorderColor3 = rgb(0, 0, 0),
                         Size = dim2(1, -1, 1, -2),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(45, 45, 45)
+                        BackgroundColor3 = rgb(25, 25, 25)
                     })
                     
                     local background = library:create("Frame", {
@@ -2632,7 +2632,7 @@
                             BorderColor3 = rgb(0, 0, 0),
                             Size = dim2(1, -2, 1, -2),
                             BorderSizePixel = 0,
-                            BackgroundColor3 = rgb(45, 45, 45)
+                            BackgroundColor3 = rgb(25, 25, 25)
                         })
                         
                         local text_holder = library:create("Frame", {
@@ -3022,7 +3022,7 @@
                         BorderColor3 = rgb(0, 0, 0),
                         Size = dim2(1, -2, 1, -2),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(45, 45, 45)
+                        BackgroundColor3 = rgb(25, 25, 25)
                     })
                     
                     local background = library:create("Frame", {
@@ -3032,7 +3032,7 @@
                         BorderColor3 = rgb(0, 0, 0),
                         Size = dim2(1, -2, 1, -2),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(19, 19, 19)
+                        BackgroundColor3 = rgb(0, 0, 0)
                     })
                     
                     local textbox = library:create("TextBox", {
@@ -3045,13 +3045,14 @@
                         RichText = true,
                         TextColor3 = rgb(178, 178, 178),
                         BorderColor3 = rgb(0, 0, 0),
-                        Text = "IF I SEE WEED I GOTTA LIGHT IT",
+                        Text = "",
                         CursorPosition = -1,
                         BackgroundTransparency = 1,
                         TextXAlignment = Enum.TextXAlignment.Left,
                         Position = dim2(0, 6, 0, 0),
                         BorderSizePixel = 0,
-                        PlaceholderColor3 = rgb(178, 178, 178),
+                        PlaceholderText = cfg.placeholder,
+                        PlaceholderColor3 = rgb(120, 120, 120),
                         BackgroundColor3 = rgb(255, 255, 255)
                     })
                     
@@ -3407,7 +3408,7 @@
                         BorderColor3 = rgb(0, 0, 0),
                         Size = dim2(1, -1, 1, -2),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(45, 45, 45)
+                        BackgroundColor3 = rgb(25, 25, 25)
                     })
                     
                     local background = library:create("Frame", {
@@ -3429,7 +3430,7 @@
                         BorderColor3 = rgb(0, 0, 0),
                         ZIndex = 4,
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(45, 45, 45)
+                        BackgroundColor3 = rgb(25, 25, 25)
                     })
 
                     local ScrollingFrame = library:create("ScrollingFrame", {
@@ -3439,7 +3440,7 @@
                         AutomaticCanvasSize = Enum.AutomaticSize.Y,
                         ScrollBarThickness = 4,
                         BackgroundTransparency = 1,
-                        ScrollBarImageColor3 = rgb(65, 65, 65),
+                        ScrollBarImageColor3 = rgb(25, 25, 25),
                         Size = dim2(1, 0, 1, 0),
                         BackgroundColor3 = rgb(255, 255, 255),
                         BorderColor3 = rgb(0, 0, 0),
@@ -3654,7 +3655,7 @@
                         BorderColor3 = rgb(0, 0, 0),
                         Size = dim2(1, -2, 1, -2),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(45, 45, 45)
+                        BackgroundColor3 = rgb(25, 25, 25)
                     })
                     
                     local background = library:create("Frame", {
@@ -3664,7 +3665,7 @@
                         BorderColor3 = rgb(0, 0, 0),
                         Size = dim2(1, -2, 1, -2),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(19, 19, 19)
+                        BackgroundColor3 = rgb(0, 0, 0)
                     })
                     
                     local button = library:create("TextButton", {
@@ -3765,7 +3766,7 @@
                 BorderColor3 = rgb(0, 0, 0);
                 BorderSizePixel = 0;
                 AutomaticSize = Enum.AutomaticSize.XY;
-                BackgroundColor3 = rgb(48, 48, 48)
+                BackgroundColor3 = rgb(25, 25, 25)
             });	
             
             local background = library:create("Frame", {
@@ -3774,7 +3775,7 @@
                 BorderColor3 = rgb(0, 0, 0);
                 BorderSizePixel = 0;
                 AutomaticSize = Enum.AutomaticSize.XY;
-                BackgroundColor3 = rgb(12, 12, 12)
+                BackgroundColor3 = rgb(0, 0, 0)
             });
             
             library:create("UIPadding", {
@@ -3863,14 +3864,14 @@ function library:watermark(options)
         Parent = wm,
         Position = dim2(0, 1, 0, 1),
         Size = dim2(1, -2, 1, -2),
-        BackgroundColor3 = rgb(48, 48, 48),
+        BackgroundColor3 = rgb(25, 25, 25),
         BorderSizePixel = 0
     })
     local wm_bg = library:create("Frame", {
         Parent = wm_inline,
         Position = dim2(0, 1, 0, 1),
         Size = dim2(1, -2, 1, -2),
-        BackgroundColor3 = rgb(12, 12, 12),
+        BackgroundColor3 = rgb(0, 0, 0),
         BorderSizePixel = 0
     })
     local wm_text = library:create("TextLabel", {
@@ -3910,14 +3911,14 @@ function library:targetHud(options)
         Parent = hud,
         Position = dim2(0, 1, 0, 1),
         Size = dim2(1, -2, 1, -2),
-        BackgroundColor3 = rgb(48, 48, 48),
+        BackgroundColor3 = rgb(25, 25, 25),
         BorderSizePixel = 0
     })
     local hud_bg = library:create("Frame", {
         Parent = hud_inline,
         Position = dim2(0, 1, 0, 1),
         Size = dim2(1, -2, 1, -2),
-        BackgroundColor3 = rgb(12, 12, 12),
+        BackgroundColor3 = rgb(0, 0, 0),
         BorderSizePixel = 0
     })
     local accentLine = library:create("Frame", {
@@ -4096,14 +4097,14 @@ function library:keybindList(options)
         Parent = kl,
         Position = dim2(0, 1, 0, 1),
         Size = dim2(1, -2, 1, -2),
-        BackgroundColor3 = rgb(48, 48, 48),
+        BackgroundColor3 = rgb(25, 25, 25),
         BorderSizePixel = 0
     })
     local kl_bg = library:create("Frame", {
         Parent = kl_inline,
         Position = dim2(0, 1, 0, 1),
         Size = dim2(1, -2, 1, -2),
-        BackgroundColor3 = rgb(12, 12, 12),
+        BackgroundColor3 = rgb(0, 0, 0),
         BorderSizePixel = 0
     })
     local title = library:create("TextLabel", {
