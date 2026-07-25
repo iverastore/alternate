@@ -325,27 +325,40 @@
             return start * (1 - t) + finish * t
         end)
 
-        function library:draggify(frame)
+        function library:draggify(frame, delay)
+            delay = delay or 0.15
             local dragging = false 
+            local drag_ready = false
             local start_size = frame.Position
             local start 
+            local press_time = 0
 
             frame.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    dragging = true
                     start = input.Position
                     start_size = frame.Position
+                    drag_ready = false
+                    pressing = true
+                    press_time = tick()
+                    task.delay(delay, function()
+                        if pressing then
+                            drag_ready = true
+                            dragging = true
+                        end
+                    end)
                 end
             end)
 
             frame.InputEnded:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 then
                     dragging = false
+                    drag_ready = false
+                    pressing = false
                 end
             end)
 
             library:connection(uis.InputChanged, function(input, game_event) 
-                if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                if dragging and drag_ready and input.UserInputType == Enum.UserInputType.MouseMovement then
                     local viewport_x = camera.ViewportSize.X
                     local viewport_y = camera.ViewportSize.Y
 
@@ -3879,15 +3892,19 @@ function library:watermark(options)
         local fpsCount = 0
         local fpsTime = tick()
         local lastFps = 60
-        while wm and wm.Parent do
+        local rsConn
+        rsConn = run.RenderStepped:Connect(function()
             fpsCount = fpsCount + 1
+        end)
+        library:connection(rsConn)
+        while wm and wm.Parent do
             local now = tick()
             if now - fpsTime >= 1 then
                 lastFps = math.round(fpsCount / (now - fpsTime))
                 fpsCount = 0
                 fpsTime = now
             end
-            task.wait(0.1)
+            task.wait(0.5)
             if wm_text and wm_text.Parent then
                 local players = #game:GetService("Players"):GetPlayers()
                 local time = os.date("%H:%M:%S")
@@ -3896,6 +3913,7 @@ function library:watermark(options)
                 wm.Size = dim2(0, math.max(bounds.X + 8, 120), 0, 25)
             end
         end
+        if rsConn then rsConn:Disconnect() end
     end)
 
     return wm
@@ -3904,7 +3922,7 @@ end
 function library:targetHud(options)
     local hud = library:create("Frame", {
         Parent = library.gui,
-        Size = dim2(0, 260, 0, 90),
+        Size = dim2(0, 280, 0, 100),
         Position = dim2(0.5, 100, 0.5, 0),
         BackgroundColor3 = rgb(0, 0, 0),
         BorderSizePixel = 0,
@@ -3922,22 +3940,23 @@ function library:targetHud(options)
         Parent = hud_inline,
         Position = dim2(0, 1, 0, 1),
         Size = dim2(1, -2, 1, -2),
-        BackgroundColor3 = rgb(0, 0, 0),
+        BackgroundColor3 = rgb(15, 15, 15),
         BorderSizePixel = 0
     })
-    local accentLine = library:create("Frame", {
+    local accentBar = library:create("Frame", {
         Parent = hud,
-        Size = dim2(1, 0, 0, 2),
+        Size = dim2(0, 3, 1, 0),
         Position = dim2(0, 0, 0, 0),
         BackgroundColor3 = themes.preset.accent,
-        BorderSizePixel = 0
+        BorderSizePixel = 0,
+        ZIndex = 3
     })
-    library:applyTheme(accentLine, "accent", "BackgroundColor3")
+    library:applyTheme(accentBar, "accent", "BackgroundColor3")
 
     local avatar = library:create("ImageLabel", {
         Parent = hud_bg,
-        Size = dim2(0, 48, 0, 48),
-        Position = dim2(0, 8, 0, 8),
+        Size = dim2(0, 56, 0, 56),
+        Position = dim2(0, 10, 0, 10),
         BackgroundColor3 = rgb(20, 20, 20),
         BorderSizePixel = 0,
         Image = "",
@@ -3946,35 +3965,92 @@ function library:targetHud(options)
     })
     local avatar_stroke = library:create("UIStroke", {
         Parent = avatar,
-        Color = rgb(48, 48, 48),
+        Color = themes.preset.accent,
         Thickness = 1,
         LineJoinMode = Enum.LineJoinMode.Miter
     })
-    local avatar_corner = library:create("UICorner", {
+    library:applyTheme(avatar_stroke, "accent", "Color")
+    library:create("UICorner", {
         Parent = avatar,
-        CornerRadius = dim(0, 4)
+        CornerRadius = dim(0, 6)
     })
 
     local display_name = library:create("TextLabel", {
         Parent = hud_bg,
         Text = "",
-        Size = dim2(1, -68, 0, 16),
-        Position = dim2(0, 64, 0, 8),
+        Size = dim2(1, -84, 0, 18),
+        Position = dim2(0, 74, 0, 10),
         BackgroundTransparency = 1,
         TextColor3 = rgb(255, 255, 255),
         TextXAlignment = Enum.TextXAlignment.Left,
         FontFace = library.font,
-        TextSize = 13,
+        TextSize = 14,
         TextTruncate = Enum.TextTruncate.AtEnd,
         ZIndex = 2
     })
     local username = library:create("TextLabel", {
         Parent = hud_bg,
         Text = "",
-        Size = dim2(1, -68, 0, 14),
-        Position = dim2(0, 64, 0, 25),
+        Size = dim2(1, -84, 0, 14),
+        Position = dim2(0, 28, 0, 28),
         BackgroundTransparency = 1,
-        TextColor3 = rgb(135, 135, 135),
+        TextColor3 = rgb(120, 120, 120),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        FontFace = library.font,
+        TextSize = 11,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+        ZIndex = 2
+    })
+
+    local info_row = library:create("Frame", {
+        Parent = hud_bg,
+        Size = dim2(1, -84, 0, 14),
+        Position = dim2(0, 74, 0, 44),
+        BackgroundTransparency = 1,
+        ZIndex = 2
+    })
+    local dist_label = library:create("TextLabel", {
+        Parent = info_row,
+        Text = "Dist:",
+        Size = dim2(0, 30, 1, 0),
+        BackgroundTransparency = 1,
+        TextColor3 = rgb(100, 100, 100),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        FontFace = library.font,
+        TextSize = 11,
+        ZIndex = 2
+    })
+    local dist_text = library:create("TextLabel", {
+        Parent = info_row,
+        Text = "0",
+        Size = dim2(0, 50, 1, 0),
+        Position = dim2(0, 28, 0, 0),
+        BackgroundTransparency = 1,
+        TextColor3 = rgb(200, 200, 200),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        FontFace = library.font,
+        TextSize = 11,
+        ZIndex = 2
+    })
+    local tool_label = library:create("TextLabel", {
+        Parent = info_row,
+        Text = "Tool:",
+        Size = dim2(0, 30, 1, 0),
+        Position = dim2(0, 80, 0, 0),
+        BackgroundTransparency = 1,
+        TextColor3 = rgb(100, 100, 100),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        FontFace = library.font,
+        TextSize = 11,
+        ZIndex = 2
+    })
+    local tool_text = library:create("TextLabel", {
+        Parent = info_row,
+        Text = "None",
+        Size = dim2(0, 80, 1, 0),
+        Position = dim2(0, 108, 0, 0),
+        BackgroundTransparency = 1,
+        TextColor3 = rgb(200, 200, 200),
         TextXAlignment = Enum.TextXAlignment.Left,
         FontFace = library.font,
         TextSize = 11,
@@ -3984,11 +4060,17 @@ function library:targetHud(options)
 
     local hp_bar_bg = library:create("Frame", {
         Parent = hud_bg,
-        Size = dim2(1, -16, 0, 4),
-        Position = dim2(0, 8, 1, -22),
+        Size = dim2(1, -20, 0, 6),
+        Position = dim2(0, 10, 1, -24),
         BackgroundColor3 = rgb(0, 0, 0),
         BorderSizePixel = 0,
         ZIndex = 2
+    })
+    library:create("UIStroke", {
+        Parent = hp_bar_bg,
+        Color = rgb(40, 40, 40),
+        Thickness = 1,
+        LineJoinMode = Enum.LineJoinMode.Miter
     })
     local hp_bar_fill = library:create("Frame", {
         Parent = hp_bar_bg,
@@ -4000,24 +4082,12 @@ function library:targetHud(options)
 
     local hp_text = library:create("TextLabel", {
         Parent = hud_bg,
-        Text = "100",
-        Size = dim2(0, 40, 0, 14),
-        Position = dim2(1, -48, 1, -38),
+        Text = "100/100",
+        Size = dim2(0, 80, 0, 14),
+        Position = dim2(1, -90, 1, -42),
         BackgroundTransparency = 1,
-        TextColor3 = rgb(135, 135, 135),
+        TextColor3 = rgb(180, 180, 180),
         TextXAlignment = Enum.TextXAlignment.Right,
-        FontFace = library.font,
-        TextSize = 11,
-        ZIndex = 2
-    })
-    local dist_text = library:create("TextLabel", {
-        Parent = hud_bg,
-        Text = "0st",
-        Size = dim2(0, 50, 0, 14),
-        Position = dim2(0, 64, 1, -18),
-        BackgroundTransparency = 1,
-        TextColor3 = rgb(135, 135, 135),
-        TextXAlignment = Enum.TextXAlignment.Left,
         FontFace = library.font,
         TextSize = 11,
         ZIndex = 2
@@ -4054,10 +4124,10 @@ function library:targetHud(options)
             end
 
             if humanoid then
-                local hp = math.floor(humanoid.Health)
+                local hp = math.floor(humanoid.GetHealth and humanoid:GetHealth() or humanoid.Health)
                 local maxHp = math.floor(humanoid.MaxHealth)
-                hp_text.Text = tostring(hp)
-                local ratio = math.clamp(humanoid.GetHealth and humanoid:GetHealth() or humanoid.Health, 0, maxHp) / math.max(maxHp, 1)
+                hp_text.Text = tostring(hp) .. "/" .. tostring(maxHp)
+                local ratio = math.clamp(hp, 0, maxHp) / math.max(maxHp, 1)
                 hp_bar_fill.Size = dim2(ratio, 0, 1, 0)
                 if ratio > 0.5 then
                     hp_bar_fill.BackgroundColor3 = rgb(0, 255, 0)
@@ -4073,9 +4143,16 @@ function library:targetHud(options)
 
             if root then
                 local dist = math.floor((workspace.CurrentCamera.CFrame.Position - root.Position).Magnitude)
-                dist_text.Text = tostring(dist) .. "st"
+                dist_text.Text = tostring(dist) .. " studs"
             else
                 dist_text.Text = "N/A"
+            end
+
+            if isPlayer and char then
+                local tool = char:FindFirstChildOfClass("Tool")
+                tool_text.Text = tool and tool.Name or "None"
+            else
+                tool_text.Text = "N/A"
             end
         end,
         Update = function(self)
@@ -4084,6 +4161,11 @@ function library:targetHud(options)
             end
         end
     }
+
+    library:connection(run.RenderStepped, function()
+        hudObj:Update()
+    end)
+
     return hudObj
 end
 
