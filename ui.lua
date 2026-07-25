@@ -3895,7 +3895,6 @@ function library:watermark(options)
     local wm = library:create("Frame", {
         Parent = library.gui,
         Size = dim2(0, 200, 0, 25),
-        AutomaticSize = Enum.AutomaticSize.X,
         Position = dim2(0, 20, 0, 20),
         BackgroundColor3 = rgb(0, 0, 0),
         BorderSizePixel = 0,
@@ -3918,8 +3917,7 @@ function library:watermark(options)
     local wm_text = library:create("TextLabel", {
         Parent = wm_bg,
         Text = " " .. (options.name or "alternate.lol"),
-        Size = dim2(0, 180, 1, 0),
-        AutomaticSize = Enum.AutomaticSize.X,
+        Size = dim2(1, 0, 1, 0),
         BackgroundTransparency = 1,
         TextColor3 = rgb(255, 255, 255),
         TextSize = 12,
@@ -3954,6 +3952,8 @@ function library:watermark(options)
                 local players = #game:GetService("Players"):GetPlayers()
                 local time = os.date("%H:%M:%S")
                 wm_text.Text = string.format(" %s | FPS: %d | Players: %d | %s", options.name or "alternate.lol", lastFps, players, time)
+                local bounds = wm_text.TextBounds
+                wm.Size = dim2(0, math.max(bounds.X + 8, 120), 0, 25)
             end
         end
     end)
