@@ -538,6 +538,7 @@
         end
 
         function library:unloadMenu() 
+            library.unloaded = true
             pcall(function()
                 if library.gui then 
                     library.gui:Destroy()
@@ -1094,7 +1095,7 @@
                 -- 
 
                 task.spawn(LPH_NO_VIRTUALIZE(function()
-                    while true do 
+                    while not library.unloaded do 
                         local anim = flagDirectory["animation"] 
 
                         if anim ~= "None" then 
@@ -4564,7 +4565,7 @@ function library:keybindList(options)
     library:draggify(kl)
 
     task.spawn(LPH_NO_VIRTUALIZE(function()
-        while task.wait(0.2) do
+        while not library.unloaded and task.wait(0.2) do
             for _, child in ipairs(list_holder:GetChildren()) do
                 if child:IsA("TextLabel") then child:Destroy() end
             end
