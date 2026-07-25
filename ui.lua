@@ -2792,6 +2792,83 @@
 
                 flags[cfg.flag] = {} 
 
+                -- Standalone color picker (called on a section, not a toggle/label)
+                    if not self.right_components then
+                        local row = library:create("TextLabel", {
+                            Parent = self.elements or self.background,
+                            Name = "",
+                            FontFace = library.font,
+                            TextColor3 = rgb(151, 151, 151),
+                            BorderColor3 = rgb(0, 0, 0),
+                            Text = "",
+                            ZIndex = 2,
+                            Size = dim2(1, -8, 0, 12),
+                            BorderSizePixel = 0,
+                            BackgroundTransparency = 1,
+                            TextXAlignment = Enum.TextXAlignment.Left,
+                            AutomaticSize = Enum.AutomaticSize.Y,
+                            TextYAlignment = Enum.TextYAlignment.Top,
+                            TextSize = 11,
+                            BackgroundColor3 = rgb(255, 255, 255)
+                        })
+
+                        local right_components = library:create("Frame", {
+                            Parent = row,
+                            Name = "",
+                            Position = dim2(1, 0, 0, -1),
+                            BorderColor3 = rgb(0, 0, 0),
+                            Size = dim2(0, 0, 0, 12),
+                            BorderSizePixel = 0,
+                            BackgroundColor3 = rgb(255, 255, 255)
+                        })
+
+                        library:create("UIListLayout", {
+                            Parent = right_components,
+                            Name = "",
+                            VerticalAlignment = Enum.VerticalAlignment.Center,
+                            FillDirection = Enum.FillDirection.Horizontal,
+                            HorizontalAlignment = Enum.HorizontalAlignment.Right,
+                            Padding = dim(0, 4),
+                            SortOrder = Enum.SortOrder.LayoutOrder
+                        })
+
+                        local left_components = library:create("Frame", {
+                            Parent = row,
+                            Name = "",
+                            BackgroundTransparency = 1,
+                            Position = dim2(0, 3, 0, 1),
+                            BorderColor3 = rgb(0, 0, 0),
+                            Size = dim2(0, 0, 0, 14),
+                            BorderSizePixel = 0,
+                            BackgroundColor3 = rgb(255, 255, 255)
+                        })
+
+                        library:create("UIListLayout", {
+                            Parent = left_components,
+                            Name = "",
+                            Padding = dim(0, 5),
+                            FillDirection = Enum.FillDirection.Horizontal
+                        })
+
+                        local text = library:create("TextButton", {
+                            Parent = left_components,
+                            Name = "",
+                            FontFace = library.font,
+                            TextColor3 = themes.preset.text,
+                            BorderColor3 = rgb(0, 0, 0),
+                            Text = cfg.name,
+                            BackgroundTransparency = 1,
+                            Size = dim2(0, 0, 1, -1),
+                            BorderSizePixel = 0,
+                            AutomaticSize = Enum.AutomaticSize.X,
+                            TextSize = 12,
+                            BackgroundColor3 = rgb(255, 255, 255)
+                        }); library:applyTheme(text, "text", "TextColor3")
+
+                        cfg.__ui = row
+                        self = setmetatable({right_components = right_components}, library)
+                    end
+
                 -- Instances
                     local outline = library:create("Frame", {
                         Parent = self.right_components,
@@ -2862,7 +2939,9 @@
                     colorpicker.outline.Position = dim_offset(button.AbsolutePosition.X + 1, button.AbsolutePosition.Y + button.AbsoluteSize.Y + 63)
                 -- 
 
-                cfg.__ui = outline
+                if not cfg.__ui then
+                    cfg.__ui = outline
+                end
 
                 return setmetatable(cfg, library)
             end 
@@ -3285,14 +3364,102 @@
                 -- 
                 
                 -- Connections 
-                    outline.MouseButton2Down:Connect(function()
-                        local modes = {"toggle", "hold", "always"}
-                        local current = table.find(modes, cfg.mode) or 1
-                        local nextMode = modes[(current % 3) + 1]
-                        cfg.set_mode(nextMode)
-                        if library.notifications and library.notifications.create_notification then
-                            library.notifications:create_notification({name = "Mode set to: " .. nextMode})
+                    local mode_menu = nil
+
+                    local function close_mode_menu()
+                        if mode_menu then
+                            mode_menu:Destroy()
+                            mode_menu = nil
                         end
+                    end
+
+                    local function open_mode_menu()
+                        close_mode_menu()
+
+                        local menu = library:create("Frame", {
+                            Parent = library.gui,
+                            Name = "",
+                            ZIndex = 9999,
+                            BorderSizePixel = 0,
+                            Size = dim2(0, 70, 0, 0),
+                            BackgroundColor3 = rgb(15, 15, 15),
+                            BorderColor3 = rgb(0, 0, 0),
+                        })
+
+                        library:create("UIStroke", {
+                            Parent = menu,
+                            Color = rgb(0, 0, 0),
+                            Thickness = 1,
+                            LineJoinMode = Enum.LineJoinMode.Miter,
+                        })
+
+                        local layout = library:create("UIListLayout", {
+                            Parent = menu,
+                            Padding = dim(0, 0),
+                            SortOrder = Enum.SortOrder.LayoutOrder,
+                            FillDirection = Enum.FillDirection.Vertical,
+                        })
+
+                        local modes_list = {"toggle", "hold", "always"}
+
+                        for _, mode_name in ipairs(modes_list) do
+                            local is_current = cfg.mode == mode_name
+                            local btn = library:create("TextButton", {
+                                Parent = menu,
+                                Name = "",
+                                Text = string.upper(string.sub(mode_name, 1, 1)) .. string.sub(mode_name, 2),
+                                FontFace = library.font,
+                                TextColor3 = is_current and themes.preset.accent or rgb(151, 151, 151),
+                                TextSize = 11,
+                                Size = dim2(1, 0, 0, 16),
+                                BackgroundColor3 = is_current and rgb(25, 25, 25) or rgb(15, 15, 15),
+                                BorderSizePixel = 0,
+                                AutoButtonColor = false,
+                                TextXAlignment = Enum.TextXAlignment.Center,
+                                ZIndex = 9999,
+                            })
+
+                            if is_current then
+                                library:applyTheme(btn, "accent", "TextColor3")
+                            end
+
+                            btn.MouseButton1Click:Connect(function()
+                                cfg.set_mode(mode_name)
+                                cfg.set({mode = cfg.mode, active = cfg.active, key = cfg.key})
+                                close_mode_menu()
+                            end)
+
+                            btn.MouseEnter:Connect(function()
+                                btn.BackgroundColor3 = rgb(30, 30, 30)
+                            end)
+                            btn.MouseLeave:Connect(function()
+                                btn.BackgroundColor3 = is_current and rgb(25, 25, 25) or rgb(15, 15, 15)
+                            end)
+                        end
+
+                        local abs_pos = outline.AbsolutePosition
+                        local abs_size = outline.AbsoluteSize
+                        menu.Position = dim2(0, abs_pos.X, 0, abs_pos.Y + abs_size.Y + 2)
+                        menu.Size = dim2(0, 70, 0, #modes_list * 16)
+
+                        mode_menu = menu
+
+                        library:connection(uis.InputBegan, function(input, game_event)
+                            if game_event then return end
+                            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 then
+                                local mp = uis:GetMouseLocation()
+                                local mp_x, mp_y = mp.X, mp.Y - gui_offset
+                                local menu_pos = menu.AbsolutePosition
+                                local menu_size = menu.AbsoluteSize
+                                if mp_x < menu_pos.X or mp_x > menu_pos.X + menu_size.X or mp_y < menu_pos.Y or mp_y > menu_pos.Y + menu_size.Y then
+                                    close_mode_menu()
+                                end
+                            end
+                        end)
+                    end
+
+                    outline.MouseButton2Down:Connect(function()
+                        open_mode_menu()
                     end)
                     
                     outline.MouseButton1Down:Connect(function()
@@ -4330,9 +4497,10 @@ function library:keybindList(options)
                 if type(data) == "table" and data.Key and data.Toggled and not tostring(flag):find("^_") then
                     active_count = active_count + 1
                     local key_display = keys[data.Key] or tostring(data.Key):gsub("Enum.KeyCode.", ""):gsub("Enum.UserInputType.", "")
+                    local mode_display = data.mode and string.upper(string.sub(data.mode, 1, 1)) .. string.sub(data.mode, 2) or "Toggle"
                     local entry = library:create("TextLabel", {
                         Parent = list_holder,
-                        Text = string.format("%s [%s]", tostring(data.name or flag), key_display),
+                        Text = string.format("%s [%s] [%s]", tostring(data.name or flag), key_display, mode_display),
                         FontFace = library.font,
                         TextColor3 = rgb(135, 135, 135),
                         BackgroundTransparency = 1,
