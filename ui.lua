@@ -8,7 +8,19 @@
     local lighting = game:GetService("Lighting")
     local run = game:GetService("RunService")
     local stats = game:GetService("Stats")
-    local coregui = game.Players.LocalPlayer.PlayerGui
+    local coregui = (function()
+        if gethui then
+            local ok, res = pcall(gethui)
+            if ok and res and not res:IsA("ScreenGui") then
+                return res
+            end
+        end
+        local ok, cg = pcall(function() return game:GetService("CoreGui") end)
+        if ok and cg then
+            return cg
+        end
+        return game.Players.LocalPlayer.PlayerGui
+    end)()
     local debris = game:GetService("Debris")
     local tween_service = game:GetService("TweenService")
     local sound_service = game:GetService("SoundService")
