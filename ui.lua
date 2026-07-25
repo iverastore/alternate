@@ -95,6 +95,7 @@
             ["hover"] = rgb(45, 45, 45),
             ["unselected"] = rgb(120, 120, 120),
             ["border"] = rgb(0, 0, 0),
+            ["glow"] = rgb(255, 255, 255),
         }, 	
 
         utility = {
@@ -138,6 +139,9 @@
             ["border"] = {
                 ["BackgroundColor3"] = {},
                 ["BorderColor3"] = {},
+            },
+            ["glow"] = {
+                ["ImageColor3"] = {},
             },
         }, 
     }
@@ -939,8 +943,8 @@
                     Parent = text_holder,
                     Name = "",
                     FontFace = library.font,
-                    TextColor3 = rgb(180, 180, 180),
-                    BorderColor3 = rgb(0, 0, 0),
+                    TextColor3 = themes.preset.unselected,
+                    BorderColor3 = themes.preset.border,
                     Text = "animations",
                     AnchorPoint = vec2(1, 0),
                     BackgroundTransparency = 1,
@@ -1038,14 +1042,14 @@
                     colorpicker_picker.Visible = true 
 
                     colorpicker_tab.TextColor3 = themes.preset.accent
-                    cfg["animations_tab"].TextColor3 = rgb(180, 180, 180)
+                    cfg["animations_tab"].TextColor3 = themes.preset.unselected
                 end)
 
                 cfg["animations_tab"].MouseButton1Click:Connect(function()
                     cfg["animations"].Visible = true 
                     colorpicker_picker.Visible = false 
 
-                    colorpicker_tab.TextColor3 = rgb(180, 180, 180)
+                    colorpicker_tab.TextColor3 = themes.preset.unselected
                     cfg["animations_tab"].TextColor3 = themes.preset.accent
                 end)
 
@@ -1551,23 +1555,25 @@
             }); outline.Position = dim_offset(outline.AbsolutePosition.X, outline.AbsolutePosition.Y) -- gay dragging fix
             library:applyTheme(outline, "outline", "BackgroundColor3")
 
-            -- local glow = library:create("ImageLabel", {
-            --     Parent = outline,
-            --     Name = "",
-            --     ImageColor3 = themes.preset.accent,
-            --     ScaleType = Enum.ScaleType.Slice,
-            --     BorderColor3 = rgb(0, 0, 0),
-            --     BackgroundColor3 = rgb(255, 255, 255),
-            --     Visible = true,
-            --     Image = "http://www.roblox.com/asset/?id=18245826428",
-            --     BackgroundTransparency = 1,
-            --     ImageTransparency = 0.8, 
-            --     Position = dim2(0, -20, 0, -20),
-            --     Size = dim2(1, 40, 1, 40),
-            --     ZIndex = 2,
-            --     BorderSizePixel = 0,
-            --     SliceCenter = rect(vec2(21, 21), vec2(79, 79))
-            -- }); library:applyTheme(glow, "accent", "ImageColor3")
+            local glow = library:create("ImageLabel", {
+                Parent = outline,
+                Name = "",
+                ImageColor3 = themes.preset.glow or themes.preset.accent,
+                ScaleType = Enum.ScaleType.Slice,
+                BorderColor3 = rgb(0, 0, 0),
+                BackgroundColor3 = rgb(255, 255, 255),
+                Visible = true,
+                Image = "rbxassetid://110204605000367",
+                BackgroundTransparency = 1,
+                ImageTransparency = 0.8,
+                Position = dim2(0, -20, 0, -20),
+                Size = dim2(1, 40, 1, 40),
+                ZIndex = 0,
+                BorderSizePixel = 0,
+                SliceCenter = rect(vec2(21, 21), vec2(79, 79)),
+                ResampleMode = Enum.ResamplerMode.Pixelated
+            }); library:applyTheme(glow, "glow", "ImageColor3")
+            cfg.glow = glow
 
             library:draggify(outline)
             library:makeResizable(outline)
@@ -1705,13 +1711,8 @@
                 local scroll_data = {}
 
                 function cfg.toggle_menu(bool)
-                    if not cfg.is_closing_menu then
-                        cfg.is_closing_menu = true
-                        outline.Visible = bool and true or false
-                        task.delay(0.1, function()
-                            cfg.is_closing_menu = false
-                        end)
-                    end
+                    outline.Visible = bool and true or false
+                    if cfg.glow then cfg.glow.Visible = bool and true or false end
                 end
             -- 
 
@@ -1728,21 +1729,21 @@
                     Parent = self.tab_holder,
                     Name = "",
                     FontFace = library.font,
-                    TextColor3 = rgb(0, 0, 0),
-                    BorderColor3 = rgb(0, 0, 0),
+                    TextColor3 = themes.preset.border,
+                    BorderColor3 = themes.preset.border,
                     Text = "",
                     AutoButtonColor = false,
                     Size = dim2(0, 0, 0, 30),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = rgb(0, 0, 0)
-                })
+                    BackgroundColor3 = themes.preset.outline
+                }); library:applyTheme(outline, "outline", "BackgroundColor3")
                 
                 local inline = library:create("Frame", {
                     Parent = outline,
                     Name = "",
                     Position = dim2(0, 1, 0, 1),
-                    BorderColor3 = rgb(0, 0, 0),
+                    BorderColor3 = themes.preset.border,
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
                     BackgroundColor3 = themes.preset.element2
@@ -1752,11 +1753,11 @@
                     Parent = inline,
                     Name = "",
                     Position = dim2(0, 1, 0, 1),
-                    BorderColor3 = rgb(0, 0, 0),
+                    BorderColor3 = themes.preset.border,
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(255, 255, 255)
-                })
+                    BackgroundColor3 = themes.preset.element
+                }); library:applyTheme(background, "element", "BackgroundColor3")
                 
                 local gradient = library:create("UIGradient", {
                     Parent = background,
@@ -1921,19 +1922,19 @@
                     BorderColor3 = rgb(0, 0, 0),
                     ZIndex = 4,
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(25, 25, 25)
-                })
+                    BackgroundColor3 = themes.preset.element2
+                }); library:applyTheme(scrollbar_fill, "element2", "BackgroundColor3")
                 
                 local shadow = library:create("Frame", {
                     Parent = background,
                     Name = "",
                     Size = dim2(1, -5, 0, 21),
                     Position = dim2(0, 0, 1, -21),
-                    BorderColor3 = rgb(0, 0, 0),
+                    BorderColor3 = themes.preset.border,
                     ZIndex = 999,
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(0, 0, 0)
-                })
+                    BackgroundColor3 = themes.preset.background
+                }); library:applyTheme(shadow, "background", "BackgroundColor3")
                 
                 local UIGradient = library:create("UIGradient", {
                     Parent = shadow,
@@ -2043,8 +2044,8 @@
                         Parent = self.background or self.elements,
                         Name = "",
                         FontFace = library.font,
-                        TextColor3 = rgb(151, 151, 151),
-                        BorderColor3 = rgb(0, 0, 0),
+                        TextColor3 = themes.preset.text,
+                        BorderColor3 = themes.preset.border,
                         Text = "",
                         ZIndex = 2,
                         Size = dim2(1, -8, 0, 12),
@@ -2055,7 +2056,7 @@
                         TextYAlignment = Enum.TextYAlignment.Top,
                         TextSize = 11,
                         BackgroundColor3 = rgb(255, 255, 255)
-                    })
+                    }); library:applyTheme(toggle, "text", "TextColor3")
                     
                     cfg["right_components"] = library:create("Frame", {
                         Parent = toggle,
@@ -2111,23 +2112,23 @@
                         Name = "",
                         Text = "",
                         Position = dim2(0, 0, 0, 2),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(0, 8, 0, 8),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(2, 2, 2),
+                        BackgroundColor3 = themes.preset.outline,
                         LayoutOrder = -1,
                         AutoButtonColor = false
-                    })
+                    }); library:applyTheme(toggle_button, "outline", "BackgroundColor3")
                     
                     local inline = library:create("Frame", {
                         Parent = toggle_button,
                         Name = "",
                         Position = dim2(0, 1, 0, 1),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(1, -2, 1, -2),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(63, 63, 63)
-                    })
+                        BackgroundColor3 = themes.preset.element2
+                    }); library:applyTheme(inline, "element2", "BackgroundColor3")
                     
                     library:create("UIGradient", {
                         Parent = inline,
@@ -2247,8 +2248,8 @@
                         Parent = self.elements or self.background or self.colorpickerElements,
                         Name = "",
                         FontFace = library.font,
-                        TextColor3 = rgb(180, 180, 180),
-                        BorderColor3 = rgb(0, 0, 0),
+                        TextColor3 = themes.preset.text,
+                        BorderColor3 = themes.preset.border,
                         Text = "",
                         ZIndex = 2,
                         Size = dim2(1, -8, 0, 12),
@@ -2259,7 +2260,7 @@
                         TextYAlignment = Enum.TextYAlignment.Top,
                         TextSize = 11,
                         BackgroundColor3 = rgb(255, 255, 255)
-                    })
+                    }); library:applyTheme(slider, "text", "TextColor3")
                     
                     local bottom_components = library:create("Frame", {
                         Parent = slider,
@@ -2277,21 +2278,21 @@
                         AutoButtonColor = false, 
                         Text = "", 
                         Position = dim2(0, 0, 0, 2),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(1, -27, 1, 8),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(1, 1, 1)
-                    })
+                        BackgroundColor3 = themes.preset.outline
+                    }); library:applyTheme(slider_dragger, "outline", "BackgroundColor3")
                     
                     local background = library:create("Frame", {
                         Parent = slider_dragger,
                         Name = "",
                         Position = dim2(0, 1, 0, 1),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(1, -2, 1, -2),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    })
+                        BackgroundColor3 = themes.preset.element2
+                    }); library:applyTheme(background, "element2", "BackgroundColor3")
                     
                     local fill = library:create("Frame", {
                         Parent = background,
@@ -2313,8 +2314,8 @@
                         Parent = fill,
                         Name = "",
                         FontFace = library.font,
-                        TextColor3 = rgb(180, 180, 180),
-                        BorderColor3 = rgb(0, 0, 0),
+                        TextColor3 = themes.preset.text,
+                        BorderColor3 = themes.preset.border,
                         Text = "0%",
                         AnchorPoint = vec2(0.5, 0),
                         BackgroundTransparency = 1,
@@ -2470,8 +2471,8 @@
                         Parent = self.background or self.elements or self.colorpickerElements,
                         Name = "",
                         FontFace = library.font,
-                        TextColor3 = rgb(180, 180, 180),
-                        BorderColor3 = rgb(0, 0, 0),
+                        TextColor3 = themes.preset.text,
+                        BorderColor3 = themes.preset.border,
                         Text = "",
                         ZIndex = 2,
                         Size = dim2(1, -8, 0, 12),
@@ -2523,28 +2524,28 @@
                         BorderColor3 = rgb(0, 0, 0),
                         Size = dim2(1, -27, 1, 20),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(1, 1, 1)
-                    })
+                        BackgroundColor3 = themes.preset.outline
+                    }); library:applyTheme(dropdown, "outline", "BackgroundColor3")
                     
                     local inline = library:create("Frame", {
                         Parent = dropdown,
                         Name = "",
                         Position = dim2(0, 0, 0, 1),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(1, -1, 1, -2),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(25, 25, 25)
-                    })
+                        BackgroundColor3 = themes.preset.inline
+                    }); library:applyTheme(inline, "inline", "BackgroundColor3")
                     
                     local background = library:create("Frame", {
                         Parent = inline,
                         Name = "",
                         Position = dim2(0, 1, 0, 1),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(1, -2, 1, -2),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(25, 25, 25)
-                    })
+                        BackgroundColor3 = themes.preset.element
+                    }); library:applyTheme(background, "element", "BackgroundColor3")
                     
                     local arrow = library:create("ImageLabel", {
                         Parent = background,
@@ -2561,8 +2562,8 @@
                         Parent = background,
                         Name = "",
                         FontFace = library.font,
-                        TextColor3 = rgb(180, 180, 180),
-                        BorderColor3 = rgb(0, 0, 0),
+                        TextColor3 = themes.preset.text,
+                        BorderColor3 = themes.preset.border,
                         Text = "players",
                         Size = dim2(1, 0, 1, 0),
                         BackgroundTransparency = 1,
@@ -2632,33 +2633,33 @@
                             Name = "",
                             Size = dim2(0, 161, 0, 0),
                             Position = dim2(0, 100, 0, 200),
-                            BorderColor3 = rgb(0, 0, 0),
+                            BorderColor3 = themes.preset.border,
                             BorderSizePixel = 0,
                             AutomaticSize = Enum.AutomaticSize.Y,
-                            BackgroundColor3 = rgb(1, 1, 1),
+                            BackgroundColor3 = themes.preset.outline,
                             Visible = false, 
                             ZIndex = 999
-                        })
+                        }); library:applyTheme(dropdown_holder, "outline", "BackgroundColor3")
                         
                         local inline = library:create("Frame", {
                             Parent = dropdown_holder,
                             Name = "",
                             Position = dim2(0, 1, 0, 1),
-                            BorderColor3 = rgb(0, 0, 0),
+                            BorderColor3 = themes.preset.border,
                             Size = dim2(1, -2, 1, -2),
                             BorderSizePixel = 0,
-                            BackgroundColor3 = rgb(25, 25, 25)
-                        })
+                            BackgroundColor3 = themes.preset.inline
+                        }); library:applyTheme(inline, "inline", "BackgroundColor3")
                         
                         local text_holder = library:create("Frame", {
                             Parent = inline,
                             Name = "",
                             Position = dim2(0, 1, 0, 1),
-                            BorderColor3 = rgb(0, 0, 0),
+                            BorderColor3 = themes.preset.border,
                             Size = dim2(1, -2, 1, -2),
                             BorderSizePixel = 0,
-                            BackgroundColor3 = rgb(25, 25, 25)
-                        })
+                            BackgroundColor3 = themes.preset.element
+                        }); library:applyTheme(text_holder, "element", "BackgroundColor3")
                         
                         library:create("UIPadding", {
                             Parent = text_holder,
@@ -2683,8 +2684,8 @@
                             Parent = text_holder,
                             Name = "",
                             FontFace = library.font,
-                            TextColor3 = rgb(180, 180, 180),
-                            BorderColor3 = rgb(0, 0, 0),
+                            TextColor3 = themes.preset.text,
+                            BorderColor3 = themes.preset.border,
                             Text = text,
                             Size = dim2(0, 0, 0, -1),
                             BackgroundTransparency = 1,
@@ -2810,8 +2811,8 @@
                             Parent = self.elements or self.background,
                             Name = "",
                             FontFace = library.font,
-                            TextColor3 = rgb(151, 151, 151),
-                            BorderColor3 = rgb(0, 0, 0),
+                            TextColor3 = themes.preset.text,
+                            BorderColor3 = themes.preset.border,
                             Text = "",
                             ZIndex = 2,
                             Size = dim2(1, -8, 0, 12),
@@ -2885,17 +2886,17 @@
                     local outline = library:create("Frame", {
                         Parent = self.right_components,
                         Name = "",
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(0, 18, 0, 9),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(2, 2, 2)
-                    })
+                        BackgroundColor3 = themes.preset.outline
+                    }); library:applyTheme(outline, "outline", "BackgroundColor3")
                     
                     cfg.colorPath = library:create("Frame", {
                         Parent = outline,
                         Name = "",
                         Position = dim2(0, 1, 0, 1),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(1, -2, 1, -2),
                         BorderSizePixel = 0,
                         BackgroundColor3 = rgb(162, 57, 209)
@@ -2968,8 +2969,8 @@
                         Parent = self.elements or self.background or self.colorpickerElements,
                         Name = "",
                         FontFace = library.font,
-                        TextColor3 = rgb(151, 151, 151),
-                        BorderColor3 = rgb(0, 0, 0),
+                        TextColor3 = themes.preset.text,
+                        BorderColor3 = themes.preset.border,
                         Text = "",
                         ZIndex = 2,
                         Size = dim2(1, -8, 0, 12),
@@ -3075,8 +3076,8 @@
                         Parent = self.background or self.elements or self.colorpickerElements,
                         Name = "",
                         FontFace = library.font,
-                        TextColor3 = rgb(180, 180, 180),
-                        BorderColor3 = rgb(0, 0, 0),
+                        TextColor3 = themes.preset.text,
+                        BorderColor3 = themes.preset.border,
                         Text = "",
                         ZIndex = 2,
                         Size = dim2(1, -8, 0, 12),
@@ -3087,7 +3088,7 @@
                         TextYAlignment = Enum.TextYAlignment.Top,
                         TextSize = 11,
                         BackgroundColor3 = rgb(255, 255, 255)
-                    })
+                    }); library:applyTheme(textbox_holder, "text", "TextColor3")
                     
                     local bottom_components = library:create("Frame", {
                         Parent = textbox_holder,
@@ -3103,31 +3104,31 @@
                         Parent = bottom_components,
                         Name = "",
                         Position = dim2(0, -1, 0, 2),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(1, -27, 1, 20),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(1, 1, 1)
-                    })
+                        BackgroundColor3 = themes.preset.outline
+                    }); library:applyTheme(textbox, "outline", "BackgroundColor3")
                     
                     local inline = library:create("Frame", {
                         Parent = textbox,
                         Name = "",
                         Position = dim2(0, 1, 0, 1),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(1, -2, 1, -2),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(25, 25, 25)
-                    })
+                        BackgroundColor3 = themes.preset.inline
+                    }); library:applyTheme(inline, "inline", "BackgroundColor3")
                     
                     local background = library:create("Frame", {
                         Parent = inline,
                         Name = "",
                         Position = dim2(0, 1, 0, 1),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(1, -2, 1, -2),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(0, 0, 0)
-                    })
+                        BackgroundColor3 = themes.preset.element
+                    }); library:applyTheme(background, "element", "BackgroundColor3")
                     
                     local textbox = library:create("TextBox", {
                         Parent = background,
@@ -3137,8 +3138,8 @@
                         TextSize = 12,
                         Size = dim2(1, -6, 1, 0),
                         RichText = true,
-                        TextColor3 = rgb(178, 178, 178),
-                        BorderColor3 = rgb(0, 0, 0),
+                        TextColor3 = themes.preset.text,
+                        BorderColor3 = themes.preset.border,
                         Text = "",
                         CursorPosition = -1,
                         BackgroundTransparency = 1,
@@ -3146,9 +3147,9 @@
                         Position = dim2(0, 6, 0, 0),
                         BorderSizePixel = 0,
                         PlaceholderText = cfg.placeholder,
-                        PlaceholderColor3 = rgb(120, 120, 120),
+                        PlaceholderColor3 = themes.preset.unselected,
                         BackgroundColor3 = rgb(255, 255, 255)
-                    })
+                    }); library:applyTheme(textbox, "text", "TextColor3")
                     
                     library:create("UIListLayout", {
                         Parent = bottom_components,
@@ -3277,8 +3278,8 @@
                         Parent = outline,
                         Name = "",
                         FontFace = library.font,
-                        TextColor3 = rgb(180, 180, 180),
-                        BorderColor3 = rgb(0, 0, 0),
+                        TextColor3 = themes.preset.unselected,
+                        BorderColor3 = themes.preset.border,
                         Text = "[ ... ]",
                         Size = dim2(1, 0, 1, 0),
                         Position = dim2(0, 0, 0, -1),
@@ -3421,10 +3422,10 @@
                                 Name = "",
                                 Text = string.upper(string.sub(mode_name, 1, 1)) .. string.sub(mode_name, 2),
                                 FontFace = library.font,
-                                TextColor3 = is_current and themes.preset.accent or rgb(151, 151, 151),
+                                TextColor3 = is_current and themes.preset.accent or themes.preset.unselected,
                                 TextSize = 11,
                                 Size = dim2(1, 0, 0, 16),
-                                BackgroundColor3 = is_current and rgb(25, 25, 25) or rgb(15, 15, 15),
+                                BackgroundColor3 = is_current and themes.preset.element2 or themes.preset.element,
                                 BorderSizePixel = 0,
                                 AutoButtonColor = false,
                                 TextXAlignment = Enum.TextXAlignment.Center,
@@ -3547,8 +3548,8 @@
                         Parent = self.background or self.elements or self.colorpickerElements,
                         Name = "",
                         FontFace = library.font,
-                        TextColor3 = rgb(180, 180, 180),
-                        BorderColor3 = rgb(0, 0, 0),
+                        TextColor3 = themes.preset.text,
+                        BorderColor3 = themes.preset.border,
                         Text = "",
                         ZIndex = 2,
                         Size = dim2(1, -8, 0, 12),
@@ -3559,7 +3560,7 @@
                         TextYAlignment = Enum.TextYAlignment.Top,
                         TextSize = 11,
                         BackgroundColor3 = rgb(255, 255, 255)
-                    })
+                    }); library:applyTheme(list_path, "text", "TextColor3")
                     
                     local bottom_components = library:create("Frame", {
                         Parent = list_path,
@@ -3577,31 +3578,31 @@
                         AutoButtonColor = false, 
                         Text = "",
                         Position = dim2(0, 0, 0, 2),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(1, -27, 0, cfg.scale),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(1, 1, 1)
-                    })
+                        BackgroundColor3 = themes.preset.outline
+                    }); library:applyTheme(list, "outline", "BackgroundColor3")
                     
                     local inline = library:create("Frame", {
                         Parent = list,
                         Name = "",
                         Position = dim2(0, 0, 0, 1),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(1, -1, 1, -2),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(25, 25, 25)
-                    })
+                        BackgroundColor3 = themes.preset.inline
+                    }); library:applyTheme(inline, "inline", "BackgroundColor3")
                     
                     local background = library:create("Frame", {
                         Parent = inline,
                         Name = "",
                         Position = dim2(0, 1, 0, 1),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(1, -2, 1, -2),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(25, 25, 25)
-                    })         
+                        BackgroundColor3 = themes.preset.element
+                    }); library:applyTheme(background, "element", "BackgroundColor3")         
 
                     local scrollbar_fill = library:create("Frame", {
                         Parent = background,
@@ -3612,8 +3613,8 @@
                         BorderColor3 = rgb(0, 0, 0),
                         ZIndex = 4,
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(25, 25, 25)
-                    })
+                        BackgroundColor3 = themes.preset.element2
+                    }); library:applyTheme(scrollbar_fill, "element2", "BackgroundColor3")
 
                     local ScrollingFrame = library:create("ScrollingFrame", {
                         Parent = background,
@@ -3622,10 +3623,10 @@
                         AutomaticCanvasSize = Enum.AutomaticSize.Y,
                         ScrollBarThickness = 4,
                         BackgroundTransparency = 1,
-                        ScrollBarImageColor3 = rgb(25, 25, 25),
+                        ScrollBarImageColor3 = themes.preset.element2,
                         Size = dim2(1, 0, 1, 0),
                         BackgroundColor3 = rgb(255, 255, 255),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         BorderSizePixel = 0,
                         CanvasSize = dim2(0, 0, 0, 0),
                         ZIndex = 999,
@@ -3706,8 +3707,8 @@
                             Parent = ScrollingFrame,
                             Name = "",
                             FontFace = library.font,
-                            TextColor3 = rgb(180, 180, 180),
-                            BorderColor3 = rgb(0, 0, 0),
+                            TextColor3 = themes.preset.unselected,
+                            BorderColor3 = themes.preset.border,
                             Text = text,
                             Size = dim2(1, 0, 0, 0),
                             BackgroundTransparency = 1,
@@ -3718,7 +3719,7 @@
                             TextXAlignment = Enum.TextXAlignment.Left, 
                             TextTruncate = Enum.TextTruncate.AtEnd,
                             BackgroundColor3 = rgb(255, 255, 255)
-                        })       
+                        }); library:applyTheme(text, "unselected", "TextColor3")       
                 
                         return text 
                     end 
@@ -3735,7 +3736,7 @@
                 
                             button.MouseButton1Click:Connect(function()
                                 if cfg.current_instance and cfg.current_instance ~= button then 
-                                    cfg.current_instance.TextColor3 = rgb(180, 180, 180) 
+                                    cfg.current_instance.TextColor3 = themes.preset.unselected 
                                 end 
                 
                                 cfg.current_instance = button 
@@ -3763,7 +3764,7 @@
                             if buttons.Text == value then 
                                 buttons.TextColor3 = themes.preset.accent 
                             else 
-                                buttons.TextColor3 = rgb(180, 180, 180) 
+                                buttons.TextColor3 = themes.preset.unselected 
                             end 
                         end 
             
@@ -3796,8 +3797,8 @@
                         Parent = self.background or self.elements or self.colorpickerElements,
                         Name = "",
                         FontFace = library.font,
-                        TextColor3 = rgb(180, 180, 180),
-                        BorderColor3 = rgb(0, 0, 0),
+                        TextColor3 = themes.preset.text,
+                        BorderColor3 = themes.preset.border,
                         Text = "",
                         ZIndex = 2,
                         Size = dim2(1, -8, 0, 12),
@@ -3824,31 +3825,31 @@
                         Parent = bottom_components,
                         Name = "",
                         Position = dim2(0, -1, 0, 2),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(1, -27, 1, 20),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(1, 1, 1)
-                    })
+                        BackgroundColor3 = themes.preset.outline
+                    }); library:applyTheme(button, "outline", "BackgroundColor3")
                     
                     local inline = library:create("Frame", {
                         Parent = button,
                         Name = "",
                         Position = dim2(0, 1, 0, 1),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(1, -2, 1, -2),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(25, 25, 25)
-                    })
+                        BackgroundColor3 = themes.preset.inline
+                    }); library:applyTheme(inline, "inline", "BackgroundColor3")
                     
                     local background = library:create("Frame", {
                         Parent = inline,
                         Name = "",
                         Position = dim2(0, 1, 0, 1),
-                        BorderColor3 = rgb(0, 0, 0),
+                        BorderColor3 = themes.preset.border,
                         Size = dim2(1, -2, 1, -2),
                         BorderSizePixel = 0,
-                        BackgroundColor3 = rgb(0, 0, 0)
-                    })
+                        BackgroundColor3 = themes.preset.element
+                    }); library:applyTheme(background, "element", "BackgroundColor3")
                     
                     local button = library:create("TextButton", {
                         Parent = background,
@@ -3858,15 +3859,15 @@
                         TextSize = 12,
                         Size = dim2(1, -6, 1, 0),
                         RichText = true,
-                        TextColor3 = rgb(178, 178, 178),
-                        BorderColor3 = rgb(0, 0, 0),
+                        TextColor3 = themes.preset.text,
+                        BorderColor3 = themes.preset.border,
                         Text = cfg.name,
                         BackgroundTransparency = 1,
                         TextXAlignment = Enum.TextXAlignment.Center,
                         Position = dim2(0, 6, 0, 0),
                         BorderSizePixel = 0,
                         BackgroundColor3 = rgb(255, 255, 255)
-                    })
+                    }); library:applyTheme(button, "text", "TextColor3")
 
                     button.MouseButton1Click:Connect(function()
                         cfg.callback() 
@@ -4118,6 +4119,24 @@ function library:watermark(options)
         BorderSizePixel = 0,
         ZIndex = 999
     }); library:applyTheme(wm, "outline", "BackgroundColor3")
+    local wm_glow = library:create("ImageLabel", {
+        Parent = wm,
+        Name = "",
+        ImageColor3 = themes.preset.glow or themes.preset.accent,
+        ScaleType = Enum.ScaleType.Slice,
+        BackgroundColor3 = rgb(255, 255, 255),
+        Visible = true,
+        Image = "rbxassetid://110204605000367",
+        BackgroundTransparency = 1,
+        ImageTransparency = 0.8,
+        Position = dim2(0, -15, 0, -15),
+        Size = dim2(1, 30, 1, 30),
+        ZIndex = 998,
+        BorderSizePixel = 0,
+        SliceCenter = rect(vec2(21, 21), vec2(79, 79)),
+        ResampleMode = Enum.ResamplerMode.Pixelated
+    }); library:applyTheme(wm_glow, "glow", "ImageColor3")
+    wm._glow = wm_glow
     local wm_inline = library:create("Frame", {
         Parent = wm,
         Position = dim2(0, 1, 0, 1),
@@ -4194,6 +4213,24 @@ function library:targetHud(options)
         Visible = false,
         ZIndex = 999
     }); library:applyTheme(hud, "outline", "BackgroundColor3")
+    local hud_glow = library:create("ImageLabel", {
+        Parent = hud,
+        Name = "",
+        ImageColor3 = themes.preset.glow or themes.preset.accent,
+        ScaleType = Enum.ScaleType.Slice,
+        BackgroundColor3 = rgb(255, 255, 255),
+        Visible = true,
+        Image = "rbxassetid://110204605000367",
+        BackgroundTransparency = 1,
+        ImageTransparency = 0.8,
+        Position = dim2(0, -15, 0, -15),
+        Size = dim2(1, 30, 1, 30),
+        ZIndex = 998,
+        BorderSizePixel = 0,
+        SliceCenter = rect(vec2(21, 21), vec2(79, 79)),
+        ResampleMode = Enum.ResamplerMode.Pixelated
+    }); library:applyTheme(hud_glow, "glow", "ImageColor3")
+    hud._glow = hud_glow
     local hud_inline = library:create("Frame", {
         Parent = hud,
         Position = dim2(0, 1, 0, 1),
@@ -4444,6 +4481,24 @@ function library:keybindList(options)
         Visible = false,
         ZIndex = 999
     }); library:applyTheme(kl, "outline", "BackgroundColor3")
+    local kl_glow = library:create("ImageLabel", {
+        Parent = kl,
+        Name = "",
+        ImageColor3 = themes.preset.glow or themes.preset.accent,
+        ScaleType = Enum.ScaleType.Slice,
+        BackgroundColor3 = rgb(255, 255, 255),
+        Visible = true,
+        Image = "rbxassetid://110204605000367",
+        BackgroundTransparency = 1,
+        ImageTransparency = 0.8,
+        Position = dim2(0, -15, 0, -15),
+        Size = dim2(1, 30, 1, 30),
+        ZIndex = 998,
+        BorderSizePixel = 0,
+        SliceCenter = rect(vec2(21, 21), vec2(79, 79)),
+        ResampleMode = Enum.ResamplerMode.Pixelated
+    }); library:applyTheme(kl_glow, "glow", "ImageColor3")
+    kl._glow = kl_glow
     local kl_inline = library:create("Frame", {
         Parent = kl,
         Position = dim2(0, 1, 0, 1),
