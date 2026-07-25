@@ -459,12 +459,19 @@
         end
 
         function library:updateTheme(theme, color)
-            for _, property in next, themes.utility[theme] do 
+            for property_name, property in next, themes.utility[theme] do 
 
                 for m, object in next, property do 
-                    if object[_] == themes.preset[theme] or object.ClassName == "UIGradient" then 
-                        object[_] = color 
-                    end 
+                    if object.ClassName == "UIGradient" and (property_name == "Color" or property_name == "ImageColor3") then
+                        local grad = object
+                        local keypoints = {}
+                        for _, kp in ipairs(grad.Color.Keypoints) do
+                            table.insert(keypoints, ColorSequenceKeypoint.new(kp.Time, color))
+                        end
+                        grad.Color = ColorSequence.new(keypoints)
+                    else
+                        object[property_name] = color 
+                    end
                 end 
             end 
 
@@ -1007,6 +1014,7 @@
                         Color = Color, 
                         Transparency = a,
                     }
+                    flags[cfg.flag .. "_color"] = Color
                 end 
 
                 cfg.set(cfg.color, cfg.alpha)
@@ -1460,6 +1468,7 @@
                         Color = Color;
                         Transparency = a 
                     }
+                    flags[cfg.flag .. "_color"] = Color
                 end 
                 
                 cfg.set(cfg.color, cfg.alpha)
@@ -1663,8 +1672,8 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(51, 51, 51)
-                })
+                    BackgroundColor3 = themes.preset.element
+                }); library:applyTheme(inline, "element", "BackgroundColor3")
                 
                 cfg["page_holder"] = library:create("Frame", {
                     Parent = inline,
@@ -1673,8 +1682,8 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(13, 13, 13)
-                }) 
+                    BackgroundColor3 = themes.preset.background
+                }); library:applyTheme(cfg["page_holder"], "background", "BackgroundColor3") 
             -- 
 
             -- Functions 
@@ -1724,8 +1733,8 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(41, 41, 41)
-                })
+                    BackgroundColor3 = themes.preset.element2
+                }); library:applyTheme(inline, "element2", "BackgroundColor3")
                 
                 local background = library:create("Frame", {
                     Parent = inline,
@@ -1751,7 +1760,7 @@
                     Parent = background,
                     Name = "",
                     FontFace = library.font,
-                    TextColor3 = rgb(140, 140, 140),
+                    TextColor3 = themes.preset.unselected,
                     BorderColor3 = rgb(0, 0, 0),
                     Text = cfg.name,
                     BackgroundTransparency = 1,
@@ -1760,7 +1769,7 @@
                     BorderSizePixel = 0,
                     TextSize = 12,
                     BackgroundColor3 = rgb(255, 255, 255)
-                }); library:applyTheme(text, "accent", "TextColor3")
+                }); library:applyTheme(text, "unselected", "TextColor3")
             -- 
 
             -- page 
@@ -1772,8 +1781,8 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(13, 13, 13)
-                })
+                    BackgroundColor3 = themes.preset.background
+                }); library:applyTheme(cfg["page"], "background", "BackgroundColor3")
                 
                 library:create("UIListLayout", {
                     Parent = cfg["page"],
@@ -1799,7 +1808,7 @@
                 library:closeCurrentElement() 
 
                 if self.selected_tab then 
-                    self.selected_tab[1].TextColor3 = rgb(160,160,160)
+                    self.selected_tab[1].TextColor3 = themes.preset.unselected
                     self.selected_tab[2].Visible = false 
                     self.selected_tab[3].Color = rgbseq{
                         rgbkey(0, rgb(41, 41, 41)),
@@ -1868,8 +1877,8 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = self.fill and dim2(1, 0, 0, 0) or cfg.size,
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(0, 0, 0)
-                })
+                    BackgroundColor3 = themes.preset.outline
+                }); library:applyTheme(outline, "outline", "BackgroundColor3")
                 
                 local inline = library:create("Frame", {
                     Parent = outline,
@@ -1878,8 +1887,8 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(25, 25, 25)
-                })
+                    BackgroundColor3 = themes.preset.inline
+                }); library:applyTheme(inline, "inline", "BackgroundColor3")
                 
                 local background = library:create("Frame", {
                     Parent = inline,
@@ -1888,8 +1897,8 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(0, 0, 0)
-                })
+                    BackgroundColor3 = themes.preset.background
+                }); library:applyTheme(background, "background", "BackgroundColor3")
                 
                 local scrollbar_fill = library:create("Frame", {
                     Parent = background,
@@ -1970,7 +1979,7 @@
                     Parent = outline,
                     Name = "",
                     FontFace = library.font,
-                    TextColor3 = rgb(205, 205, 205),
+                    TextColor3 = themes.preset.text,
                     BorderColor3 = rgb(0, 0, 0),
                     Text = cfg.name,
                     AutomaticSize = Enum.AutomaticSize.XY,
@@ -1982,7 +1991,7 @@
                     ZIndex = 2,
                     TextSize = 12,
                     BackgroundColor3 = rgb(0, 0, 0)
-                })
+                }); library:applyTheme(section_title, "text", "TextColor3")
 
                 local section_filler = library:create("Frame", {
                     Parent = outline,
@@ -2136,7 +2145,7 @@
                         Parent = left_components,
                         Name = "",
                         FontFace = library.font,
-                        TextColor3 = rgb(180, 180, 180),
+                        TextColor3 = themes.preset.text,
                         BorderColor3 = rgb(0, 0, 0),
                         Text = cfg.name,
                         BackgroundTransparency = 1,
@@ -2145,7 +2154,7 @@
                         AutomaticSize = Enum.AutomaticSize.X,
                         TextSize = 12,
                         BackgroundColor3 = rgb(255, 255, 255)
-                    })
+                    }); library:applyTheme(text, "text", "TextColor3")
 
                     cfg.background = library:create("Frame", {
                         Parent = toggle,
@@ -2341,7 +2350,7 @@
                             Parent = left_components,
                             Name = "",
                             FontFace = library.font,
-                            TextColor3 = rgb(180, 180, 180),
+                            TextColor3 = themes.preset.text,
                             BorderColor3 = rgb(0, 0, 0),
                             Text = cfg.name,
                             BackgroundTransparency = 1,
@@ -2350,7 +2359,7 @@
                             AutomaticSize = Enum.AutomaticSize.X,
                             TextSize = 12,
                             BackgroundColor3 = rgb(255, 255, 255)
-                        })
+                        }); library:applyTheme(text, "text", "TextColor3")
                         
                         library:create("UIListLayout", {
                             Parent = left_components,
@@ -2569,7 +2578,7 @@
                             Parent = left_components,
                             Name = "",
                             FontFace = library.font,
-                            TextColor3 = rgb(180, 180, 180),
+                            TextColor3 = themes.preset.text,
                             BorderColor3 = rgb(0, 0, 0),
                             Text = cfg.name,
                             BackgroundTransparency = 1,
@@ -2578,7 +2587,7 @@
                             AutomaticSize = Enum.AutomaticSize.X,
                             TextSize = 12,
                             BackgroundColor3 = rgb(255, 255, 255)
-                        })
+                        }); library:applyTheme(text, "text", "TextColor3")
                         
                         library:create("UIListLayout", {
                             Parent = left_components,
@@ -2935,7 +2944,7 @@
                         Parent = left_components,
                         Name = "",
                         FontFace = library.font,
-                        TextColor3 = rgb(180, 180, 180),
+                        TextColor3 = themes.preset.text,
                         BorderColor3 = rgb(0, 0, 0),
                         Text = cfg.name,
                         BackgroundTransparency = 1,
@@ -2944,7 +2953,7 @@
                         AutomaticSize = Enum.AutomaticSize.X,
                         TextSize = 12,
                         BackgroundColor3 = rgb(255, 255, 255)
-                    })
+                    }); library:applyTheme(text, "text", "TextColor3")
 
                     library:create("UIListLayout", {
                         Parent = cfg.background,
@@ -3082,7 +3091,7 @@
                         Parent = left_components,
                         Name = "",
                         FontFace = library.font,
-                        TextColor3 = rgb(180, 180, 180),
+                        TextColor3 = themes.preset.text,
                         BorderColor3 = rgb(0, 0, 0),
                         Text = cfg.name,
                         BackgroundTransparency = 1,
@@ -3091,7 +3100,7 @@
                         AutomaticSize = Enum.AutomaticSize.X,
                         TextSize = 12,
                         BackgroundColor3 = rgb(255, 255, 255)
-                    })
+                    }); library:applyTheme(text, "text", "TextColor3")
                     
                     library:create("UIListLayout", {
                         Parent = left_components,
@@ -3475,7 +3484,7 @@
                             Parent = left_components,
                             Name = "",
                             FontFace = library.font,
-                            TextColor3 = rgb(180, 180, 180),
+                            TextColor3 = themes.preset.text,
                             BorderColor3 = rgb(0, 0, 0),
                             Text = cfg.name,
                             BackgroundTransparency = 1,
@@ -3484,7 +3493,7 @@
                             AutomaticSize = Enum.AutomaticSize.X,
                             TextSize = 12,
                             BackgroundColor3 = rgb(255, 255, 255)
-                        })
+                        }); library:applyTheme(text, "text", "TextColor3")
                         
                         library:create("UIListLayout", {
                             Parent = left_components,
@@ -3857,7 +3866,7 @@
                 Size = dim2(0, 0, 0, 1);
                 BorderSizePixel = 0;
                 BackgroundColor3 = themes.preset.accent
-            });
+            }); library:applyTheme(line, "accent", "BackgroundColor3")
             
             local accent = library:create( "Frame" , {
                 Parent = outline;
@@ -3867,7 +3876,7 @@
                 Size = dim2(0, 1, 1, -1);
                 BorderSizePixel = 0;
                 BackgroundColor3 = themes.preset.accent
-            });
+            }); library:applyTheme(accent, "accent", "BackgroundColor3")
         -- 
         
         local index = #notifications.notifs + 1
@@ -4380,11 +4389,11 @@ function library:subtab(properties)
         Text = cfg.name,
         FontFace = library.font,
         TextSize = 12,
-        TextColor3 = rgb(140, 140, 140),
+        TextColor3 = themes.preset.unselected,
         BackgroundTransparency = 1,
         AutomaticSize = Enum.AutomaticSize.X,
         Size = dim2(0, 0, 1, 0)
-    })
+    }); library:applyTheme(btn, "unselected", "TextColor3")
     
     local underline = library:create("Frame", {
         Parent = btn,
@@ -4413,7 +4422,7 @@ function library:subtab(properties)
     
     function cfg.open_subtab()
         if self.selected_subtab then
-            self.selected_subtab.btn.TextColor3 = rgb(140, 140, 140)
+            self.selected_subtab.btn.TextColor3 = themes.preset.unselected
             self.selected_subtab.underline.Visible = false
             self.selected_subtab.page.Visible = false
         end
