@@ -3352,9 +3352,7 @@
                             
                             cfg.mode = (input.mode and string.lower(input.mode)) or "toggle"
 
-                            if input.active then
-                                cfg.active = input.active
-                            end
+                            cfg.active = input.active == true
                         end 
 
                         local flag_key = cfg.key
@@ -4305,7 +4303,7 @@ function library:targetHud(options)
         Parent = hud_bg,
         Text = "",
         Size = dim2(1, -84, 0, 14),
-        Position = dim2(0, 28, 0, 28),
+        Position = dim2(0, 74, 0, 28),
         BackgroundTransparency = 1,
         TextColor3 = themes.preset.unselected,
         TextXAlignment = Enum.TextXAlignment.Left,
@@ -4345,31 +4343,6 @@ function library:targetHud(options)
         TextSize = 11,
         ZIndex = 2
     }); library:applyTheme(dist_text, "text", "TextColor3")
-    local tool_label = library:create("TextLabel", {
-        Parent = info_row,
-        Text = "Tool:",
-        Size = dim2(0, 30, 1, 0),
-        Position = dim2(0, 80, 0, 0),
-        BackgroundTransparency = 1,
-        TextColor3 = themes.preset.unselected,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        FontFace = library.font,
-        TextSize = 11,
-        ZIndex = 2
-    }); library:applyTheme(tool_label, "unselected", "TextColor3")
-    local tool_text = library:create("TextLabel", {
-        Parent = info_row,
-        Text = "None",
-        Size = dim2(0, 80, 1, 0),
-        Position = dim2(0, 108, 0, 0),
-        BackgroundTransparency = 1,
-        TextColor3 = themes.preset.text,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        FontFace = library.font,
-        TextSize = 11,
-        TextTruncate = Enum.TextTruncate.AtEnd,
-        ZIndex = 2
-    }); library:applyTheme(tool_text, "text", "TextColor3")
 
     local hp_bar_bg = library:create("Frame", {
         Parent = hud_bg,
@@ -4426,6 +4399,16 @@ function library:targetHud(options)
             local humanoid = char and char:FindFirstChildOfClass("Humanoid")
             local root = char and char:FindFirstChild("HumanoidRootPart")
 
+            local avatarEnabled = library.flags["TargetHUDAvatar"] ~= false
+            avatar.Visible = avatarEnabled
+            local offset = avatarEnabled and 74 or 14
+            display_name.Position = dim2(0, offset, 0, 10)
+            display_name.Size = dim2(1, -offset - 10, 0, 18)
+            username.Position = dim2(0, offset, 0, 28)
+            username.Size = dim2(1, -offset - 10, 0, 14)
+            info_row.Position = dim2(0, offset, 0, 44)
+            info_row.Size = dim2(1, -offset - 10, 0, 14)
+
             if isPlayer then
                 display_name.Text = target.DisplayName
                 username.Text = "@" .. target.Name
@@ -4459,13 +4442,6 @@ function library:targetHud(options)
                 dist_text.Text = tostring(dist) .. " studs"
             else
                 dist_text.Text = "N/A"
-            end
-
-            if isPlayer and char then
-                local tool = char:FindFirstChildOfClass("Tool")
-                tool_text.Text = tool and tool.Name or "None"
-            else
-                tool_text.Text = "N/A"
             end
         end,
         Update = function(self)
