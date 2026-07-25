@@ -202,7 +202,7 @@
     end
 
     for _, path in next, library.folders do 
-        makefolder(library.directory .. path)
+        pcall(function() makefolder(library.directory .. path) end)
     end
 
     local flags = library.flags 
@@ -215,28 +215,32 @@
     -- -- Font importing system 
         -- Hello skids, i dont know why you are overwriting a table and using setreadonly this is so unneccessary and removes solara support.. ;(
 
-        if not isfile(library.directory .. "/fonts/main.ttf") then 
-            writefile(library.directory .. "/fonts/main.ttf", game:HttpGet("https://github.com/i77lhm/storage/raw/refs/heads/main/fonts/fs-tahoma-8px.ttf"))
-        end
-        
-        local tahoma = {
-            name = "SmallestPixel7",
-            faces = {
-                {
-                    name = "Regular",
-                    weight = 400,
-                    style = "normal",
-                    assetId = getcustomasset(library.directory .. "/fonts/main.ttf")
+        local _fontOk = pcall(function()
+            if not isfile(library.directory .. "/fonts/main.ttf") then 
+                writefile(library.directory .. "/fonts/main.ttf", game:HttpGet("https://github.com/i77lhm/storage/raw/refs/heads/main/fonts/fs-tahoma-8px.ttf"))
+            end
+            
+            local tahoma = {
+                name = "SmallestPixel7",
+                faces = {
+                    {
+                        name = "Regular",
+                        weight = 400,
+                        style = "normal",
+                        assetId = getcustomasset(library.directory .. "/fonts/main.ttf")
+                    }
                 }
             }
-        }
-        
-        if not isfile(library.directory .. "/fonts/main_encoded.ttf") then 
-            writefile(library.directory .. "/fonts/main_encoded.ttf", http_service:JSONEncode(tahoma))
-        end 
-        
-        library.font = Font.new(getcustomasset(library.directory .. "/fonts/main_encoded.ttf"), Enum.FontWeight.Regular)
-        -- library.font = library.font
+            
+            if not isfile(library.directory .. "/fonts/main_encoded.ttf") then 
+                writefile(library.directory .. "/fonts/main_encoded.ttf", http_service:JSONEncode(tahoma))
+            end 
+            
+            library.font = Font.new(getcustomasset(library.directory .. "/fonts/main_encoded.ttf"), Enum.FontWeight.Regular)
+        end)
+        if not _fontOk then
+            library.font = Font.fromEnum(Enum.Font.Code)
+        end
     -- -- 
 
     --library.font = Font.new("rbxasset://fonts/families/Zekton.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
@@ -406,10 +410,12 @@
         
             local list = {}
         
-            for idx, file in next, listfiles(library.directory .. "/configs") do
-                local name = file:gsub(library.directory .. "\\configs\\", ""):gsub(".cfg", "")
-                list[#list + 1] = name
-            end
+            pcall(function()
+                for idx, file in next, listfiles(library.directory .. "/configs") do
+                    local name = file:gsub(library.directory .. "\\configs\\", ""):gsub(".cfg", "")
+                    list[#list + 1] = name
+                end
+            end)
             
             config_holder.refresh_options(list)
         end 
@@ -512,12 +518,14 @@
         end
 
         function library:unloadMenu() 
-            if library.gui then 
-                library.gui:Destroy()
-            end
+            pcall(function()
+                if library.gui then 
+                    library.gui:Destroy()
+                end
+            end)
             
             for index, connection in next, library.connections do 
-                connection:Disconnect() 
+                pcall(function() connection:Disconnect() end)
                 connection = nil 
             end     
             
