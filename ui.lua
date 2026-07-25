@@ -1672,69 +1672,9 @@
                 function cfg.toggle_menu(bool)
                     if not cfg.is_closing_menu then
                         cfg.is_closing_menu = true
-                
-                        if bool == true then
-                            for element, original_transparency in next, old_data do
-                                library:tween(element, {
-                                    BackgroundTransparency = original_transparency,
-                                }, 0.5)
-                            end
-                
-                            for element, original_transparency in next, text_data do
-                                library:tween(element, {
-                                    TextTransparency = original_transparency,
-                                }, 0.5)
-                            end
-                
-                            for element, original_transparency in next, image_data do
-                                library:tween(element, {
-                                    ImageTransparency = original_transparency,
-                                }, 0.5)
-                            end
-
-                            for element, original_transparency in next, scroll_data do
-                                library:tween(element, {
-                                    ScrollBarImageTransparency = original_transparency,
-                                }, 0.5)
-                            end
-                            
-                        else
-                            for _, element in next, library.gui:GetDescendants() do
-                                if not element:IsA("GuiObject") then
-                                    continue
-                                end
-                
-                                old_data[element] = element.BackgroundTransparency
-                                library:tween(element, {
-                                    BackgroundTransparency = 1,
-                                }, 0.5)
-                
-                                if element:IsA("TextLabel") or element:IsA("TextButton") or element:IsA("TextBox") then
-                                    text_data[element] = element.TextTransparency
-                                    library:tween(element, {
-                                        TextTransparency = 1,
-                                    }, 0.5)
-                                end
-                
-                                if element:IsA("ImageLabel") or element:IsA("ImageButton") then
-                                    image_data[element] = element.ImageTransparency
-                                    library:tween(element, {
-                                        ImageTransparency = 1,
-                                    }, 0.5)
-                                end
-
-                                if element:IsA("ScrollingFrame") then 
-                                    scroll_data[element] = element.ScrollBarImageTransparency
-                                    library:tween(element, {
-                                        ScrollBarImageTransparency = 1,
-                                    }, 0.5)
-                                end 
-                            end
-                        end
-                        
-                        task.delay(0.5, function()
-                            cfg.is_closing_menu = false 
-
+                        outline.Visible = bool and true or false
+                        task.delay(0.1, function()
+                            cfg.is_closing_menu = false
                         end)
                     end
                 end
