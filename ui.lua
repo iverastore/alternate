@@ -86,6 +86,15 @@
         preset = {
             ["accent"] = hex("#FFFFFF"),
             ["text_outline"] = rgb(0, 0, 0),
+            ["background"] = rgb(0, 0, 0),
+            ["text"] = rgb(255, 255, 255),
+            ["element"] = rgb(20, 20, 20),
+            ["element2"] = rgb(35, 35, 35),
+            ["outline"] = rgb(30, 30, 30),
+            ["inline"] = rgb(10, 10, 10),
+            ["hover"] = rgb(45, 45, 45),
+            ["unselected"] = rgb(120, 120, 120),
+            ["border"] = rgb(0, 0, 0),
         }, 	
 
         utility = {
@@ -97,6 +106,33 @@
             },
             ["text_outline"] = {
                 ["Color"] = {},
+            },
+            ["background"] = {
+                ["BackgroundColor3"] = {},
+            },
+            ["text"] = {
+                ["TextColor3"] = {},
+            },
+            ["element"] = {
+                ["BackgroundColor3"] = {},
+            },
+            ["element2"] = {
+                ["BackgroundColor3"] = {},
+            },
+            ["outline"] = {
+                ["BackgroundColor3"] = {},
+            },
+            ["inline"] = {
+                ["BackgroundColor3"] = {},
+            },
+            ["hover"] = {
+                ["BackgroundColor3"] = {},
+            },
+            ["unselected"] = {
+                ["TextColor3"] = {},
+            },
+            ["border"] = {
+                ["BackgroundColor3"] = {},
             },
         }, 
     }
@@ -1476,8 +1512,9 @@
                 BorderColor3 = rgb(0, 0, 0),
                 Size = cfg.size,
                 BorderSizePixel = 0,
-                BackgroundColor3 = rgb(0, 0, 0)
+                BackgroundColor3 = themes.preset.outline
             }); outline.Position = dim_offset(outline.AbsolutePosition.X, outline.AbsolutePosition.Y) -- gay dragging fix
+            library:applyTheme(outline, "outline", "BackgroundColor3")
 
             -- local glow = library:create("ImageLabel", {
             --     Parent = outline,
@@ -1508,8 +1545,9 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(25, 25, 25)
+                    BackgroundColor3 = themes.preset.inline
                 })
+                library:applyTheme(inline, "inline", "BackgroundColor3")
                 
                 local background = library:create("Frame", {
                     Parent = inline,
@@ -1518,8 +1556,9 @@
                     BorderColor3 = rgb(0, 0, 0),
                     Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = rgb(0, 0, 0)
+                    BackgroundColor3 = themes.preset.background
                 })
+                library:applyTheme(background, "background", "BackgroundColor3")
                 
                 local title_holder = library:create("Frame", {
                     Parent = background,
@@ -1535,7 +1574,7 @@
                     Parent = title_holder,
                     Name = "",
                     FontFace = library.font,
-                    TextColor3 = rgb(135, 135, 135),
+                    TextColor3 = themes.preset.text,
                     BorderColor3 = rgb(0, 0, 0),
                     Text = cfg.name,
                     Size = dim2(1, 0, 0, 24),
@@ -1546,6 +1585,7 @@
                     TextSize = 12,
                     BackgroundColor3 = rgb(255, 255, 255)
                 })
+                library:applyTheme(ui_title, "text", "TextColor3")
                 
                 local accent_line = library:create("Frame", {
                     Parent = title_holder,
@@ -3854,7 +3894,8 @@
 function library:watermark(options)
     local wm = library:create("Frame", {
         Parent = library.gui,
-        Size = dim2(0, 320, 0, 25),
+        Size = dim2(0, 200, 0, 25),
+        AutomaticSize = Enum.AutomaticSize.X,
         Position = dim2(0, 20, 0, 20),
         BackgroundColor3 = rgb(0, 0, 0),
         BorderSizePixel = 0,
@@ -3877,7 +3918,8 @@ function library:watermark(options)
     local wm_text = library:create("TextLabel", {
         Parent = wm_bg,
         Text = " " .. (options.name or "alternate.lol"),
-        Size = dim2(1, 0, 1, 0),
+        Size = dim2(0, 180, 1, 0),
+        AutomaticSize = Enum.AutomaticSize.X,
         BackgroundTransparency = 1,
         TextColor3 = rgb(255, 255, 255),
         TextSize = 12,
