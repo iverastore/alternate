@@ -463,7 +463,9 @@
                 local function_set = library.config_flags[_]
                 
                 if function_set then 
-                    if type(v) == "table" and not v["active"] then
+                    if type(v) == "table" and v["key"] and v["mode"] then
+                        function_set(v)
+                    elseif type(v) == "table" and v["Transparency"] and v["Color"] then
                         function_set(hex(v["Color"]), v["Transparency"])
                     elseif type(v) == "table" and v["active"] then 
                         function_set(v)
@@ -3501,7 +3503,7 @@
                     end)
 
                     library:connection(uis.InputBegan, function(input, game_event) 
-                        if not game_event then 
+                        if not game_event and not cfg.binding then 
                             local selected_key = input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode or input.UserInputType
                             if selected_key == cfg.key then 
                                 if cfg.mode == "toggle" then 
@@ -4420,7 +4422,7 @@ function library:targetHud(options)
             end
 
             if humanoid then
-                local hp = math.floor(humanoid.GetHealth and humanoid:GetHealth() or humanoid.Health)
+                local hp = math.floor(humanoid.Health)
                 local maxHp = math.floor(humanoid.MaxHealth)
                 hp_text.Text = tostring(hp) .. "/" .. tostring(maxHp)
                 local ratio = math.clamp(hp, 0, maxHp) / math.max(maxHp, 1)
