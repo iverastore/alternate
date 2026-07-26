@@ -79,7 +79,8 @@
         Inline = Color3.fromRGB(10, 10, 10),
         Element = Color3.fromRGB(20, 20, 20),
         ["Element 2"] = Color3.fromRGB(35, 35, 35),
-        ["Hovered Element"] = Color3.fromRGB(45, 45, 45)
+        ["Hovered Element"] = Color3.fromRGB(45, 45, 45),
+        TextOutline = Color3.fromRGB(0, 0, 0)
     }
     getgenv().library.CurrentTheme = {
         Text = {
@@ -89,7 +90,8 @@
         Borders = {
             Outline = Color3.fromRGB(30, 30, 30),
             Inline = Color3.fromRGB(0, 0, 0)
-        }
+        },
+        TextOutline = Color3.fromRGB(0, 0, 0)
     }
     getgenv().themes = {
         preset = {
@@ -183,6 +185,28 @@
             obj[prop] = resolveThemeColor(name)
         end)
     end
+
+    local updateThemeMap = {
+        ["accent"] = "Accent",
+        ["background"] = "Background",
+        ["text"] = {"Text", "Main"},
+        ["text_outline"] = "TextOutline",
+        ["element"] = "Element",
+        ["element2"] = "Element 2",
+        ["outline"] = {"Borders", "Outline"},
+        ["inline"] = "Inline",
+        ["hover"] = "Hovered Element",
+        ["unselected"] = {"Text", "Unselected"},
+        ["border"] = {"Borders", "Inline"},
+        ["glow"] = "glow",
+    }
+
+    function library:updateTheme(theme, color)
+        local mapped = updateThemeMap[theme]
+        if mapped then
+            library:ChangeTheme(mapped, color)
+        end
+    end
     
     -- Context menu system
     library.ContextMenu = nil
@@ -269,9 +293,10 @@
                 })
                 library:RegisterTheme(btn, "TextColor3", {"Text", "Unselected"})
                 
-                library:create("UIStroke", {
+                local ctxStroke = library:create("UIStroke", {
                     Parent = btn;
                 })
+                library:RegisterTheme(ctxStroke, "Color", "TextOutline")
                 
                 library:create("UIPadding", {
                     Parent = btn;
@@ -505,60 +530,8 @@
         end
 
         function library:resizify(frame) 
-            local Frame = Instance.new("TextButton")
-            Frame.Position = dim2(1, -10, 1, -10)
-            Frame.BorderColor3 = rgb(0, 0, 0)
-            Frame.Size = dim2(0, 10, 0, 10)
-            Frame.BorderSizePixel = 0
-            Frame.BackgroundColor3 = rgb(255, 255, 255)
-            Frame.Parent = frame
-            Frame.BackgroundTransparency = 1 
-            Frame.Text = ""
-
-            local resizing = false 
-            local start_size 
-            local start 
-            local og_size = frame.Size  
-
-            Frame.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    resizing = true
-                    start = input.Position
-                    start_size = frame.Size
-                end
-            end)
-
-            Frame.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    resizing = false
-                end
-            end)
-
-            library:connection(uis.InputChanged, function(input, game_event) 
-                if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
-                    local viewport_x = camera.ViewportSize.X
-                    local viewport_y = camera.ViewportSize.Y
-
-                    local current_size = dim2(
-                        start_size.X.Scale,
-                        math.clamp(
-                            start_size.X.Offset + (input.Position.X - start.X),
-                            og_size.X.Offset,
-                            viewport_x
-                        ),
-                        start_size.Y.Scale,
-                        math.clamp(
-                            start_size.Y.Offset + (input.Position.Y - start.Y),
-                            og_size.Y.Offset,
-                            viewport_y
-                        )
-                    )
-
-                    -- library:tween(frame, {Size = current_size}, Enum.EasingStyle.Linear, 0.05) -- nobody will ntoice this aswell 👿
-                    frame.Size = current_size
-                end
-            end)
-        end 
+            return
+        end
 
         function library:mouse_in_frame(uiobject)
             local y_cond = uiobject.AbsolutePosition.Y <= mouse.Y and mouse.Y <= uiobject.AbsolutePosition.Y + uiobject.AbsoluteSize.Y
@@ -677,9 +650,9 @@
                 elseif type(v) == "table" and v["Transparency"] and v["Color"] then
                     local color = v["Color"]
                     if typeof(color) == "Color3" then
-                        Config[_] = {Transparency = v["Transparency"], Color = color:ToHex()}
+                        Config[_] = {_type = "ColorPicker", Transparency = v["Transparency"], Color = {R = math.floor(color.R*255+0.5), G = math.floor(color.G*255+0.5), B = math.floor(color.B*255+0.5)}}
                     elseif type(color) == "string" then
-                        Config[_] = {Transparency = v["Transparency"], Color = color}
+                        Config[_] = {_type = "ColorPicker", Transparency = v["Transparency"], Color = color}
                     end
                 else
                     Config[_] = v
@@ -710,10 +683,38 @@
                 local function_set = library.config_flags[key]
                 if function_set then 
                     local ok, err = pcall(function()
-                        if type(v) == "table" and v["Transparency"] and v["Color"] then
+                        if type(v) == "table" and v._type == "ColorPicker" then
+                            local color
+                            if type(v.Color) == "table" then
+                                color = Color3.fromRGB(v.Color.R or 0, v.Color.G or 0, v.Color.B or 0)
+                            elseif type(v.Color) == "string" then
+                                color = Color3.fromHex(v.Color:sub(1, 6)) or Color3.fromRGB(255, 255, 255)
+                            end
+                            function_set(color, tonumber(v.Transparency) or 0)
+                        elseif type(v) == "table" and v._type == "Color3" then
+                            local color = Color3.fromRGB(v.R or 0, v.G or 0, v.B or 0)
+                            function_set(color)
+                        elseif type(v) == "table" and v["Transparency"] and v["Color"] then
                             local color = tostring(v["Color"])
-                            local color3 = Color3.fromHex(color:sub(1, 6)) or Color3.fromRGB(255, 255, 255)
+                            local color3
+                            if type(v.Color) == "table" then
+                                color3 = Color3.fromRGB(v.Color.R or 0, v.Color.G or 0, v.Color.B or 0)
+                            else
+                                color3 = Color3.fromHex(color:sub(1, 6)) or Color3.fromRGB(255, 255, 255)
+                            end
                             function_set(color3, tonumber(v["Transparency"]) or 0)
+                        elseif type(v) == "table" and (v.key or v.Key) then
+                            local keyVal = v.key or v.Key
+                            local keyEnum = keyVal
+                            if type(keyVal) == "string" and keyVal ~= "NONE" and keyVal:find("Enum") then
+                                keyEnum = library:convert_enum(keyVal) or keyVal
+                            end
+                            if keyVal == "NONE" or keyVal == nil then keyEnum = nil end
+                            function_set({
+                                mode = v.mode or v.Mode or "Toggle",
+                                key = keyEnum,
+                                active = v.active or v.Active or false,
+                            })
                         elseif type(v) == "table" and v["active"] ~= nil then 
                             function_set(v)
                         else
@@ -787,7 +788,7 @@
             local cfg = { 
                 -- Properties
                 name = properties.name or properties.Name or "nebula";
-                size = properties.size or properties.Size or dim2(0, 650, 0, 400);
+                size = properties.size or properties.Size or dim2(0, 650, 0, 500);
                 logo = properties.logo or properties.Logo or "rbxassetid://132488048637620";
 
                 selected_tab;
@@ -947,7 +948,6 @@
 
             do -- Other
                 library:draggify(items[ "window" ])
-                library:resizify(items[ "window" ])
             end 
             
             function cfg.toggle_menu(bool) 
@@ -1030,7 +1030,8 @@
                         Selectable = true;
                         BorderSizePixel = 0;
                         BackgroundColor3 = rgb(255, 255, 255)
-                    });                       
+                    });
+                    library:RegisterTheme(items[ "image" ], "ImageColor3", {"Text", "Unselected"})                       
                 -- 
 
                 -- Page directory
@@ -1086,7 +1087,7 @@
                 local selected_tab = self.selected_tab
                 
                 if selected_tab then 
-                   selected_tab[ 1 ].ImageColor3 = rgb(128, 128, 128)
+                   selected_tab[ 1 ].ImageColor3 = resolveThemeColor({"Text", "Unselected"})
                    selected_tab[ 2 ].Parent = library.items
                    selected_tab[ 2 ].Visible = false
                 end
@@ -1310,9 +1311,10 @@
                 });
                 library:RegisterTheme(items.line, "BackgroundColor3", "Accent")                
 
-                library:create( "UIStroke" , {
+                local sectionStroke = library:create( "UIStroke" , {
                     Parent = items.text;
                 });
+                library:RegisterTheme(sectionStroke, "Color", "TextOutline")
             end;
 
             items[ "section_outline" ].MouseEnter:Connect(function()
@@ -1642,6 +1644,7 @@
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(0, 0, 0)
                 });
+                library:RegisterTheme(items[ "toggle_outline" ], "BackgroundColor3", {"Borders", "Outline"})
                 
                 items[ "toggle_shading" ] = library:create( "Frame" , {
                     Parent = items[ "toggle_outline" ];
@@ -1653,6 +1656,7 @@
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(92, 92, 92)
                 });
+                library:RegisterTheme(items[ "toggle_shading" ], "BackgroundColor3", "Element")
                 
                 items[ "toggle_inline" ] = library:create( "Frame" , {
                     Parent = items[ "toggle_shading" ];
@@ -1686,9 +1690,10 @@
                 });
                 library:RegisterTheme(items[ "text" ], "TextColor3", {"Text", "Unselected"})
                 
-                library:create( "UIStroke" , {
+                local toggleStroke = library:create( "UIStroke" , {
                     Parent = items[ "text" ]
                 });
+                library:RegisterTheme(toggleStroke, "Color", "TextOutline")
                 
                 library:create( "UIPadding" , {
                     PaddingLeft = dim(0, 1);
@@ -1789,6 +1794,7 @@
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(0, 0, 0)
                 });
+                library:RegisterTheme(items[ "slider_holder" ], "BackgroundColor3", {"Borders", "Outline"})
                 
                 items[ "gradient_holder" ] = library:create( "Frame" , {
                     Parent = items[ "slider_holder" ];
@@ -1836,6 +1842,7 @@
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(0, 0, 0)
                 });
+                library:RegisterTheme(items[ "slider" ], "BackgroundColor3", {"Borders", "Outline"})
                 
                 items[ "inline" ] = library:create( "Frame" , {
                     Parent = items[ "slider" ];
@@ -1962,9 +1969,11 @@
                             TextSize = 10;
                             BackgroundColor3 = rgb(255, 255, 255)
                         });
-                        library:create( "UIStroke" , {
+                        library:RegisterTheme(items[ "name_text" ], "TextColor3", {"Text", "Unselected"})
+                        local ddNameStroke = library:create( "UIStroke" , {
                             Parent = items[ "name_text" ]
                         });
+                        library:RegisterTheme(ddNameStroke, "Color", "TextOutline")
                     end
 
                     items[ "dropdown_outline" ] = library:create( "TextButton" , {
@@ -2042,6 +2051,7 @@
                         BorderSizePixel = 0;
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
+                    library:RegisterTheme(items[ "arrow" ], "ImageColor3", {"Text", "Unselected"})
                     
                     -- No UIListLayout needed, name and dropdown are manually positioned
                 -- 
@@ -2358,12 +2368,13 @@
                     FillDirection = Enum.FillDirection.Horizontal
                 });
 
-                library:create( "UIStroke" , {
+                local labelStroke = library:create( "UIStroke" , {
                     Parent = items.text;
                     Color = rgb(0, 0, 0);
                     Thickness = 1;
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
                 });
+                library:RegisterTheme(labelStroke, "Color", "TextOutline")
 
                 library:create( "UIPadding" , {
                     PaddingLeft = dim(0, 1);
@@ -2724,6 +2735,7 @@
                     library:create( "UIStroke" , {
                         Parent = items.title
                     });
+                    library:RegisterTheme(items.title:FindFirstChildOfClass("UIStroke"), "Color", "TextOutline")
                     
                     library:create( "UIPadding" , {
                         PaddingLeft = dim(0, 1);
@@ -2934,6 +2946,7 @@
                 library:create( "UIStroke" , {
                     Parent = items[ "textbox" ]
                 });
+                library:RegisterTheme(items[ "textbox" ], "TextColor3", {"Text", "Main"})
                 
                 library:create( "UIGradient" , {
                     Rotation = 90;
@@ -2948,7 +2961,6 @@
                 });                
 
                 library:RegisterTheme(items[ "textbox_outline" ], "BackgroundColor3", {"Borders", "Outline"})
-                library:RegisterTheme(items[ "textbox" ], "TextColor3", {"Text", "Main"})
             end 
             
             function cfg.set(text) 
@@ -3028,10 +3040,13 @@
                         TextSize = 10;
                         BackgroundColor3 = rgb(38, 38, 38)
                     });
+                    library:RegisterTheme(items.text_label, "TextColor3", {"Text", "Unselected"})
+                    library:RegisterTheme(items.text_label, "BackgroundColor3", "Element 2")
 
-                    library:create( "UIStroke" , {
+                    local kbStroke = library:create( "UIStroke" , {
                         Parent = items.text_label
                     });
+                    library:RegisterTheme(kbStroke, "Color", "TextOutline")
 
                     library:create( "UIPadding" , {
                         Parent = items.text_label;
@@ -3055,6 +3070,7 @@
                         AutomaticSize = Enum.AutomaticSize.Y;
                         BackgroundColor3 = rgb(0, 0, 0)
                     });
+                    library:RegisterTheme(items[ "modes" ], "BackgroundColor3", {"Borders", "Outline"})
                     
                     items[ "mode_shading" ] = library:create( "Frame" , {
                         Parent = items[ "modes" ];
@@ -3108,14 +3124,16 @@
                             TextSize = 10;
                             BackgroundColor3 = rgb(255, 255, 255)
                         }); cfg.hold_instances[option] = name
-                        
-                        library:create( "UIStroke" , {
-                            Parent = items[ "TextLabel" ]
+                        library:RegisterTheme(name, "TextColor3", {"Text", "Unselected"})
+
+                        local modeStroke = library:create( "UIStroke" , {
+                            Parent = name
                         });
+                        library:RegisterTheme(modeStroke, "Color", "TextOutline")
                         
                         library:create( "UIPadding" , {
                             PaddingLeft = dim(0, 5);
-                            Parent = items[ "TextLabel" ]
+                            Parent = name
                         });
                                                 
                         -- cfg.y_size += name.AbsoluteSize.Y
@@ -3138,13 +3156,22 @@
             
             function cfg.modify_mode_color(path) -- ts so frikin tuff 💀
                 for _,v in cfg.hold_instances do 
-                    v.TextColor3 = rgb(178, 178, 178)
+                    v.TextColor3 = resolveThemeColor({"Text", "Unselected"})
                 end 
 
-                cfg.hold_instances[path].TextColor3 = rgb(255, 255, 255)
+                cfg.hold_instances[path].TextColor3 = library.Theme.Accent
+            end
+
+            local function normalizeMode(m)
+                local lower = string.lower(m or "toggle")
+                if lower == "toggle" then return "Toggle" end
+                if lower == "hold" then return "Hold" end
+                if lower == "always" then return "Always" end
+                return "Toggle"
             end
 
             function cfg.set_mode(mode) 
+                mode = normalizeMode(mode)
                 cfg.mode = mode 
 
                 if mode == "Always" then
@@ -3170,19 +3197,19 @@
                     input = input.Name == "Escape" and "NONE" or input
                     
                     cfg.key = input or "NONE"	
-                elseif find({"Toggle", "Hold", "Always"}, input) then 
-                    if input == "Always" then 
+                elseif type(input) == "string" and find({"toggle", "hold", "always"}, string.lower(input)) then 
+                    if string.lower(input) == "always" then 
                         cfg.active = true 
                     end 
 
-                    cfg.mode = input
+                    cfg.mode = normalizeMode(input)
                     cfg.set_mode(cfg.mode) 
                 elseif type(input) == "table" then 
                     input.key = type(input.key) == "string" and input.key ~= "NONE" and library:convert_enum(input.key) or input.key
                     input.key = input.key == Enum.KeyCode.Escape and "NONE" or input.key
 
                     cfg.key = input.key or "NONE"
-                    cfg.mode = input.mode or "Toggle"
+                    cfg.mode = normalizeMode(input.mode or "Toggle")
 
                     if input.active then
                         cfg.active = input.active
@@ -3243,10 +3270,10 @@
                     local selected_key = input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode or input.UserInputType
 
                     if selected_key == cfg.key then 
-                        if cfg.mode == "Toggle" then 
+                        if string.lower(cfg.mode) == "toggle" then 
                             cfg.active = not cfg.active
                             cfg.set(cfg.active)
-                        elseif cfg.mode == "Hold" then 
+                        elseif string.lower(cfg.mode) == "hold" then 
                             cfg.set(true)
                         end
                     end
@@ -3261,7 +3288,7 @@
                 local selected_key = input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode or input.UserInputType
     
                 if selected_key == cfg.key then
-                    if cfg.mode == "Hold" then 
+                    if string.lower(cfg.mode) == "hold" then 
                         cfg.set(false)
                     end
                 end
@@ -3321,6 +3348,7 @@
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(0, 0, 0)
                 });
+                library:RegisterTheme(items[ "button_outline" ], "BackgroundColor3", {"Borders", "Outline"})
                 
                 items[ "button_shading" ] = library:create( "Frame" , {
                     Parent = items[ "button_outline" ];
@@ -3354,9 +3382,10 @@
                 });
                 library:RegisterTheme(items[ "button_text" ], "TextColor3", {"Text", "Unselected"})
                 
-                library:create( "UIStroke" , {
+                local btnStroke = library:create( "UIStroke" , {
                     Parent = items[ "button_text" ]
                 });
+                library:RegisterTheme(btnStroke, "Color", "TextOutline")
                 
                 library:create( "UIListLayout" , {
                     Parent = items[ "button" ];
@@ -3417,7 +3446,7 @@
 
                 for _, option_data in options_to_refresh do -- haha u skids no next >_<
                     local button = library:create( "TextButton" , {
-                        FontFace = fonts.small;
+                        FontFace = library.font;
                         TextColor3 = rgb(0, 0, 0);
                         BorderColor3 = rgb(0, 0, 0);
                         Text = "";
@@ -3431,6 +3460,7 @@
                         TextSize = 14;
                         BackgroundColor3 = rgb(33, 33, 35)
                     }); cfg.data_store[#cfg.data_store + 1] = button;
+                    library:RegisterTheme(button, "BackgroundColor3", "Element")
 
                     local name = library:create( "TextLabel" , {
                         FontFace = library.font;
@@ -3446,6 +3476,7 @@
                         TextSize = 14;
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
+                    library:RegisterTheme(name, "TextColor3", {"Text", "Unselected"})
                     
                     library:create( "UICorner" , {
                         Parent = button;
@@ -3455,12 +3486,12 @@
                     button.MouseButton1Click:Connect(function()
                         local current = cfg.current_element 
                         if current and current ~= name then 
-                            library:tween(current, {TextColor3 = rgb(72, 72, 72)})
+                            library:tween(current, {TextColor3 = resolveThemeColor({"Text", "Unselected"})})
                         end
 
                         flags[cfg.flag] = option_data
                         cfg.callback(option_data)
-                        library:tween(name, {TextColor3 = rgb(245, 245, 245)})
+                        library:tween(name, {TextColor3 = resolveThemeColor({"Text", "Main"})})
                         cfg.current_element = name
                     end)
 
@@ -3469,7 +3500,7 @@
                             return 
                         end 
 
-                        library:tween(name, {TextColor3 = rgb(140, 140, 140)})
+                        library:tween(name, {TextColor3 = resolveThemeColor({"Text", "Main"})})
                     end)
 
                     name.MouseLeave:Connect(function()
@@ -3477,7 +3508,7 @@
                             return 
                         end 
 
-                        library:tween(name, {TextColor3 = rgb(72, 72, 72)})
+                        library:tween(name, {TextColor3 = resolveThemeColor({"Text", "Unselected"})})
                     end)
                 end
             end
@@ -3605,6 +3636,7 @@
 					AutomaticSize = Enum.AutomaticSize.XY;
 					BackgroundColor3 = rgb(46, 46, 46)
 				});
+				library:RegisterTheme(outline, "BackgroundColor3", {"Borders", "Outline"})
 
 				local inline = library:create("Frame", {
 					Parent = outline;
@@ -3613,7 +3645,8 @@
 					BorderSizePixel = 0;
 					AutomaticSize = Enum.AutomaticSize.XY;
 					BackgroundColor3 = rgb(21, 21, 21)
-				});	
+				});
+				library:RegisterTheme(inline, "BackgroundColor3", "Background")	
 				
 				library:create("UIPadding", {
 					PaddingTop = dim(0, 7);
@@ -3640,6 +3673,7 @@
 					TextSize = 10;
 					BackgroundColor3 = rgb(255, 255, 255)
 				});
+				library:RegisterTheme(misc_text, "TextColor3", {"Text", "Main"})
 				
 				library:create("UIPadding", {
 					PaddingBottom = dim(0, 1);
@@ -3839,6 +3873,7 @@ function library:Watermark(options)
         Active = true,
         ZIndex = 1
     })
+    library:RegisterTheme(container, "BackgroundColor3", {"Borders", "Outline"})
 
     local inline = library:create("Frame", {
         Parent = container,
@@ -3848,6 +3883,7 @@ function library:Watermark(options)
         Size = dim2(1, -2, 1, -2),
         ZIndex = 2
     })
+    library:RegisterTheme(inline, "BackgroundColor3", "Inline")
 
     local content = library:create("Frame", {
         Parent = inline,
@@ -3857,6 +3893,7 @@ function library:Watermark(options)
         Size = dim2(1, -2, 1, -2),
         ZIndex = 3
     })
+    library:RegisterTheme(content, "BackgroundColor3", "Background")
 
     local accent_bar = library:create("Frame", {
         Parent = content,
@@ -3899,13 +3936,15 @@ function library:Watermark(options)
         ZIndex = 4,
         TextXAlignment = Enum.TextXAlignment.Left
     })
+    library:RegisterTheme(text_lbl, "TextColor3", {"Text", "Main"})
 
-    library:create("UIStroke", {
+    local wmStroke = library:create("UIStroke", {
         Parent = text_lbl,
         Color = rgb(0, 0, 0),
         Thickness = 1,
         Transparency = 0.5
     })
+    library:RegisterTheme(wmStroke, "Color", "TextOutline")
 
     library:draggify(container)
 
@@ -3958,6 +3997,7 @@ function library:TargetHUD(options)
         Visible = false,
         ZIndex = 1
     })
+    library:RegisterTheme(container, "BackgroundColor3", {"Borders", "Outline"})
     
     local inline = library:create("Frame", {
         Parent = container,
@@ -3967,6 +4007,7 @@ function library:TargetHUD(options)
         Size = dim2(1, -2, 1, -2),
         ZIndex = 2
     })
+    library:RegisterTheme(inline, "BackgroundColor3", "Inline")
     
     local content = library:create("Frame", {
         Parent = inline,
@@ -3976,6 +4017,7 @@ function library:TargetHUD(options)
         Size = dim2(1, -2, 1, -2),
         ZIndex = 3
     })
+    library:RegisterTheme(content, "BackgroundColor3", "Background")
 
     local accent_bar = library:create("Frame", {
         Parent = content,
@@ -4018,6 +4060,7 @@ function library:TargetHUD(options)
         ZIndex = 4,
         TextXAlignment = Enum.TextXAlignment.Left
     })
+    library:RegisterTheme(name_lbl, "TextColor3", {"Text", "Main"})
     
     local bar_bg = library:create("Frame", {
         Parent = content,
@@ -4048,6 +4091,7 @@ function library:TargetHUD(options)
         ZIndex = 4,
         TextXAlignment = Enum.TextXAlignment.Left
     })
+    library:RegisterTheme(info_lbl, "TextColor3", {"Text", "Unselected"})
 
     local obj = {
         Items = {
@@ -4104,6 +4148,7 @@ function library:KeybindList(options)
         Active = true,
         ZIndex = 1
     })
+    library:RegisterTheme(container, "BackgroundColor3", {"Borders", "Outline"})
 
     local inline = library:create("Frame", {
         Parent = container,
@@ -4113,6 +4158,7 @@ function library:KeybindList(options)
         Size = dim2(1, -2, 1, -2),
         ZIndex = 2
     })
+    library:RegisterTheme(inline, "BackgroundColor3", "Inline")
 
     local content = library:create("Frame", {
         Parent = inline,
@@ -4122,6 +4168,7 @@ function library:KeybindList(options)
         Size = dim2(1, -2, 1, -2),
         ZIndex = 3
     })
+    library:RegisterTheme(content, "BackgroundColor3", "Background")
 
     local glow = library:create("ImageLabel", {
         Parent = container,
@@ -4152,13 +4199,15 @@ function library:KeybindList(options)
         TextXAlignment = Enum.TextXAlignment.Left,
         ZIndex = 4
     })
+    library:RegisterTheme(header, "TextColor3", {"Text", "Main"})
 
-    library:create("UIStroke", {
+    local klHeaderStroke = library:create("UIStroke", {
         Parent = header,
         Color = rgb(0, 0, 0),
         Thickness = 1,
         Transparency = 0.5
     })
+    library:RegisterTheme(klHeaderStroke, "Color", "TextOutline")
 
     local header_line = library:create("Frame", {
         Parent = content,
@@ -4168,6 +4217,7 @@ function library:KeybindList(options)
         Size = dim2(1, 0, 0, 1),
         ZIndex = 4
     })
+    library:RegisterTheme(header_line, "BackgroundColor3", "Accent")
 
     local list_holder = library:create("Frame", {
         Parent = content,
@@ -4232,13 +4282,15 @@ function library:KeybindList(options)
                         TextXAlignment = Enum.TextXAlignment.Left,
                         ZIndex = 4
                     })
+                    library:RegisterTheme(entry, "TextColor3", {"Text", "Unselected"})
 
-                    library:create("UIStroke", {
+                    local entryStroke = library:create("UIStroke", {
                         Parent = entry,
                         Color = rgb(0, 0, 0),
                         Thickness = 1,
                         Transparency = 0.5
                     })
+                    library:RegisterTheme(entryStroke, "Color", "TextOutline")
 
                     pool[i] = entry
                 end
