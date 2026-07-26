@@ -76,7 +76,7 @@
     end 
 
     getgenv().library = {
-        directory = "obels",
+        directory = "alternate.lol",
         folders = {
             "/fonts",
             "/configs",
@@ -221,8 +221,9 @@
         end
     end
 
+    pcall(function() if not isfolder(library.directory) then makefolder(library.directory) end end)
     for _, path in next, library.folders do 
-        pcall(function() makefolder(library.directory .. path) end)
+        pcall(function() if not isfolder(library.directory .. path) then makefolder(library.directory .. path) end end)
     end
 
     local flags = library.flags 
