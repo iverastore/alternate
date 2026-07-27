@@ -213,6 +213,13 @@
         [Enum.KeyCode.Space] = "SPC",
     }
 
+    -- Setup safe metatable for library
+    local libraryMeta = {}
+    function libraryMeta:__index(key)
+        return rawget(library, key)
+    end
+    setmetatable(library, libraryMeta)
+
     function library:visible(bool)
         if self.__ui then
             self.__ui.Visible = bool
