@@ -1833,39 +1833,207 @@
                 })
             -- 
 
-            function cfg.open_tab() 
-                library:closeCurrentElement() 
+            function cfg.open_tab()
+                library:closeCurrentElement()
 
-                if self.selected_tab then 
+                if self.selected_tab then
                     self.selected_tab[1].TextColor3 = themes.preset.unselected
-                    self.selected_tab[2].Visible = false 
+                    self.selected_tab[2].Visible = false
                     self.selected_tab[3].Color = rgbseq{
                         rgbkey(0, rgb(41, 41, 41)),
                         rgbkey(1, rgb(16, 16, 16))
                     }
 
-                    self.selected_tab = nil 
-                end 
+                    self.selected_tab = nil
+                end
 
                 text.TextColor3 = themes.preset.accent
-                cfg["page"].Visible = true 
+                cfg["page"].Visible = true
                 gradient.Color = rgbseq{
                     rgbkey(0, rgb(41, 41, 41)),
                     rgbkey(1, rgb(25, 25, 25))
                 }
                 self.selected_tab = {text, cfg["page"], gradient}
-            end 
+            end
+
+            -- Add column method to tab for direct section support
+            function cfg:column(properties)
+                local col_cfg = {
+                    fill = properties.fill or properties.Fill or false,
+                }
+
+                col_cfg["column"] = library:create("Frame", {
+                    Parent = cfg["page"],
+                    Name = "",
+                    BackgroundTransparency = 1,
+                    BorderColor3 = rgb(0, 0, 0),
+                    Size = dim2(0, 100, 0, 100),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = rgb(0, 0, 0)
+                })
+
+                library:create("UIListLayout", {
+                    Parent = col_cfg["column"],
+                    Name = "",
+                    Padding = dim(0, 12),
+                    SortOrder = Enum.SortOrder.LayoutOrder,
+                    VerticalFlex = col_cfg.fill and Enum.UIFlexAlignment.Fill or Enum.UIFlexAlignment.None
+                })
+
+                return setmetatable(col_cfg, library)
+            end
 
             outline.MouseButton1Down:Connect(function()
                 cfg.open_tab()
             end)
 
-            if not self.selected_tab then 
-                cfg.open_tab(true) 
-            end 
+            if not self.selected_tab then
+                cfg.open_tab(true)
+            end
 
-            return setmetatable(cfg, library)    
-        end 
+            return setmetatable(cfg, library)
+        end
+
+        function library:Page(properties)
+            local cfg = {
+                name = properties.name or properties.Name or "Page",
+            }
+
+            -- Create a separate page holder (independent of tabs)
+            cfg.page_holder = library:create("Frame", {
+                Parent = library.gui,
+                Name = cfg.name,
+                Visible = false,
+                Position = dim2(0, 0, 0, 0),
+                BorderColor3 = rgb(0, 0, 0),
+                Size = dim2(1, 0, 1, 0),
+                BorderSizePixel = 0,
+                BackgroundColor3 = rgb(0, 0, 0)
+            })
+
+            local outline = library:create("Frame", {
+                Parent = cfg.page_holder,
+                Name = "",
+                Position = dim2(0.5, -258, 0.5, -281),
+                BorderColor3 = rgb(0, 0, 0),
+                Size = dim2(0, 516, 0, 563),
+                BorderSizePixel = 0,
+                BackgroundColor3 = themes.preset.outline
+            }); library:applyTheme(outline, "outline", "BackgroundColor3")
+
+            local inline = library:create("Frame", {
+                Parent = outline,
+                Name = "",
+                Position = dim2(0, 1, 0, 1),
+                BorderColor3 = rgb(0, 0, 0),
+                Size = dim2(1, -2, 1, -2),
+                BorderSizePixel = 0,
+                BackgroundColor3 = themes.preset.inline
+            }); library:applyTheme(inline, "inline", "BackgroundColor3")
+
+            local background = library:create("Frame", {
+                Parent = inline,
+                Name = "",
+                Position = dim2(0, 1, 0, 1),
+                BorderColor3 = rgb(0, 0, 0),
+                Size = dim2(1, -2, 1, -2),
+                BorderSizePixel = 0,
+                BackgroundColor3 = themes.preset.background
+            }); library:applyTheme(background, "background", "BackgroundColor3")
+
+            library:draggify(outline)
+            library:makeResizable(outline)
+
+            -- Page content area
+            cfg.content = library:create("Frame", {
+                Parent = background,
+                Name = "",
+                Position = dim2(0, 0, 0, 30),
+                BorderColor3 = rgb(0, 0, 0),
+                Size = dim2(1, 0, 1, -30),
+                BorderSizePixel = 0,
+                BackgroundColor3 = rgb(0, 0, 0)
+            })
+
+            library:create("UIListLayout", {
+                Parent = cfg.content,
+                Name = "",
+                FillDirection = Enum.FillDirection.Horizontal,
+                HorizontalFlex = Enum.UIFlexAlignment.Fill,
+                Padding = dim(0, 11),
+                SortOrder = Enum.SortOrder.LayoutOrder,
+                VerticalFlex = Enum.UIFlexAlignment.Fill
+            })
+
+            library:create("UIPadding", {
+                Parent = cfg.content,
+                Name = "",
+                PaddingTop = dim(0, 11),
+                PaddingBottom = dim(0, 11),
+                PaddingRight = dim(0, 11),
+                PaddingLeft = dim(0, 11)
+            })
+
+            -- Add column method to page
+            function cfg:column(properties)
+                local col_cfg = {
+                    fill = properties.fill or properties.Fill or false,
+                }
+
+                col_cfg["column"] = library:create("Frame", {
+                    Parent = cfg.content,
+                    Name = "",
+                    BackgroundTransparency = 1,
+                    BorderColor3 = rgb(0, 0, 0),
+                    Size = dim2(0, 100, 0, 100),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = rgb(0, 0, 0)
+                })
+
+                library:create("UIListLayout", {
+                    Parent = col_cfg["column"],
+                    Name = "",
+                    Padding = dim(0, 12),
+                    SortOrder = Enum.SortOrder.LayoutOrder,
+                    VerticalFlex = col_cfg.fill and Enum.UIFlexAlignment.Fill or Enum.UIFlexAlignment.None
+                })
+
+                return setmetatable(col_cfg, library)
+            end
+
+            -- Add section method to page
+            function cfg:Section(properties)
+                local col = self:column({fill = true})
+                return col:section(properties)
+            end
+
+            -- Add MultiSection method to page
+            function cfg:MultiSection(properties)
+                local wrapper = {}
+                local side = properties.Side or 1
+                local col = self:column({fill = true})
+
+                function wrapper:Add(name)
+                    return col:section({name = name})
+                end
+
+                function wrapper:Select(name)
+                    -- Selection logic if needed
+                end
+
+                return wrapper
+            end
+
+            function cfg:show()
+                cfg.page_holder.Visible = true
+            end
+
+            function cfg:hide()
+                cfg.page_holder.Visible = false
+            end
+
+            return setmetatable(cfg, library)
+        end
 
         function library:column(properties)
             local cfg = {
