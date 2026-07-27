@@ -212,8 +212,6 @@
         [Enum.KeyCode.Escape] = "ESC",
         [Enum.KeyCode.Space] = "SPC",
     }
-    
-    library.__index = library
 
     function library:visible(bool)
         if self.__ui then
