@@ -212,13 +212,8 @@
         [Enum.KeyCode.Escape] = "ESC",
         [Enum.KeyCode.Space] = "SPC",
     }
-
-    -- Setup safe metatable for library
-    local libraryMeta = {}
-    function libraryMeta:__index(key)
-        return rawget(library, key)
-    end
-    setmetatable(library, libraryMeta)
+    
+    library.__index = library
 
     function library:visible(bool)
         if self.__ui then
