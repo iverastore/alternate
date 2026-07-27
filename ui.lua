@@ -4581,27 +4581,32 @@ function library:subtab(properties)
         name = properties.name or properties.Name or "subtab",
     }
     
-    if not self.subtab_holder then
+    local parent_tab = self
+    if properties.parent then
+        parent_tab = properties.parent
+    end
+    
+    if not parent_tab.subtab_holder then
         -- Convert tab's page to vertical layout for subtabs
-        local layout = self.page:FindFirstChildWhichIsA("UIListLayout")
+        local layout = parent_tab.page:FindFirstChildWhichIsA("UIListLayout")
         if layout then
             layout.FillDirection = Enum.FillDirection.Vertical
             layout.Padding = dim(0, 5)
         end
         
-        self.subtab_holder = library:create("Frame", {
-            Parent = self.page,
+        parent_tab.subtab_holder = library:create("Frame", {
+            Parent = parent_tab.page,
             BackgroundTransparency = 1,
             Size = dim2(1, 0, 0, 25)
         })
         library:create("UIListLayout", {
-            Parent = self.subtab_holder,
+            Parent = parent_tab.subtab_holder,
             FillDirection = Enum.FillDirection.Horizontal,
             Padding = dim(0, 5)
         })
         
-        self.subpage_holder = library:create("Frame", {
-            Parent = self.page,
+        parent_tab.subpage_holder = library:create("Frame", {
+            Parent = parent_tab.page,
             BackgroundTransparency = 1,
             Size = dim2(1, 0, 1, -30) -- fill rest of page
         })
@@ -4609,7 +4614,7 @@ function library:subtab(properties)
     
     -- subtab button
     local btn = library:create("TextButton", {
-        Parent = self.subtab_holder,
+        Parent = parent_tab.subtab_holder,
         Text = cfg.name,
         FontFace = library.font,
         TextSize = 12,
@@ -4631,7 +4636,7 @@ function library:subtab(properties)
     
     -- subpage
     cfg.page = library:create("Frame", {
-        Parent = self.subpage_holder,
+        Parent = parent_tab.subpage_holder,
         BackgroundTransparency = 1,
         Size = dim2(1, 0, 1, 0),
         Visible = false
@@ -4645,19 +4650,19 @@ function library:subtab(properties)
     })
     
     function cfg.open_subtab()
-        if self.selected_subtab then
-            self.selected_subtab.btn.TextColor3 = themes.preset.unselected
-            self.selected_subtab.underline.Visible = false
-            self.selected_subtab.page.Visible = false
+        if parent_tab.selected_subtab then
+            parent_tab.selected_subtab.btn.TextColor3 = themes.preset.unselected
+            parent_tab.selected_subtab.underline.Visible = false
+            parent_tab.selected_subtab.page.Visible = false
         end
         btn.TextColor3 = themes.preset.accent
         underline.Visible = true
         cfg.page.Visible = true
-        self.selected_subtab = {btn = btn, underline = underline, page = cfg.page}
+        parent_tab.selected_subtab = {btn = btn, underline = underline, page = cfg.page}
     end
     
     btn.MouseButton1Down:Connect(cfg.open_subtab)
-    if not self.selected_subtab then
+    if not parent_tab.selected_subtab then
         cfg.open_subtab()
     end
     
