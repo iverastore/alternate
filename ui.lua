@@ -4755,11 +4755,17 @@ function library:subtab(properties)
     end
     
     if not parent_tab.subtab_holder then
+        -- Convert tab's page to vertical layout for subtabs
+        local layout = parent_tab.page:FindFirstChildWhichIsA("UIListLayout")
+        if layout then
+            layout.FillDirection = Enum.FillDirection.Vertical
+            layout.Padding = dim(0, 5)
+        end
+        
         parent_tab.subtab_holder = library:create("Frame", {
             Parent = parent_tab.page,
             BackgroundTransparency = 1,
-            Size = dim2(1, 0, 0, 20),
-            LayoutOrder = 1
+            Size = dim2(1, 0, 0, 25)
         })
         library:create("UIListLayout", {
             Parent = parent_tab.subtab_holder,
@@ -4770,8 +4776,7 @@ function library:subtab(properties)
         parent_tab.subpage_holder = library:create("Frame", {
             Parent = parent_tab.page,
             BackgroundTransparency = 1,
-            Size = dim2(1, 0, 1, -25),
-            LayoutOrder = 2
+            Size = dim2(1, 0, 1, -30) -- fill rest of page
         })
     end
     
@@ -4785,7 +4790,7 @@ function library:subtab(properties)
         BackgroundTransparency = 1,
         AutomaticSize = Enum.AutomaticSize.X,
         Size = dim2(0, 0, 1, 0)
-    })
+    }); library:applyTheme(btn, "unselected", "TextColor3")
     
     local underline = library:create("Frame", {
         Parent = btn,
@@ -4795,6 +4800,7 @@ function library:subtab(properties)
         Position = dim2(0, 0, 1, -2),
         Visible = false
     })
+    library:applyTheme(underline, "accent", "BackgroundColor3")
     
     -- subpage
     cfg.page = library:create("Frame", {
