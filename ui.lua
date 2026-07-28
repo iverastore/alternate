@@ -4755,32 +4755,43 @@ function library:subtab(properties)
     end
     
     if not parent_tab.subtab_holder then
-        -- Convert tab's page to vertical layout for subtabs
-        local layout = parent_tab.page:FindFirstChildWhichIsA("UIListLayout")
-        if layout then
-            layout.FillDirection = Enum.FillDirection.Vertical
-            layout.Padding = dim(0, 5)
-        end
+        -- Create a separator line
+        library:create("Frame", {
+            Parent = parent_tab.page,
+            BackgroundColor3 = themes.preset.outline,
+            BorderSizePixel = 0,
+            Size = dim2(1, 0, 0, 1),
+            LayoutOrder = 0
+        })
+        library:applyTheme(nil, "outline", "BackgroundColor3") -- Just to register theme
         
+        -- Create subtab holder - full width bar
         parent_tab.subtab_holder = library:create("Frame", {
             Parent = parent_tab.page,
-            BackgroundTransparency = 1,
-            Size = dim2(1, 0, 0, 25)
+            BackgroundColor3 = themes.preset.background,
+            BorderSizePixel = 0,
+            Size = dim2(1, 0, 0, 32),
+            LayoutOrder = 1
         })
+        library:applyTheme(parent_tab.subtab_holder, "background", "BackgroundColor3")
+        
         library:create("UIListLayout", {
             Parent = parent_tab.subtab_holder,
             FillDirection = Enum.FillDirection.Horizontal,
-            Padding = dim(0, 5)
+            Padding = dim(0, 0),
+            VerticalAlignment = Enum.VerticalAlignment.Center
         })
         
+        -- Create subpage holder - full width content area
         parent_tab.subpage_holder = library:create("Frame", {
             Parent = parent_tab.page,
             BackgroundTransparency = 1,
-            Size = dim2(1, 0, 1, -30) -- fill rest of page
+            Size = dim2(1, 0, 1, -65),
+            LayoutOrder = 2
         })
     end
     
-    -- subtab button
+    -- subtab button - styled like mini tabs
     local btn = library:create("TextButton", {
         Parent = parent_tab.subtab_holder,
         Text = cfg.name,
@@ -4788,9 +4799,11 @@ function library:subtab(properties)
         TextSize = 12,
         TextColor3 = themes.preset.unselected,
         BackgroundTransparency = 1,
-        AutomaticSize = Enum.AutomaticSize.X,
-        Size = dim2(0, 0, 1, 0)
-    }); library:applyTheme(btn, "unselected", "TextColor3")
+        AutomaticSize = Enum.AutomaticSize.None,
+        Size = dim2(0, 120, 1, 0),
+        BorderSizePixel = 0
+    })
+    library:applyTheme(btn, "unselected", "TextColor3")
     
     local underline = library:create("Frame", {
         Parent = btn,
@@ -4798,7 +4811,8 @@ function library:subtab(properties)
         BorderSizePixel = 0,
         Size = dim2(1, 0, 0, 2),
         Position = dim2(0, 0, 1, -2),
-        Visible = false
+        Visible = false,
+        ZIndex = 2
     })
     library:applyTheme(underline, "accent", "BackgroundColor3")
     
@@ -4807,7 +4821,8 @@ function library:subtab(properties)
         Parent = parent_tab.subpage_holder,
         BackgroundTransparency = 1,
         Size = dim2(1, 0, 1, 0),
-        Visible = false
+        Visible = false,
+        CanvasSize = UDim2.new(1, 0, 0, 0)
     })
     library:create("UIListLayout", {
         Parent = cfg.page,
