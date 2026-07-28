@@ -4755,16 +4755,11 @@ function library:subtab(properties)
     end
     
     if not parent_tab.subtab_holder then
-        local layout = parent_tab.page:FindFirstChildWhichIsA("UIListLayout")
-        if layout then
-            layout.FillDirection = Enum.FillDirection.Vertical
-            layout.Padding = dim(0, 5)
-        end
-        
         parent_tab.subtab_holder = library:create("Frame", {
             Parent = parent_tab.page,
             BackgroundTransparency = 1,
-            Size = dim2(1, 0, 0, 25)
+            Size = dim2(1, 0, 0, 20),
+            LayoutOrder = 1
         })
         library:create("UIListLayout", {
             Parent = parent_tab.subtab_holder,
@@ -4775,7 +4770,8 @@ function library:subtab(properties)
         parent_tab.subpage_holder = library:create("Frame", {
             Parent = parent_tab.page,
             BackgroundTransparency = 1,
-            Size = dim2(1, 0, 1, -30)
+            Size = dim2(1, 0, 1, -25),
+            LayoutOrder = 2
         })
     end
     
