@@ -4821,8 +4821,7 @@ function library:subtab(properties)
         Parent = parent_tab.subpage_holder,
         BackgroundTransparency = 1,
         Size = dim2(1, 0, 1, 0),
-        Visible = false,
-        CanvasSize = UDim2.new(1, 0, 0, 0)
+        Visible = false
     })
     library:create("UIListLayout", {
         Parent = cfg.page,
