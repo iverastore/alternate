@@ -4755,41 +4755,31 @@ function library:subtab(properties)
     end
     
     if not parent_tab.subtab_holder then
-        -- Create separator line
-        library:create("Frame", {
-            Parent = parent_tab.page,
-            BackgroundColor3 = themes.preset.outline,
-            BorderSizePixel = 0,
-            Size = dim2(1, 0, 0, 1),
-            LayoutOrder = 0
-        })
+        local layout = parent_tab.page:FindFirstChildWhichIsA("UIListLayout")
+        if layout then
+            layout.FillDirection = Enum.FillDirection.Vertical
+            layout.Padding = dim(0, 5)
+        end
         
-        -- Create subtab bar - full width
         parent_tab.subtab_holder = library:create("Frame", {
             Parent = parent_tab.page,
-            BackgroundColor3 = themes.preset.background,
-            BorderSizePixel = 0,
-            Size = dim2(1, 0, 0, 32),
-            LayoutOrder = 1
+            BackgroundTransparency = 1,
+            Size = dim2(1, 0, 0, 25)
         })
-        
         library:create("UIListLayout", {
             Parent = parent_tab.subtab_holder,
             FillDirection = Enum.FillDirection.Horizontal,
-            Padding = dim(0, 0),
-            VerticalAlignment = Enum.VerticalAlignment.Center
+            Padding = dim(0, 5)
         })
         
-        -- Create content holder
         parent_tab.subpage_holder = library:create("Frame", {
             Parent = parent_tab.page,
             BackgroundTransparency = 1,
-            Size = dim2(1, 0, 1, -65),
-            LayoutOrder = 2
+            Size = dim2(1, 0, 1, -30)
         })
     end
     
-    -- Subtab button
+    -- subtab button
     local btn = library:create("TextButton", {
         Parent = parent_tab.subtab_holder,
         Text = cfg.name,
@@ -4797,8 +4787,8 @@ function library:subtab(properties)
         TextSize = 12,
         TextColor3 = themes.preset.unselected,
         BackgroundTransparency = 1,
-        Size = dim2(0, 120, 1, 0),
-        BorderSizePixel = 0
+        AutomaticSize = Enum.AutomaticSize.X,
+        Size = dim2(0, 0, 1, 0)
     })
     
     local underline = library:create("Frame", {
@@ -4807,18 +4797,16 @@ function library:subtab(properties)
         BorderSizePixel = 0,
         Size = dim2(1, 0, 0, 2),
         Position = dim2(0, 0, 1, -2),
-        Visible = false,
-        ZIndex = 2
+        Visible = false
     })
     
-    -- Content page
+    -- subpage
     cfg.page = library:create("Frame", {
         Parent = parent_tab.subpage_holder,
         BackgroundTransparency = 1,
         Size = dim2(1, 0, 1, 0),
         Visible = false
     })
-    
     library:create("UIListLayout", {
         Parent = cfg.page,
         FillDirection = Enum.FillDirection.Horizontal,
