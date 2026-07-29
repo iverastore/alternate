@@ -3867,8 +3867,8 @@ function library:Watermark(options)
         Parent = watermark_gui,
         BackgroundColor3 = rgb(255, 255, 255),
         BorderSizePixel = 0,
-        Position = dim2(0.98, -320, 0, 16),
-        Size = dim2(0, 310, 0, 48),
+        Position = dim2(0.9, -150, 0, 15),
+        Size = dim2(0, 220, 0, 28),
         Visible = true,
         Active = true,
         ZIndex = 1
@@ -3900,7 +3900,7 @@ function library:Watermark(options)
         BackgroundColor3 = library.Theme.Accent,
         BorderSizePixel = 0,
         Position = dim2(0, 0, 0, 0),
-        Size = dim2(1, 0, 0, 2),
+        Size = dim2(0, 2, 1, 0),
         ZIndex = 5
     })
     library:RegisterTheme(accent_bar, "BackgroundColor3", "Accent")
@@ -3915,45 +3915,31 @@ function library:Watermark(options)
         Visible = true,
         Image = "http://www.roblox.com/asset/?id=18245826428",
         BackgroundTransparency = 1,
-        ImageTransparency = 0.82,
-        Position = dim2(0, -24, 0, -24),
-        Size = dim2(1, 48, 1, 48),
+        ImageTransparency = 0.88,
+        Position = dim2(0, -20, 0, -20),
+        Size = dim2(1, 40, 1, 40),
         ZIndex = -1,
         BorderSizePixel = 0,
         SliceCenter = rect(vec2(21, 21), vec2(79, 79))
     })
     library:RegisterTheme(glow, "ImageColor3", "Accent")
 
-    local title_lbl = library:create("TextLabel", {
+    local text_lbl = library:create("TextLabel", {
         Parent = content,
         BackgroundTransparency = 1,
-        Position = dim2(0, 10, 0, 4),
-        Size = dim2(1, -20, 0, 16),
-        TextColor3 = rgb(230, 230, 255),
-        FontFace = library.font,
-        TextSize = 11,
-        Text = string.upper(options.name or options.Name or "alternate.lol"),
-        ZIndex = 4,
-        TextXAlignment = Enum.TextXAlignment.Left
-    })
-    library:RegisterTheme(title_lbl, "TextColor3", {"Text", "Main"})
-
-    local info_lbl = library:create("TextLabel", {
-        Parent = content,
-        BackgroundTransparency = 1,
-        Position = dim2(0, 10, 0, 20),
-        Size = dim2(1, -20, 0, 20),
-        TextColor3 = rgb(178, 178, 200),
+        Position = dim2(0, 8, 0, 0),
+        Size = dim2(1, -8, 1, 0),
+        TextColor3 = rgb(230, 230, 230),
         FontFace = library.font,
         TextSize = 10,
-        Text = "loading stats...",
+        Text = options.name or options.Name or "alternate.lol",
         ZIndex = 4,
         TextXAlignment = Enum.TextXAlignment.Left
     })
-    library:RegisterTheme(info_lbl, "TextColor3", {"Text", "Unselected"})
+    library:RegisterTheme(text_lbl, "TextColor3", {"Text", "Main"})
 
     local wmStroke = library:create("UIStroke", {
-        Parent = title_lbl,
+        Parent = text_lbl,
         Color = rgb(0, 0, 0),
         Thickness = 1,
         Transparency = 0.5
@@ -3972,14 +3958,17 @@ function library:Watermark(options)
         end)
     end)
 
+    text_lbl:GetPropertyChangedSignal("TextBounds"):Connect(function()
+        container.Size = dim2(0, math.max(text_lbl.TextBounds.X + 20, 220), 0, 28)
+    end)
+
     task.spawn(function()
         while task.wait(1) do
             local ping = 0
-            local placeName = tostring(game.PlaceId)
             pcall(function()
                 ping = math.round(lp:GetNetworkPing() * 1000)
             end)
-            info_lbl.Text = string.format("fps %d   |   ping %dms   |   place %s", fps, ping, placeName)
+            text_lbl.Text = string.format("%s | %d FPS | %dms", options.name or options.Name or "alternate.lol", fps, ping)
         end
     end)
 
