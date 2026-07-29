@@ -4755,150 +4755,81 @@ function library:subtab(properties)
     end
     
     if not parent_tab.subtab_holder then
+        -- Convert tab's page to vertical layout for subtabs
         local layout = parent_tab.page:FindFirstChildWhichIsA("UIListLayout")
         if layout then
             layout.FillDirection = Enum.FillDirection.Vertical
-            layout.Padding = dim(0, 8)
-            layout.HorizontalFlex = Enum.UIFlexAlignment.None
-            layout.VerticalFlex = Enum.UIFlexAlignment.None
+            layout.Padding = dim(0, 5)
         end
-
+        
         parent_tab.subtab_holder = library:create("Frame", {
             Parent = parent_tab.page,
-            Name = "",
             BackgroundTransparency = 1,
-            Size = dim2(1, 0, 0, 30)
+            Size = dim2(1, 0, 0, 25)
         })
-
         library:create("UIListLayout", {
             Parent = parent_tab.subtab_holder,
-            Name = "",
             FillDirection = Enum.FillDirection.Horizontal,
-            HorizontalFlex = Enum.UIFlexAlignment.Fill,
-            Padding = dim(0, 6),
-            SortOrder = Enum.SortOrder.LayoutOrder,
-            VerticalFlex = Enum.UIFlexAlignment.Fill
+            Padding = dim(0, 5)
         })
-
+        
         parent_tab.subpage_holder = library:create("Frame", {
             Parent = parent_tab.page,
-            Name = "",
             BackgroundTransparency = 1,
-            Size = dim2(1, 0, 1, -38)
-        })
-
-        library:create("UIListLayout", {
-            Parent = parent_tab.subpage_holder,
-            Name = "",
-            FillDirection = Enum.FillDirection.Horizontal,
-            HorizontalFlex = Enum.UIFlexAlignment.Fill,
-            SortOrder = Enum.SortOrder.LayoutOrder,
-            VerticalFlex = Enum.UIFlexAlignment.Fill
+            Size = dim2(1, 0, 1, -30) -- fill rest of page
         })
     end
-
-    local outline = library:create("TextButton", {
+    
+    -- subtab button
+    local btn = library:create("TextButton", {
         Parent = parent_tab.subtab_holder,
-        Name = "",
-        FontFace = library.font,
-        TextColor3 = themes.preset.border,
-        BorderColor3 = themes.preset.border,
-        Text = "",
-        AutoButtonColor = false,
-        Size = dim2(0, 0, 1, 0),
-        BorderSizePixel = 0,
-        TextSize = 14,
-        BackgroundColor3 = themes.preset.outline
-    }); library:applyTheme(outline, "outline", "BackgroundColor3")
-
-    local inline = library:create("Frame", {
-        Parent = outline,
-        Name = "",
-        Position = dim2(0, 1, 0, 1),
-        BorderColor3 = themes.preset.border,
-        Size = dim2(1, -2, 1, -2),
-        BorderSizePixel = 0,
-        BackgroundColor3 = themes.preset.element2
-    }); library:applyTheme(inline, "element2", "BackgroundColor3")
-
-    local background = library:create("Frame", {
-        Parent = inline,
-        Name = "",
-        Position = dim2(0, 1, 0, 1),
-        BorderColor3 = themes.preset.border,
-        Size = dim2(1, -2, 1, -2),
-        BorderSizePixel = 0,
-        BackgroundColor3 = themes.preset.element
-    }); library:applyTheme(background, "element", "BackgroundColor3")
-
-    local gradient = library:create("UIGradient", {
-        Parent = background,
-        Name = "",
-        Rotation = 90,
-        Color = rgbseq{
-            rgbkey(0, rgb(41, 41, 41)),
-            rgbkey(1, rgb(16, 16, 16))
-        }
-    })
-
-    local text = library:create("TextLabel", {
-        Parent = background,
-        Name = "",
-        FontFace = library.font,
-        TextColor3 = themes.preset.unselected,
-        BorderColor3 = rgb(0, 0, 0),
         Text = cfg.name,
-        BackgroundTransparency = 1,
-        Position = dim2(0, 0, 0, -1),
-        Size = dim2(1, 0, 1, 0),
-        BorderSizePixel = 0,
+        FontFace = library.font,
         TextSize = 12,
-        BackgroundColor3 = rgb(255, 255, 255)
-    }); library:applyTheme(text, "unselected", "TextColor3")
-
+        TextColor3 = themes.preset.unselected,
+        BackgroundTransparency = 1,
+        AutomaticSize = Enum.AutomaticSize.X,
+        Size = dim2(0, 0, 1, 0)
+    }); library:applyTheme(btn, "unselected", "TextColor3")
+    
+    local underline = library:create("Frame", {
+        Parent = btn,
+        BackgroundColor3 = themes.preset.accent,
+        BorderSizePixel = 0,
+        Size = dim2(1, 0, 0, 2),
+        Position = dim2(0, 0, 1, -2),
+        Visible = false
+    })
+    library:applyTheme(underline, "accent", "BackgroundColor3")
+    
+    -- subpage
     cfg.page = library:create("Frame", {
         Parent = parent_tab.subpage_holder,
-        Name = "",
         BackgroundTransparency = 1,
         Size = dim2(1, 0, 1, 0),
         Visible = false
     })
-
     library:create("UIListLayout", {
         Parent = cfg.page,
-        Name = "",
         FillDirection = Enum.FillDirection.Horizontal,
         HorizontalFlex = Enum.UIFlexAlignment.Fill,
         Padding = dim(0, 11),
-        SortOrder = Enum.SortOrder.LayoutOrder,
         VerticalFlex = Enum.UIFlexAlignment.Fill
     })
-
+    
     function cfg.open_subtab()
         if parent_tab.selected_subtab then
-            parent_tab.selected_subtab.text.TextColor3 = themes.preset.unselected
+            parent_tab.selected_subtab.btn.TextColor3 = themes.preset.unselected
+            parent_tab.selected_subtab.underline.Visible = false
             parent_tab.selected_subtab.page.Visible = false
-            parent_tab.selected_subtab.gradient.Color = rgbseq{
-                rgbkey(0, rgb(41, 41, 41)),
-                rgbkey(1, rgb(16, 16, 16))
-            }
         end
-
-        text.TextColor3 = themes.preset.accent
+        btn.TextColor3 = themes.preset.accent
+        underline.Visible = true
         cfg.page.Visible = true
-        gradient.Color = rgbseq{
-            rgbkey(0, rgb(41, 41, 41)),
-            rgbkey(1, rgb(25, 25, 25))
-        }
-        parent_tab.selected_subtab = {
-            button = outline,
-            text = text,
-            page = cfg.page,
-            gradient = gradient
-        }
+        parent_tab.selected_subtab = {btn = btn, underline = underline, page = cfg.page}
     end
-
-    outline.MouseButton1Down:Connect(cfg.open_subtab)
+    
+    btn.MouseButton1Down:Connect(cfg.open_subtab)
     if not parent_tab.selected_subtab then
         cfg.open_subtab()
     end
