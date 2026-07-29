@@ -96,18 +96,18 @@
 
     local themes = {
         preset = {
-            ["accent"] = rgb(124, 92, 255),
+            ["accent"] = hex("#FFFFFF"),
             ["text_outline"] = rgb(0, 0, 0),
-            ["background"] = rgb(10, 10, 12),
-            ["text"] = rgb(240, 240, 245),
-            ["element"] = rgb(18, 18, 22),
-            ["element2"] = rgb(24, 24, 29),
-            ["outline"] = rgb(35, 35, 42),
-            ["inline"] = rgb(14, 14, 18),
-            ["hover"] = rgb(31, 31, 38),
-            ["unselected"] = rgb(140, 140, 150),
+            ["background"] = rgb(0, 0, 0),
+            ["text"] = rgb(255, 255, 255),
+            ["element"] = rgb(20, 20, 20),
+            ["element2"] = rgb(35, 35, 35),
+            ["outline"] = rgb(30, 30, 30),
+            ["inline"] = rgb(10, 10, 10),
+            ["hover"] = rgb(45, 45, 45),
+            ["unselected"] = rgb(120, 120, 120),
             ["border"] = rgb(0, 0, 0),
-            ["glow"] = rgb(124, 92, 255),
+            ["glow"] = rgb(255, 255, 255),
         }, 	
 
         utility = {
@@ -484,17 +484,7 @@
         end 
 
         function library:applyTheme(instance, theme, property) 
-            local theme_bucket = themes.utility[theme]
-            if not theme_bucket then
-                return
-            end
-
-            local property_bucket = theme_bucket[property]
-            if not property_bucket then
-                return
-            end
-
-            insert(property_bucket, instance)
+            insert(themes.utility[theme][property], instance)
         end
 
         function library:updateTheme(theme, color)
@@ -533,27 +523,6 @@
             }) 
 
             library:applyTheme(STROKE, "text_outline", "Color")
-        end
-
-        function library:addCorner(parent, radius)
-            return library:create("UICorner", {
-                Parent = parent,
-                CornerRadius = dim(0, radius or 6)
-            })
-        end
-
-        function library:addThemedStroke(parent, theme, thickness, transparency, property)
-            local stroke = library:create("UIStroke", {
-                Parent = parent,
-                Thickness = thickness or 1,
-                Transparency = transparency or 0,
-                ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-                LineJoinMode = Enum.LineJoinMode.Round,
-                Color = themes.preset[theme] or themes.preset.outline
-            })
-
-            library:applyTheme(stroke, theme or "outline", property or "Color")
-            return stroke
         end
 
         function library:create(instance, options)
@@ -1780,36 +1749,42 @@
                     BorderColor3 = themes.preset.border,
                     Text = "",
                     AutoButtonColor = false,
-                    Size = dim2(0, 0, 0, 32),
+                    Size = dim2(0, 0, 0, 30),
                     BorderSizePixel = 0,
                     TextSize = 14,
-                    BackgroundColor3 = themes.preset.element
-                }); library:applyTheme(outline, "element", "BackgroundColor3")
-                library:addCorner(outline, 7)
-                local stroke = library:addThemedStroke(outline, "text_outline", 1, 0)
-
-                local background = library:create("Frame", {
+                    BackgroundColor3 = themes.preset.outline
+                }); library:applyTheme(outline, "outline", "BackgroundColor3")
+                
+                local inline = library:create("Frame", {
                     Parent = outline,
                     Name = "",
-                    Position = dim2(0, 0, 0, 0),
+                    Position = dim2(0, 1, 0, 1),
                     BorderColor3 = themes.preset.border,
-                    Size = dim2(1, 0, 1, 0),
+                    Size = dim2(1, -2, 1, -2),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = themes.preset.element2
+                }); library:applyTheme(inline, "element2", "BackgroundColor3")
+                
+                local background = library:create("Frame", {
+                    Parent = inline,
+                    Name = "",
+                    Position = dim2(0, 1, 0, 1),
+                    BorderColor3 = themes.preset.border,
+                    Size = dim2(1, -2, 1, -2),
                     BorderSizePixel = 0,
                     BackgroundColor3 = themes.preset.element
                 }); library:applyTheme(background, "element", "BackgroundColor3")
-                library:addCorner(background, 7)
-
-                local accent_fill = library:create("Frame", {
+                
+                local gradient = library:create("UIGradient", {
                     Parent = background,
                     Name = "",
-                    Position = dim2(0, 0, 1, -2),
-                    Size = dim2(1, 0, 0, 2),
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = themes.preset.accent,
-                    Visible = false
-                }); library:applyTheme(accent_fill, "accent", "BackgroundColor3")
-                library:addCorner(accent_fill, 7)
-
+                    Rotation = 90,
+                    Color = rgbseq{
+                        rgbkey(0, rgb(41, 41, 41)), 
+                        rgbkey(1, rgb(16, 16, 16))
+                    }
+                })
+                
                 local text = library:create("TextLabel", {
                     Parent = background,
                     Name = "",
@@ -1862,27 +1837,23 @@
                 library:closeCurrentElement()
 
                 if self.selected_tab then
-                    self.selected_tab.text.TextColor3 = themes.preset.unselected
-                    self.selected_tab.page.Visible = false
-                    self.selected_tab.button.BackgroundColor3 = themes.preset.element
-                    self.selected_tab.stroke.Color = themes.preset.text_outline
-                    self.selected_tab.accent_fill.Visible = false
+                    self.selected_tab[1].TextColor3 = themes.preset.unselected
+                    self.selected_tab[2].Visible = false
+                    self.selected_tab[3].Color = rgbseq{
+                        rgbkey(0, rgb(41, 41, 41)),
+                        rgbkey(1, rgb(16, 16, 16))
+                    }
 
                     self.selected_tab = nil
                 end
 
-                text.TextColor3 = themes.preset.text
-                outline.BackgroundColor3 = themes.preset.element2
-                stroke.Color = themes.preset.text_outline
-                accent_fill.Visible = true
+                text.TextColor3 = themes.preset.accent
                 cfg["page"].Visible = true
-                self.selected_tab = {
-                    text = text,
-                    page = cfg["page"],
-                    button = outline,
-                    stroke = stroke,
-                    accent_fill = accent_fill
+                gradient.Color = rgbseq{
+                    rgbkey(0, rgb(41, 41, 41)),
+                    rgbkey(1, rgb(25, 25, 25))
                 }
+                self.selected_tab = {text, cfg["page"], gradient}
             end
 
             -- Add column method to tab for direct section support
@@ -1914,18 +1885,6 @@
 
             outline.MouseButton1Down:Connect(function()
                 cfg.open_tab()
-            end)
-
-            outline.MouseEnter:Connect(function()
-                if not self.selected_tab or self.selected_tab.button ~= outline then
-                    outline.BackgroundColor3 = themes.preset.hover
-                end
-            end)
-
-            outline.MouseLeave:Connect(function()
-                if not self.selected_tab or self.selected_tab.button ~= outline then
-                    outline.BackgroundColor3 = themes.preset.element
-                end
             end)
 
             if not self.selected_tab then
@@ -4796,86 +4755,54 @@ function library:subtab(properties)
     end
     
     if not parent_tab.subtab_holder then
+        -- Convert tab's page to vertical layout for subtabs
         local layout = parent_tab.page:FindFirstChildWhichIsA("UIListLayout")
         if layout then
             layout.FillDirection = Enum.FillDirection.Vertical
-            layout.Padding = dim(0, 10)
-            layout.HorizontalFlex = Enum.UIFlexAlignment.None
-            layout.VerticalFlex = Enum.UIFlexAlignment.None
+            layout.Padding = dim(0, 5)
         end
         
-        parent_tab.subtab_shell = library:create("Frame", {
-            Parent = parent_tab.page,
-            BackgroundColor3 = themes.preset.inline,
-            BorderSizePixel = 0,
-            Size = dim2(1, 0, 0, 34)
-        })
-        library:applyTheme(parent_tab.subtab_shell, "inline", "BackgroundColor3")
-        library:addCorner(parent_tab.subtab_shell, 6)
-        library:addThemedStroke(parent_tab.subtab_shell, "text_outline", 1, 0)
-
         parent_tab.subtab_holder = library:create("Frame", {
-            Parent = parent_tab.subtab_shell,
+            Parent = parent_tab.page,
             BackgroundTransparency = 1,
-            Size = dim2(1, -10, 1, -6),
-            Position = dim2(0, 5, 0, 3)
+            Size = dim2(1, 0, 0, 25)
         })
         library:create("UIListLayout", {
             Parent = parent_tab.subtab_holder,
             FillDirection = Enum.FillDirection.Horizontal,
-            Padding = dim(0, 8),
-            SortOrder = Enum.SortOrder.LayoutOrder,
-            VerticalAlignment = Enum.VerticalAlignment.Center
-        })
-        library:create("UIPadding", {
-            Parent = parent_tab.subtab_holder,
-            PaddingLeft = dim(0, 0),
-            PaddingRight = dim(0, 0)
+            Padding = dim(0, 5)
         })
         
         parent_tab.subpage_holder = library:create("Frame", {
             Parent = parent_tab.page,
             BackgroundTransparency = 1,
-            Size = dim2(1, 0, 1, -44)
+            Size = dim2(1, 0, 1, -30) -- fill rest of page
         })
     end
     
+    -- subtab button
     local btn = library:create("TextButton", {
         Parent = parent_tab.subtab_holder,
         Text = cfg.name,
         FontFace = library.font,
         TextSize = 12,
         TextColor3 = themes.preset.unselected,
-        AutoButtonColor = false,
-        BackgroundColor3 = themes.preset.element,
-        BorderSizePixel = 0,
+        BackgroundTransparency = 1,
         AutomaticSize = Enum.AutomaticSize.X,
-        Size = dim2(0, 0, 1, 0),
-        TextXAlignment = Enum.TextXAlignment.Center
-    })
-    library:applyTheme(btn, "element", "BackgroundColor3")
-    library:applyTheme(btn, "unselected", "TextColor3")
-    library:addCorner(btn, 4)
-    local btn_padding = library:create("UIPadding", {
-        Parent = btn,
-        PaddingLeft = dim(0, 12),
-        PaddingRight = dim(0, 12)
-    })
-    local stroke = library:addThemedStroke(btn, "text_outline", 1, 0)
+        Size = dim2(0, 0, 1, 0)
+    }); library:applyTheme(btn, "unselected", "TextColor3")
     
-    local accent_fill = library:create("Frame", {
+    local underline = library:create("Frame", {
         Parent = btn,
         BackgroundColor3 = themes.preset.accent,
         BorderSizePixel = 0,
         Size = dim2(1, 0, 0, 2),
         Position = dim2(0, 0, 1, -2),
-        Visible = false,
-        ZIndex = 0
+        Visible = false
     })
-    library:applyTheme(accent_fill, "accent", "BackgroundColor3")
-
-    btn_padding.Parent = btn
+    library:applyTheme(underline, "accent", "BackgroundColor3")
     
+    -- subpage
     cfg.page = library:create("Frame", {
         Parent = parent_tab.subpage_holder,
         BackgroundTransparency = 1,
@@ -4893,36 +4820,14 @@ function library:subtab(properties)
     function cfg.open_subtab()
         if parent_tab.selected_subtab then
             parent_tab.selected_subtab.btn.TextColor3 = themes.preset.unselected
-            parent_tab.selected_subtab.btn.BackgroundColor3 = themes.preset.element
-            parent_tab.selected_subtab.stroke.Color = themes.preset.text_outline
-            parent_tab.selected_subtab.accent_fill.Visible = false
+            parent_tab.selected_subtab.underline.Visible = false
             parent_tab.selected_subtab.page.Visible = false
         end
-
-        btn.TextColor3 = themes.preset.text
-        btn.BackgroundColor3 = themes.preset.element2
-        stroke.Color = themes.preset.text_outline
-        accent_fill.Visible = true
+        btn.TextColor3 = themes.preset.accent
+        underline.Visible = true
         cfg.page.Visible = true
-        parent_tab.selected_subtab = {
-            btn = btn,
-            stroke = stroke,
-            accent_fill = accent_fill,
-            page = cfg.page
-        }
+        parent_tab.selected_subtab = {btn = btn, underline = underline, page = cfg.page}
     end
-
-    btn.MouseEnter:Connect(function()
-        if not parent_tab.selected_subtab or parent_tab.selected_subtab.btn ~= btn then
-            btn.BackgroundColor3 = themes.preset.hover
-        end
-    end)
-
-    btn.MouseLeave:Connect(function()
-        if not parent_tab.selected_subtab or parent_tab.selected_subtab.btn ~= btn then
-            btn.BackgroundColor3 = themes.preset.element
-        end
-    end)
     
     btn.MouseButton1Down:Connect(cfg.open_subtab)
     if not parent_tab.selected_subtab then
