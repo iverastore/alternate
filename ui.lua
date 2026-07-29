@@ -484,7 +484,17 @@
         end 
 
         function library:applyTheme(instance, theme, property) 
-            insert(themes.utility[theme][property], instance)
+            local theme_bucket = themes.utility[theme]
+            if not theme_bucket then
+                return
+            end
+
+            local property_bucket = theme_bucket[property]
+            if not property_bucket then
+                return
+            end
+
+            insert(property_bucket, instance)
         end
 
         function library:updateTheme(theme, color)
@@ -532,7 +542,7 @@
             })
         end
 
-        function library:addThemedStroke(parent, theme, thickness, transparency)
+        function library:addThemedStroke(parent, theme, thickness, transparency, property)
             local stroke = library:create("UIStroke", {
                 Parent = parent,
                 Thickness = thickness or 1,
@@ -542,7 +552,7 @@
                 Color = themes.preset[theme] or themes.preset.outline
             })
 
-            library:applyTheme(stroke, theme or "outline", "Color")
+            library:applyTheme(stroke, theme or "outline", property or "Color")
             return stroke
         end
 
@@ -1776,7 +1786,7 @@
                     BackgroundColor3 = themes.preset.element
                 }); library:applyTheme(outline, "element", "BackgroundColor3")
                 library:addCorner(outline, 7)
-                local stroke = library:addThemedStroke(outline, "outline", 1, 0)
+                local stroke = library:addThemedStroke(outline, "text_outline", 1, 0)
 
                 local background = library:create("Frame", {
                     Parent = outline,
@@ -1792,10 +1802,10 @@
                 local accent_fill = library:create("Frame", {
                     Parent = background,
                     Name = "",
-                    Size = dim2(0, 0, 1, 0),
+                    Position = dim2(0, 0, 1, -2),
+                    Size = dim2(1, 0, 0, 2),
                     BorderSizePixel = 0,
                     BackgroundColor3 = themes.preset.accent,
-                    BackgroundTransparency = 0.82,
                     Visible = false
                 }); library:applyTheme(accent_fill, "accent", "BackgroundColor3")
                 library:addCorner(accent_fill, 7)
@@ -1855,7 +1865,7 @@
                     self.selected_tab.text.TextColor3 = themes.preset.unselected
                     self.selected_tab.page.Visible = false
                     self.selected_tab.button.BackgroundColor3 = themes.preset.element
-                    self.selected_tab.stroke.Color = themes.preset.outline
+                    self.selected_tab.stroke.Color = themes.preset.text_outline
                     self.selected_tab.accent_fill.Visible = false
 
                     self.selected_tab = nil
@@ -1863,7 +1873,7 @@
 
                 text.TextColor3 = themes.preset.text
                 outline.BackgroundColor3 = themes.preset.element2
-                stroke.Color = themes.preset.accent
+                stroke.Color = themes.preset.text_outline
                 accent_fill.Visible = true
                 cfg["page"].Visible = true
                 self.selected_tab = {
@@ -4798,17 +4808,17 @@ function library:subtab(properties)
             Parent = parent_tab.page,
             BackgroundColor3 = themes.preset.inline,
             BorderSizePixel = 0,
-            Size = dim2(1, 0, 0, 38)
+            Size = dim2(1, 0, 0, 34)
         })
         library:applyTheme(parent_tab.subtab_shell, "inline", "BackgroundColor3")
-        library:addCorner(parent_tab.subtab_shell, 8)
-        library:addThemedStroke(parent_tab.subtab_shell, "outline", 1, 0)
+        library:addCorner(parent_tab.subtab_shell, 6)
+        library:addThemedStroke(parent_tab.subtab_shell, "text_outline", 1, 0)
 
         parent_tab.subtab_holder = library:create("Frame", {
             Parent = parent_tab.subtab_shell,
             BackgroundTransparency = 1,
-            Size = dim2(1, -12, 1, -8),
-            Position = dim2(0, 6, 0, 4)
+            Size = dim2(1, -10, 1, -6),
+            Position = dim2(0, 5, 0, 3)
         })
         library:create("UIListLayout", {
             Parent = parent_tab.subtab_holder,
@@ -4826,7 +4836,7 @@ function library:subtab(properties)
         parent_tab.subpage_holder = library:create("Frame", {
             Parent = parent_tab.page,
             BackgroundTransparency = 1,
-            Size = dim2(1, 0, 1, -48)
+            Size = dim2(1, 0, 1, -44)
         })
     end
     
@@ -4845,25 +4855,24 @@ function library:subtab(properties)
     })
     library:applyTheme(btn, "element", "BackgroundColor3")
     library:applyTheme(btn, "unselected", "TextColor3")
-    library:addCorner(btn, 6)
+    library:addCorner(btn, 4)
     local btn_padding = library:create("UIPadding", {
         Parent = btn,
         PaddingLeft = dim(0, 12),
         PaddingRight = dim(0, 12)
     })
-    local stroke = library:addThemedStroke(btn, "outline", 1, 0)
+    local stroke = library:addThemedStroke(btn, "text_outline", 1, 0)
     
     local accent_fill = library:create("Frame", {
         Parent = btn,
         BackgroundColor3 = themes.preset.accent,
-        BackgroundTransparency = 0.84,
         BorderSizePixel = 0,
-        Size = dim2(1, 0, 1, 0),
+        Size = dim2(1, 0, 0, 2),
+        Position = dim2(0, 0, 1, -2),
         Visible = false,
         ZIndex = 0
     })
     library:applyTheme(accent_fill, "accent", "BackgroundColor3")
-    library:addCorner(accent_fill, 6)
 
     btn_padding.Parent = btn
     
@@ -4885,14 +4894,14 @@ function library:subtab(properties)
         if parent_tab.selected_subtab then
             parent_tab.selected_subtab.btn.TextColor3 = themes.preset.unselected
             parent_tab.selected_subtab.btn.BackgroundColor3 = themes.preset.element
-            parent_tab.selected_subtab.stroke.Color = themes.preset.outline
+            parent_tab.selected_subtab.stroke.Color = themes.preset.text_outline
             parent_tab.selected_subtab.accent_fill.Visible = false
             parent_tab.selected_subtab.page.Visible = false
         end
 
         btn.TextColor3 = themes.preset.text
         btn.BackgroundColor3 = themes.preset.element2
-        stroke.Color = themes.preset.accent
+        stroke.Color = themes.preset.text_outline
         accent_fill.Visible = true
         cfg.page.Visible = true
         parent_tab.selected_subtab = {
