@@ -1783,7 +1783,13 @@
                 Thickness = 1,
                 Color = themes.preset.outline
             })
-            library:applyTheme(icon_stroke, "outline", "Color")
+            pcall(function()
+                if library.RegisterTheme then
+                    library:RegisterTheme(icon_stroke, "Color", {"Borders", "Outline"})
+                else
+                    icon_stroke.Color = themes.preset.outline
+                end
+            end)
 
             local icon = library:create("ImageLabel", {
                 Parent = icon_bg,
