@@ -74,28 +74,28 @@
     getgenv().library = library
     
     getgenv().library.Theme = {
-        Accent = Color3.fromRGB(170, 85, 255),
-        Background = Color3.fromRGB(8, 8, 12),
-        Inline = Color3.fromRGB(14, 10, 20),
-        Element = Color3.fromRGB(22, 16, 32),
-        ["Element 2"] = Color3.fromRGB(34, 24, 48),
-        ["Hovered Element"] = Color3.fromRGB(58, 38, 86),
+        Accent = Color3.fromRGB(255, 255, 255),
+        Background = Color3.fromRGB(0, 0, 0),
+        Inline = Color3.fromRGB(10, 10, 10),
+        Element = Color3.fromRGB(20, 20, 20),
+        ["Element 2"] = Color3.fromRGB(35, 35, 35),
+        ["Hovered Element"] = Color3.fromRGB(45, 45, 45),
         TextOutline = Color3.fromRGB(0, 0, 0)
     }
     getgenv().library.CurrentTheme = {
         Text = {
-            Main = Color3.fromRGB(245, 245, 255),
-            Unselected = Color3.fromRGB(164, 146, 196)
+            Main = Color3.fromRGB(255, 255, 255),
+            Unselected = Color3.fromRGB(120, 120, 120)
         },
         Borders = {
-            Outline = Color3.fromRGB(44, 26, 70),
-            Inline = Color3.fromRGB(5, 5, 8)
+            Outline = Color3.fromRGB(30, 30, 30),
+            Inline = Color3.fromRGB(0, 0, 0)
         },
         TextOutline = Color3.fromRGB(0, 0, 0)
     }
     getgenv().themes = {
         preset = {
-            glow = Color3.fromRGB(190, 120, 255)
+            glow = Color3.fromRGB(255, 255, 255)
         }
     }
     
@@ -3868,7 +3868,7 @@ function library:Watermark(options)
         BackgroundColor3 = rgb(255, 255, 255),
         BorderSizePixel = 0,
         Position = dim2(0.9, -150, 0, 15),
-        Size = dim2(0, 220, 0, 28),
+        Size = dim2(0, 200, 0, 28),
         Visible = true,
         Active = true,
         ZIndex = 1
@@ -3915,7 +3915,7 @@ function library:Watermark(options)
         Visible = true,
         Image = "http://www.roblox.com/asset/?id=18245826428",
         BackgroundTransparency = 1,
-        ImageTransparency = 0.88,
+        ImageTransparency = 0.8,
         Position = dim2(0, -20, 0, -20),
         Size = dim2(1, 40, 1, 40),
         ZIndex = -1,
@@ -3959,7 +3959,7 @@ function library:Watermark(options)
     end)
 
     text_lbl:GetPropertyChangedSignal("TextBounds"):Connect(function()
-        container.Size = dim2(0, math.max(text_lbl.TextBounds.X + 20, 220), 0, 28)
+        container.Size = dim2(0, text_lbl.TextBounds.X + 20, 0, 28)
     end)
 
     task.spawn(function()
@@ -3975,7 +3975,6 @@ function library:Watermark(options)
     local obj = {
         SetVisibility = function(self, bool)
             container.Visible = bool
-            glow.Visible = bool
         end
     }
     library.WatermarkObj = obj
@@ -4143,8 +4142,8 @@ function library:KeybindList(options)
         Parent = keylist_gui,
         BackgroundColor3 = rgb(255, 255, 255),
         BorderSizePixel = 0,
-        Position = dim2(0.05, 0, 0.28, 0),
-        Size = dim2(0, 230, 0, 36),
+        Position = dim2(0.05, 0, 0.3, 0),
+        Size = dim2(0, 180, 0, 30),
         Visible = true,
         Active = true,
         ZIndex = 1
@@ -4171,16 +4170,6 @@ function library:KeybindList(options)
     })
     library:RegisterTheme(content, "BackgroundColor3", "Background")
 
-    local accent_bar = library:create("Frame", {
-        Parent = content,
-        BackgroundColor3 = library.Theme.Accent,
-        BorderSizePixel = 0,
-        Position = dim2(0, 0, 0, 0),
-        Size = dim2(1, 0, 0, 2),
-        ZIndex = 5
-    })
-    library:RegisterTheme(accent_bar, "BackgroundColor3", "Accent")
-
     local glow = library:create("ImageLabel", {
         Parent = container,
         Name = "",
@@ -4191,62 +4180,64 @@ function library:KeybindList(options)
         Visible = true,
         Image = "http://www.roblox.com/asset/?id=18245826428",
         BackgroundTransparency = 1,
-        ImageTransparency = 0.82,
+        ImageTransparency = 0.8,
         Position = dim2(0, -20, 0, -20),
         Size = dim2(1, 40, 1, 40),
         ZIndex = -1,
         BorderSizePixel = 0,
         SliceCenter = rect(vec2(21, 21), vec2(79, 79))
     })
-    library:RegisterTheme(glow, "ImageColor3", "Accent")
 
     local header = library:create("TextLabel", {
         Parent = content,
         BackgroundTransparency = 1,
-        Position = dim2(0, 10, 0, 4),
-        Size = dim2(1, -20, 0, 14),
+        Size = dim2(1, 0, 0, 22),
         TextColor3 = rgb(255, 255, 255),
         FontFace = library.font,
-        TextSize = 11,
-        Text = "ACTIVE KEYBINDS",
+        TextSize = 10,
+        Text = "  Keybinds",
         TextXAlignment = Enum.TextXAlignment.Left,
         ZIndex = 4
     })
     library:RegisterTheme(header, "TextColor3", {"Text", "Main"})
 
-    local summary = library:create("TextLabel", {
+    local klHeaderStroke = library:create("UIStroke", {
+        Parent = header,
+        Color = rgb(0, 0, 0),
+        Thickness = 1,
+        Transparency = 0.5
+    })
+    library:RegisterTheme(klHeaderStroke, "Color", "TextOutline")
+
+    local header_line = library:create("Frame", {
         Parent = content,
-        BackgroundTransparency = 1,
-        Position = dim2(0, 10, 0, 18),
-        Size = dim2(1, -20, 0, 12),
-        TextColor3 = rgb(178, 178, 178),
-        FontFace = library.font,
-        TextSize = 9,
-        Text = "0 binds active",
-        TextXAlignment = Enum.TextXAlignment.Left,
+        BackgroundColor3 = rgb(255, 255, 255),
+        BorderSizePixel = 0,
+        Position = dim2(0, 0, 0, 22),
+        Size = dim2(1, 0, 0, 1),
         ZIndex = 4
     })
-    library:RegisterTheme(summary, "TextColor3", {"Text", "Unselected"})
+    library:RegisterTheme(header_line, "BackgroundColor3", "Accent")
 
     local list_holder = library:create("Frame", {
         Parent = content,
         BackgroundTransparency = 1,
-        Position = dim2(0, 0, 0, 32),
-        Size = dim2(1, 0, 1, -32),
+        Position = dim2(0, 0, 0, 24),
+        Size = dim2(1, 0, 1, -24),
         BorderSizePixel = 0,
         ZIndex = 4
     })
 
     library:create("UIPadding", {
         Parent = list_holder,
-        PaddingLeft = dim(0, 8),
-        PaddingRight = dim(0, 8),
-        PaddingBottom = dim(0, 6)
+        PaddingLeft = dim(0, 4),
+        PaddingRight = dim(0, 4),
+        PaddingBottom = dim(0, 4)
     })
 
     local list_layout = library:create("UIListLayout", {
         Parent = list_holder,
-        Padding = dim(0, 4),
+        Padding = dim(0, 3),
         SortOrder = Enum.SortOrder.LayoutOrder
     })
 
@@ -4264,7 +4255,7 @@ function library:KeybindList(options)
                     local keyName = tostring(keyRaw):gsub("Enum.KeyCode.", ""):gsub("Enum.UserInputType.", "")
                     if isActive and keyRaw ~= nil and keyName ~= "NONE" and keyName ~= "Unknown" and keyName ~= "nil" and keyName ~= "" then
                         local dispName = (library.KeybindNames and library.KeybindNames[flag]) or tostring(flag):gsub("Bind$", "")
-                        local mode = tostring(data.mode or data.Mode or "Toggle")
+                        local mode = tostring(data.mode or data.Mode or "Toggle"):lower()
                         actives[#actives + 1] = {name = dispName, key = keyName, mode = mode}
                     end
                 end
@@ -4279,33 +4270,41 @@ function library:KeybindList(options)
 
             if sig ~= last_sig then
                 last_sig = sig
-                summary.Text = string.format("%d bind%s active", #actives, #actives == 1 and "" or "s")
                 for i = #pool + 1, #actives do
                     local entry = library:create("TextLabel", {
                         Parent = list_holder,
                         BackgroundTransparency = 1,
-                        Size = dim2(1, 0, 0, 16),
+                        Size = dim2(1, 0, 0, 14),
                         TextColor3 = rgb(178, 178, 178),
                         FontFace = library.font,
-                        TextSize = 10,
+                        TextSize = 9,
                         Text = "",
                         TextXAlignment = Enum.TextXAlignment.Left,
                         ZIndex = 4
                     })
                     library:RegisterTheme(entry, "TextColor3", {"Text", "Unselected"})
+
+                    local entryStroke = library:create("UIStroke", {
+                        Parent = entry,
+                        Color = rgb(0, 0, 0),
+                        Thickness = 1,
+                        Transparency = 0.5
+                    })
+                    library:RegisterTheme(entryStroke, "Color", "TextOutline")
+
                     pool[i] = entry
                 end
                 for i = 1, #pool do
                     local entry = pool[i]
                     local a = actives[i]
                     if a then
-                        entry.Text = string.format("%s  •  %s  •  %s", a.name, a.key, a.mode)
+                        entry.Text = string.format("%s [%s] [%s]", a.name, a.key, a.mode)
                         entry.Visible = true
                     else
                         entry.Visible = false
                     end
                 end
-                container.Size = dim2(0, 230, 0, 38 + (#actives * 20))
+                container.Size = dim2(0, 180, 0, 25 + (#actives * 17))
             end
         end
     end)
@@ -4313,7 +4312,6 @@ function library:KeybindList(options)
     local obj = {
         SetVisibility = function(self, bool)
             container.Visible = bool
-            glow.Visible = bool
         end
     }
     library.KeyList = obj
@@ -4323,270 +4321,41 @@ end
 function library:PlayerList(options)
     local callbacks = options or {}
     local whitelisted = {}
-    local selectedPlayer = nil
-
-    local gui = library:create("ScreenGui", {
-        Parent = coregui,
-        Name = "PlayerList",
-        ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    })
-
-    local container = library:create("Frame", {
-        Parent = gui,
-        BackgroundColor3 = rgb(255, 255, 255),
-        BorderSizePixel = 0,
-        Position = dim2(0.73, 0, 0.18, 0),
-        Size = dim2(0, 320, 0, 360),
-        Visible = false,
-        Active = true,
-        ZIndex = 20
-    })
-    library:RegisterTheme(container, "BackgroundColor3", {"Borders", "Outline"})
-
-    local inline = library:create("Frame", {
-        Parent = container,
-        BackgroundColor3 = rgb(19, 19, 19),
-        BorderSizePixel = 0,
-        Position = dim2(0, 1, 0, 1),
-        Size = dim2(1, -2, 1, -2),
-        ZIndex = 21
-    })
-    library:RegisterTheme(inline, "BackgroundColor3", "Inline")
-
-    local content = library:create("Frame", {
-        Parent = inline,
-        BackgroundColor3 = rgb(12, 12, 12),
-        BorderSizePixel = 0,
-        Position = dim2(0, 1, 0, 1),
-        Size = dim2(1, -2, 1, -2),
-        ZIndex = 22
-    })
-    library:RegisterTheme(content, "BackgroundColor3", "Background")
-
-    local accent_bar = library:create("Frame", {
-        Parent = content,
-        BackgroundColor3 = library.Theme.Accent,
-        BorderSizePixel = 0,
-        Position = dim2(0, 0, 0, 0),
-        Size = dim2(1, 0, 0, 2),
-        ZIndex = 24
-    })
-    library:RegisterTheme(accent_bar, "BackgroundColor3", "Accent")
-
-    local title = library:create("TextLabel", {
-        Parent = content,
-        BackgroundTransparency = 1,
-        Position = dim2(0, 10, 0, 6),
-        Size = dim2(1, -20, 0, 18),
-        Text = "PLAYERS",
-        TextColor3 = rgb(255, 255, 255),
-        FontFace = library.font,
-        TextSize = 11,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        ZIndex = 24
-    })
-    library:RegisterTheme(title, "TextColor3", {"Text", "Main"})
-
-    local listPane = library:create("ScrollingFrame", {
-        Parent = content,
-        BackgroundTransparency = 1,
-        Position = dim2(0, 8, 0, 30),
-        Size = dim2(0, 144, 1, -38),
-        CanvasSize = dim2(0, 0, 0, 0),
-        ScrollBarThickness = 2,
-        BorderSizePixel = 0,
-        ZIndex = 24
-    })
-
-    local listLayout = library:create("UIListLayout", {
-        Parent = listPane,
-        Padding = dim(0, 4),
-        SortOrder = Enum.SortOrder.LayoutOrder
-    })
-
-    local detailPane = library:create("Frame", {
-        Parent = content,
-        BackgroundTransparency = 1,
-        Position = dim2(0, 160, 0, 30),
-        Size = dim2(1, -168, 1, -38),
-        BorderSizePixel = 0,
-        ZIndex = 24
-    })
-
-    local avatar = library:create("ImageLabel", {
-        Parent = detailPane,
-        BackgroundColor3 = rgb(20, 20, 20),
-        BorderSizePixel = 0,
-        Position = dim2(0, 0, 0, 0),
-        Size = dim2(0, 72, 0, 72),
-        Image = "rbxthumb://type=AvatarHeadShot&id=1&w=150&h=150",
-        ZIndex = 24
-    })
-    library:RegisterTheme(avatar, "BackgroundColor3", "Element")
-
-    local nameLabel = library:create("TextLabel", {
-        Parent = detailPane,
-        BackgroundTransparency = 1,
-        Position = dim2(0, 82, 0, 6),
-        Size = dim2(1, -82, 0, 16),
-        Text = "No player selected",
-        TextColor3 = rgb(255,255,255),
-        FontFace = library.font,
-        TextSize = 11,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        ZIndex = 24
-    })
-    library:RegisterTheme(nameLabel, "TextColor3", {"Text", "Main"})
-
-    local infoLabel = library:create("TextLabel", {
-        Parent = detailPane,
-        BackgroundTransparency = 1,
-        Position = dim2(0, 82, 0, 24),
-        Size = dim2(1, -82, 0, 42),
-        Text = "Display info appears here",
-        TextColor3 = rgb(178,178,178),
-        FontFace = library.font,
-        TextSize = 9,
-        TextWrapped = true,
-        TextYAlignment = Enum.TextYAlignment.Top,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        ZIndex = 24
-    })
-    library:RegisterTheme(infoLabel, "TextColor3", {"Text", "Unselected"})
-
-    local function makeActionButton(y, text, callback)
-        local btn = library:create("TextButton", {
-            Parent = detailPane,
-            BackgroundColor3 = rgb(22, 22, 22),
-            BorderSizePixel = 0,
-            Position = dim2(0, 0, 0, y),
-            Size = dim2(1, 0, 0, 24),
-            Text = text,
-            TextColor3 = rgb(255,255,255),
-            FontFace = library.font,
-            TextSize = 10,
-            AutoButtonColor = false,
-            ZIndex = 24
-        })
-        library:RegisterTheme(btn, "BackgroundColor3", "Element")
-        library:RegisterTheme(btn, "TextColor3", {"Text", "Main"})
-        btn.MouseButton1Click:Connect(function()
-            if selectedPlayer then
-                pcall(callback, selectedPlayer)
-            end
-        end)
-        return btn
-    end
-
-    local whitelistBtn = makeActionButton(86, "Toggle Whitelist", function(player)
-        whitelisted[player] = not whitelisted[player] or nil
-        if callbacks.OnWhitelist then pcall(callbacks.OnWhitelist, player) end
-    end)
-    local targetBtn = makeActionButton(114, "Set Target", function(player)
-        if callbacks.OnTarget then pcall(callbacks.OnTarget, player) end
-    end)
-    local tpBtn = makeActionButton(142, "Teleport", function(player)
-        if callbacks.OnTeleport then pcall(callbacks.OnTeleport, player) end
-    end)
-    local spectateBtn = makeActionButton(170, "Spectate", function(player)
-        if callbacks.OnSpectate then pcall(callbacks.OnSpectate, player) end
-    end)
-
-    local playerButtons = {}
-    local function updateSelected(player)
-        selectedPlayer = player
-        if not player then
-            nameLabel.Text = "No player selected"
-            infoLabel.Text = "Display info appears here"
-            return
-        end
-        nameLabel.Text = player.DisplayName ~= "" and (player.DisplayName .. " @" .. player.Name) or player.Name
-        local char = player.Character
-        local hum = char and char:FindFirstChildOfClass("Humanoid")
-        local root = char and char:FindFirstChild("HumanoidRootPart")
-        local localRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-        local distance = (root and localRoot) and math.round((root.Position - localRoot.Position).Magnitude) or 0
-        local hp = hum and math.round(hum.Health) or 0
-        avatar.Image = string.format("rbxthumb://type=AvatarHeadShot&id=%d&w=150&h=150", player.UserId)
-        infoLabel.Text = string.format("health: %d\ndistance: %d\nwhitelisted: %s", hp, distance, whitelisted[player] and "yes" or "no")
-    end
-
-    local function refreshPlayers()
-        for _, btn in ipairs(playerButtons) do
-            if btn and btn.Parent then btn:Destroy() end
-        end
-        table.clear(playerButtons)
-        for _, player in ipairs(players:GetPlayers()) do
-            if player ~= lp then
-                local btn = library:create("TextButton", {
-                    Parent = listPane,
-                    BackgroundColor3 = rgb(20, 20, 20),
-                    BorderSizePixel = 0,
-                    Size = dim2(1, -4, 0, 28),
-                    Text = "  " .. player.Name,
-                    TextColor3 = rgb(255,255,255),
-                    FontFace = library.font,
-                    TextSize = 10,
-                    TextXAlignment = Enum.TextXAlignment.Left,
-                    AutoButtonColor = false,
-                    ZIndex = 24
-                })
-                library:RegisterTheme(btn, "BackgroundColor3", "Element")
-                library:RegisterTheme(btn, "TextColor3", {"Text", "Main"})
-                btn.MouseButton1Click:Connect(function()
-                    updateSelected(player)
-                end)
-                table.insert(playerButtons, btn)
-            end
-        end
-        task.defer(function()
-            listPane.CanvasSize = dim2(0, 0, 0, listLayout.AbsoluteContentSize.Y + 4)
-        end)
-    end
-
-    players.PlayerAdded:Connect(refreshPlayers)
-    players.PlayerRemoving:Connect(function(player)
-        if selectedPlayer == player then
-            updateSelected(nil)
-        end
-        refreshPlayers()
-    end)
-    listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        listPane.CanvasSize = dim2(0, 0, 0, listLayout.AbsoluteContentSize.Y + 4)
-    end)
-    refreshPlayers()
-
-    library:draggify(container)
 
     local obj = {
         Callbacks = callbacks,
         Whitelisted = whitelisted,
         SetVisibility = function(self, bool)
-            container.Visible = bool
             if callbacks.OnVisibility then
                 pcall(callbacks.OnVisibility, bool)
             end
         end,
         SetWhitelisted = function(player, bool)
             whitelisted[player] = bool or nil
-            if selectedPlayer == player then updateSelected(player) end
         end,
         IsWhitelisted = function(player)
             return whitelisted[player] == true
         end,
         NotifyWhitelist = function(player)
-            if callbacks.OnWhitelist then pcall(callbacks.OnWhitelist, player) end
+            if callbacks.OnWhitelist then
+                pcall(callbacks.OnWhitelist, player)
+            end
         end,
         NotifyTarget = function(player)
-            if callbacks.OnTarget then pcall(callbacks.OnTarget, player) end
+            if callbacks.OnTarget then
+                pcall(callbacks.OnTarget, player)
+            end
         end,
         NotifyTeleport = function(player)
-            if callbacks.OnTeleport then pcall(callbacks.OnTeleport, player) end
+            if callbacks.OnTeleport then
+                pcall(callbacks.OnTeleport, player)
+            end
         end,
         NotifySpectate = function(player)
-            if callbacks.OnSpectate then pcall(callbacks.OnSpectate, player) end
+            if callbacks.OnSpectate then
+                pcall(callbacks.OnSpectate, player)
+            end
         end,
-        Refresh = refreshPlayers
     }
     library.PlayerListObj = obj
     return obj
