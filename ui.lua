@@ -3423,7 +3423,10 @@
 
                 local cfg = {
                     flag = options.flag or "SET ME A FLAG NOWWW!!!!",
-                    callback = options.callback or function() end,
+                    callback = options.callback or (parent_set and function(bool)
+                        if self then self.enabled = bool end
+                        parent_set(bool)
+                    end) or function() end,
                     open = false,
                     binding = nil, 
                     name = options.name or nil, 
