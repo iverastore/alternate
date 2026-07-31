@@ -3124,12 +3124,7 @@
 
                 local cfg = {
                     flag = options.flag or "SET ME A FLAG NOWWW!!!!",
-                    callback = options.callback or (parent_set and function(bool)
-                        if self then
-                            self.enabled = bool
-                        end
-                        parent_set(bool)
-                    end) or function() end,
+                    callback = options.callback or function() end,
                     open = false,
                     binding = nil, 
                     name = options.name or nil, 
@@ -3292,29 +3287,9 @@
                             if selected_key == cfg.key then 
                                 if cfg.mode == "toggle" then 
                                     cfg.active = not cfg.active
-                                    -- Update flag data without calling parent toggle callback
-                                    local flag_key = cfg.key
-                                    if flag_key == "..." or flag_key == nil then flag_key = nil end
-                                    flags[cfg.flag] = {
-                                        mode = cfg.mode,
-                                        key = cfg.key,
-                                        Key = flag_key,
-                                        active = cfg.active,
-                                        Toggled = cfg.active == true,
-                                        name = cfg.name or (self and self.name) or cfg.flag,
-                                    }
+                                    cfg.set(cfg.active)
                                 elseif cfg.mode == "hold" then 
-                                    cfg.active = true
-                                    local flag_key = cfg.key
-                                    if flag_key == "..." or flag_key == nil then flag_key = nil end
-                                    flags[cfg.flag] = {
-                                        mode = cfg.mode,
-                                        key = cfg.key,
-                                        Key = flag_key,
-                                        active = true,
-                                        Toggled = true,
-                                        name = cfg.name or (self and self.name) or cfg.flag,
-                                    }
+                                    cfg.set(true)
                                 end
                             end
                         end
@@ -3329,17 +3304,7 @@
             
                         if selected_key == cfg.key then
                             if cfg.mode == "hold" then 
-                                cfg.active = false
-                                local flag_key = cfg.key
-                                if flag_key == "..." or flag_key == nil then flag_key = nil end
-                                flags[cfg.flag] = {
-                                    mode = cfg.mode,
-                                    key = cfg.key,
-                                    Key = flag_key,
-                                    active = false,
-                                    Toggled = false,
-                                    name = cfg.name or (self and self.name) or cfg.flag,
-                                }
+                                cfg.set(false)
                             end
                         end
                     end)
