@@ -3423,12 +3423,7 @@
 
                 local cfg = {
                     flag = options.flag or "SET ME A FLAG NOWWW!!!!",
-                    callback = options.callback or (parent_set and function(bool)
-                        if self then
-                            self.enabled = bool
-                        end
-                        parent_set(bool)
-                    end) or function() end,
+                    callback = options.callback or function() end,
                     open = false,
                     binding = nil, 
                     name = options.name or nil, 
@@ -3444,8 +3439,13 @@
                 flags[cfg.flag] = {} 
 
                 -- Instances
+                    local parent_el = (self and self.right_components) or (self and self.elements) or nil
+                    if not parent_el then
+                        config_flags[cfg.flag] = cfg.set
+                        return setmetatable(cfg, library)
+                    end
                     local outline = library:create("TextButton", {
-                        Parent = self.right_components,
+                        Parent = parent_el,
                         Name = "",
                         Text = "", 
                         AutoButtonColor = false, 
